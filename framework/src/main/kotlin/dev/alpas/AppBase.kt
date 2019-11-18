@@ -18,7 +18,7 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
         if (file.isFile) file.parentFile else file
     }
     override val srcPackage: String by lazy { entryClass.`package`.name }
-    override val logger: KLogger by lazy { KotlinLogging.logger("") }
+    override val logger: KLogger by lazy { KotlinLogging.logger("alpas") }
     override val env by lazy { make<Environment>() }
     override val configs by lazy { makeMany<Config>() }
 
