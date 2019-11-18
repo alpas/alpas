@@ -115,17 +115,16 @@ class DefaultContainer(override val picoContainer: MutablePicoContainer = Defaul
 
 class ChildContainer(val parent: Container) : Container, AutoCloseable {
     override fun close() {
+        picoContainer.components.forEach {
+            picoContainer.removeComponentByInstance(it)
+        }
         detachFromParent()
     }
 
-    override val picoContainer: MutablePicoContainer by lazy {
-        parent.picoContainer.makeChildContainer().also {
-            it.start()
-        }
-    }
+    override val picoContainer: MutablePicoContainer = parent.picoContainer.makeChildContainer()
 
     fun detachFromParent() {
         parent.removeChildContainer(this)
-        this.picoContainer.dispose()
+        picoContainer.dispose()
     }
 }
