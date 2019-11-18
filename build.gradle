@@ -1,0 +1,110 @@
+buildscript {
+    ext {
+        kotlinVersion = "1.3.50"
+    }
+    repositories {
+        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
+    }
+}
+
+allprojects {
+    group = "dev.alpas"
+    version = "0.1"
+}
+
+subprojects { project ->
+    apply plugin: "kotlin"
+    apply plugin: "maven-publish"
+    apply plugin: "com.jfrog.bintray"
+
+    repositories {
+        jcenter()
+        maven { url = uri("https://jitpack.io") }
+    }
+
+    dependencies {
+        compile "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
+        compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.allWarningsAsErrors = true
+    }
+
+    task generateSourcesJar(type: Jar) {
+        classifier = "sources"
+        from sourceSets.main.allSource
+    }
+
+    task generateJavadoc(type: Jar) {
+        classifier = "javadoc"
+    }
+
+    publishing {
+        publications {
+            bintray(MavenPublication) {
+                from components.java
+                artifact generateSourcesJar
+                artifact generateJavadoc
+
+                groupId project.group
+                artifactId project.name
+                version project.version
+
+                pom {
+                    name = project.name
+                    description = "A web framework for Kotlin."
+                    url = "https://github.com/ashokgelal/alpas"
+                    licenses {
+                        license {
+                            name = "The Apache Software License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "ashokgelal"
+                            name = "Ashok Gelal"
+                            email = "ashokgelal@gmail.com"
+                        }
+                    }
+                    scm {
+                        url = "https://github.com/ashokgelal/alpas.git"
+                    }
+                }
+            }
+        }
+    }
+
+    bintray {
+        user = System.getenv("BINTRAY_USER")
+        key = System.getenv("BINTRAY_KEY")
+        publications = ["bintray"]
+        publish = false
+
+        pkg {
+            repo = "Alpas"
+            name = project.name
+            licenses = ["Apache-2.0"]
+            vcsUrl = "https://github.com/ashokgelal/alpas.git"
+            labels = ["Kotlin", "web framework"]
+
+            version {
+                name = project.version
+                released = new Date()
+                vcsTag = project.version
+            }
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}
+

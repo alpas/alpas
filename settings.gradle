@@ -1,0 +1,11 @@
+include "framework"
+include "pulsar"
+
+enableFeaturePreview("STABLE_PUBLISHING")
+
+rootProject.name = 'alpas'
+
+rootProject.children.each { project ->
+    project.buildFileName = "${project.name}.gradle"
+}
+

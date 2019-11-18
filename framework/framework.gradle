@@ -1,0 +1,32 @@
+buildscript {
+    ext.jettyVersion = '9.4.22.v20191022'
+    ext.ktormVersion = '2.5'
+}
+
+dependencies {
+    implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
+    implementation "org.eclipse.jetty:jetty-webapp:${jettyVersion}"
+    implementation "com.github.danielnorberg:rut:v1.0"
+    implementation "org.picocontainer:picocontainer:2.15"
+    implementation "io.github.cdimascio:java-dotenv:5.1.1"
+    implementation "io.github.classgraph:classgraph:4.8.43"
+    implementation "com.github.simbiose:Encryption:2.0.1"
+    implementation "org.slf4j:slf4j-api:1.8.0-beta4"
+    implementation "de.mkammerer:argon2-jvm:2.5"
+    implementation "uy.kohesive.klutter:klutter-core:2.6.0"
+    implementation "org.apache.geronimo.specs:geronimo-jms_2.0_spec:1.0-alpha-2"
+    implementation "org.apache.qpid:qpid-jms-client:0.44.0"
+    implementation "org.simplejavamail:simple-java-mail:5.2.0"
+    implementation "com.github.alpas:url-signer:0.1.7"
+    implementation "com.github.cesarferreira:kotlin-pluralizer:0.2.9"
+    implementation "com.github.freva:ascii-table:1.1.0"
+
+    compile "io.pebbletemplates:pebble:3.1.0"
+    compile "com.github.ajalt:clikt:2.1.0"
+    compile "com.github.ajalt:mordant:1.2.1"
+    compile "io.github.microutils:kotlin-logging:1.7.2"
+    compile "me.liuwj.ktorm:ktorm-core:${ktormVersion}"
+    compile "me.liuwj.ktorm:ktorm-jackson:${ktormVersion}"
+    compile "com.github.marlonlom:timeago:4.0.1"
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
+}

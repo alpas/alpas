@@ -1,0 +1,33 @@
+package dev.alpas.notifications.channels
+
+import dev.alpas.mailing.MailConfig
+import dev.alpas.mailing.SendMailJob
+import dev.alpas.notifications.MailableNotification
+import dev.alpas.notifications.Notifiable
+import dev.alpas.notifications.Notification
+import dev.alpas.queue.JobSerializer
+import dev.alpas.queue.Queue
+import dev.alpas.view.ViewRenderer
+
+class MailChannel(
+    private val queue: Queue,
+    private val mailConfig: MailConfig,
+    private val viewRenderer: ViewRenderer,
+    private val serializer: JobSerializer
+) : NotificationChannel {
+
+    override fun <T : Notifiable> send(notification: Notification<T>, notifiables: List<T>) {
+        val not = notification as MailableNotification<T>
+        notifiables.forEach {
+            val message = not.toMail(it).apply { render(viewRenderer) }
+            val job = SendMailJob(message)
+            if (notification.shouldQueue(it)) {
+                queue.enqueue(job, serializer = serializer)
+            } else {
+                job(mailer)
+            }
+        }
+    }
+
+    private val mailer by lazy { mailConfig.driver() }
+}
