@@ -1,0 +1,13 @@
+name: Auto Upload Packages
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run script
+      run: ./auto-upload.sh
