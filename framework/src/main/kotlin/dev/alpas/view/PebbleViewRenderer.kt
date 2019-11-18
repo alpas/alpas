@@ -10,7 +10,7 @@ import java.io.StringWriter
 internal class PebbleViewRenderer(private val app: Application) : ViewRenderer {
     private lateinit var templateExtension: String
     private var viewConfigs = mutableMapOf<String, Any?>()
-    private lateinit var engine: PebbleEngine
+    private val engine: PebbleEngine by lazy { engineBuilder.cacheActive(app.env.isProduction).build() }
 
     private val engineBuilder by lazy {
         val viewConfig = app.config<ViewConfig>()
@@ -26,7 +26,6 @@ internal class PebbleViewRenderer(private val app: Application) : ViewRenderer {
     }
 
     override fun boot() {
-        engine = engineBuilder.cacheActive(app.env.isProduction).build()
     }
 
     override fun extend(extension: ViewExtension, vararg extensions: ViewExtension) {
