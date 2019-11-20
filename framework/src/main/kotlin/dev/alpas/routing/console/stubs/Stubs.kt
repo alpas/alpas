@@ -6,8 +6,8 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import HttpCall
-                import Controller
+                import dev.alpas.http.HttpCall
+                import dev.alpas.routing.Controller
 
                 class StubClazzName : Controller() {
                     fun index(call: HttpCall) {
@@ -21,9 +21,9 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import Handler
-                import Middleware
-                import HttpCall
+                import dev.alpas.Handler
+                import dev.alpas.Middleware
+                import dev.alpas.http.HttpCall
 
                 class StubClazzName : Middleware<HttpCall>() {
                     override fun invoke(call: HttpCall, forward: Handler<HttpCall>) {
@@ -37,8 +37,8 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import ValidationGuard
-                import Rule
+                import dev.alpas.validation.ValidationGuard
+                import dev.alpas.validation.Rule
 
                 class StubClazzName : ValidationGuard() {
                     override fun rules(): Map<String, Iterable<Rule>> {

@@ -6,8 +6,8 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import Container
-                import Job
+                import dev.alpas.Container
+                import dev.alpas.queue.Job
 
                 class StubClazzName : Job() {
                     override fun invoke(container: Container) {

@@ -720,10 +720,10 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import VerifiedEmailOnlyMiddleware
-                import HttpCall
-                import Controller
-                import ControllerMiddleware
+                import dev.alpas.auth.middleware.VerifiedEmailOnlyMiddleware
+                import dev.alpas.http.HttpCall
+                import dev.alpas.routing.Controller
+                import dev.alpas.routing.ControllerMiddleware
 
                 class StubClazzName : Controller() {
                     override fun middleware(call: HttpCall) = listOf(ControllerMiddleware(VerifiedEmailOnlyMiddleware::class))
@@ -739,8 +739,8 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import HandlesEmailVerification
-                import Controller
+                import dev.alpas.auth.HandlesEmailVerification
+                import dev.alpas.routing.Controller
 
                 class StubClazzName : Controller(), HandlesEmailVerification
             """.trimIndent()
@@ -750,8 +750,8 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import HandlesForgottenPassword
-                import Controller
+                import dev.alpas.auth.HandlesForgottenPassword
+                import dev.alpas.routing.Controller
 
                 class StubClazzName : Controller(), HandlesForgottenPassword
             """.trimIndent()
@@ -761,8 +761,8 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import HandlesUserLogin
-                import Controller
+                import dev.alpas.auth.HandlesUserLogin
+                import dev.alpas.routing.Controller
 
                 class StubClazzName : Controller(), HandlesUserLogin
             """.trimIndent()
@@ -772,8 +772,8 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import HandlesPasswordReset
-                import Controller
+                import dev.alpas.auth.HandlesPasswordReset
+                import dev.alpas.routing.Controller
 
                 class StubClazzName : Controller(), HandlesPasswordReset
             """.trimIndent()
@@ -783,8 +783,8 @@ internal class Stubs {
             return """
                 package StubPackageName
 
-                import HandlesUserRegistration
-                import Controller
+                import dev.alpas.auth.HandlesUserRegistration
+                import dev.alpas.routing.Controller
 
                 class StubClazzName : Controller(), HandlesUserRegistration
             """.trimIndent()

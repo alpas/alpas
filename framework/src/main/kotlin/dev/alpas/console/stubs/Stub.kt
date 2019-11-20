@@ -20,9 +20,9 @@ internal class Stubs {
             return """
                 package StubPackageName 
 
-                import GeneratorCommand
-                import OutputFile
-                import toPascalCase
+                import dev.alpas.console.GeneratorCommand
+                import dev.alpas.console.OutputFile
+                import dev.alpas.extensions.toPascalCase
                 import java.io.File
 
                 class StubClazzName(srcPackage: String) : 
