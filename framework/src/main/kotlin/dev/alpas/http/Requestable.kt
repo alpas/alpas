@@ -75,12 +75,12 @@ class Request(private val servletRequest: HttpServletRequest) : Requestable {
     override val method by lazy { Method.valueOf(servletRequest.method.toUpperCase()) }
     override val remoteAddr: String get() = servletRequest.remoteAddr
     override val referrer: String? get() = header("referer")
-    override val uri: String get() = servletRequest.requestURI
-    override val url get() = servletRequest.requestURL.toString()
-    override val fullUri get() = "${servletRequest.requestURI}$queryString"
-    override val rootUrl get() = jettyRequest.rootURL.toString()
-    override val fullUrl get() = "$url$queryString"
     override val queryString get() = servletRequest.queryString.ifNotBlank { query -> "?$query" }
+    override val uri: String get() = servletRequest.requestURI
+    override val fullUri get() = "$uri$queryString"
+    override val url get() = servletRequest.requestURL.toString()
+    override val fullUrl get() = servletRequest.requestURL.append(queryString).toString()
+    override val rootUrl get() = jettyRequest.rootURL.toString()
     override val isXmlHttpRequest get() = header("X-Requested-With") == "XMLHttpRequest"
     override val isAjax get() = isXmlHttpRequest
     override val isPjax get() = header("X-PJAX") == "true"
