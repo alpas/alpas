@@ -3,21 +3,42 @@ package dev.alpas.http
 import dev.alpas.Application
 import dev.alpas.Kernel
 import dev.alpas.Middleware
+import dev.alpas.auth.middleware.AuthOnlyMiddleware
 import dev.alpas.cookie.EncryptCookies
 import dev.alpas.http.middleware.SessionStart
 import dev.alpas.http.middleware.VerifyCsrfToken
 import kotlin.reflect.KClass
 
 open class HttpKernel : AlpasServer(), Kernel {
-    open val middlewareGroups: Map<String, List<KClass<out Middleware<HttpCall>>>> =
-        mapOf("web" to listOf(SessionStart::class, VerifyCsrfToken::class, EncryptCookies::class))
+    private val routeEntryMiddlewareGroups: Map<String, List<KClass<out Middleware<HttpCall>>>> by lazy {
+        val groups: HashMap<String, List<KClass<out Middleware<HttpCall>>>> = hashMapOf()
+        groups["web"] = webMiddlewareGroup()
+        registerRouteMiddlewareGroups(groups)
+        groups
+    }
 
     override fun boot(app: Application) {
         super<AlpasServer>.boot(app)
     }
 
     override fun routeEntryMiddlewareGroups(app: Application): Map<String, List<KClass<out Middleware<HttpCall>>>> {
-        return middlewareGroups
+        return routeEntryMiddlewareGroups
+    }
+
+    protected open fun registerRouteMiddlewareGroups(groups: HashMap<String, List<KClass<out Middleware<HttpCall>>>>) {
+    }
+
+    override fun serverEntryMiddleware(app: Application): Iterable<KClass<out Middleware<HttpCall>>> {
+        val middleware = mutableListOf<KClass<out Middleware<HttpCall>>>()
+        registerServerEntryMiddleware(middleware)
+        return middleware
+    }
+
+    protected open fun registerServerEntryMiddleware(middleware: MutableList<KClass<out Middleware<HttpCall>>>) {
+    }
+
+    open fun webMiddlewareGroup(): List<KClass<out Middleware<HttpCall>>> {
+        return listOf(SessionStart::class, VerifyCsrfToken::class, EncryptCookies::class)
     }
 
     override fun stop(app: Application) {
@@ -25,3 +46,4 @@ open class HttpKernel : AlpasServer(), Kernel {
         super<AlpasServer>.stop(app)
     }
 }
+
