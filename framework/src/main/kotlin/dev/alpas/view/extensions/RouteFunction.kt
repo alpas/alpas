@@ -11,7 +11,7 @@ private val EvaluationContext.call: HttpCall
         return this.getVariable("call") as HttpCall
     }
 
-internal class RouteFunction() : Function {
+internal class RouteFunction : Function {
 
     override fun getArgumentNames(): List<String> {
         return listOf("name", "params")
@@ -30,7 +30,7 @@ internal class RouteFunction() : Function {
     }
 }
 
-internal class HasRouteFunction() : Function {
+internal class HasRouteFunction : Function {
 
     override fun getArgumentNames(): List<String> {
         return listOf("name")
