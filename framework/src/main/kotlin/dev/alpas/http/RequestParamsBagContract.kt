@@ -4,53 +4,57 @@ import dev.alpas.routing.RouteResult
 
 interface RequestParamsBagContract {
     // all parameters including query params, form params, and route params
-    val params: Map<String, List<Any>>
-    val routeParams: Map<String, List<Any>>
+    val params: Map<String, List<Any>?>?
+    val routeParams: Map<String, List<Any>?>?
+    val queryParams: Map<String, List<Any>?>?
 
     fun param(key: String): Any? {
-        return params[key]?.firstOrNull()
+        return params?.get(key)?.firstOrNull()
     }
 
     fun paramAsString(key: String): String? {
-        return params[key]?.firstOrNull()?.toString()
+        return params?.get(key)?.firstOrNull()?.toString()
     }
 
     fun paramAsInt(key: String): Int? {
-        return params[key]?.firstOrNull()?.toString()?.toInt()
+        return params?.get(key)?.firstOrNull()?.toString()?.toInt()
     }
 
     fun paramAsLong(key: String): Long? {
-        return params[key]?.firstOrNull()?.toString()?.toLong()
+        return params?.get(key)?.firstOrNull()?.toString()?.toLong()
     }
 
     fun paramAsBool(key: String): Boolean? {
-        return params[key]?.firstOrNull()?.toString()?.toBoolean()
+        return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
     }
 
     fun params(key: String): List<Any>? {
-        return params[key]
+        return queryParams?.get(key)
     }
 
     fun routeParam(key: String): Any? {
-        return routeParams[key]?.firstOrNull()
+        return routeParams?.get(key)?.firstOrNull()
     }
 
     fun routeParams(key: String): List<Any>? {
-        return if (routeParams.isNotEmpty()) routeParams[key] else null
+        return routeParams?.get(key)
     }
 
-    fun only(vararg key: String): Map<String, Any> {
-        val map = mutableMapOf<String, Any>()
-        key.forEach { k ->
-            param(k)?.let { value -> map[k] = value }
-        }
+    fun queryParam(key: String): Any? {
+        return queryParams?.get(key)?.firstOrNull()
+    }
+
+    fun queryParams(key: String): List<Any>? {
+        return queryParams?.get(key)
+    }
+
+    fun only(key: String, vararg keys: String): Map<String, Any?> {
+        val map = mutableMapOf<String, Any?>()
+        keys.toMutableSet().apply { add(key) }
+            .forEach { k ->
+                map[k] = param(k)
+            }
         return map
-    }
-
-    fun only(vararg key: String, default: () -> Map<String, Any>): Map<String, Any> {
-        return only(*key).let {
-            if (it.isEmpty()) default() else it
-        }
     }
 }
 
@@ -74,5 +78,9 @@ class RequestParamsBag(private val request: Requestable, private val route: Rout
                 it[route.paramName(idx)] = arrayOf
             }
         }.toMap()
+    }
+
+    override val queryParams: Map<String, List<Any>?> by lazy {
+        request.jettyRequest.queryParameters
     }
 }
