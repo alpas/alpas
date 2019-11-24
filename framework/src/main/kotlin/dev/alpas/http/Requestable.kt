@@ -30,7 +30,6 @@ interface Requestable {
     val isJson: Boolean
     val isPrefetch: Boolean
     val expectsJson: Boolean
-    val acceptsJson: Boolean
     val wantsJson: Boolean
     val acceptsHtml: Boolean
     val acceptsAnyContentType: Boolean
@@ -46,21 +45,14 @@ interface Requestable {
     val jsonBody: Map<String, Any>?
 
     fun header(name: String): String?
-
-    fun accepts(vararg contentType: String): Boolean {
-        if (acceptableContentTypes.isEmpty()) {
     fun headers(name: String): List<String>?
+    fun accepts(contentType: String, vararg contentTypes: String): Boolean {
+        if (acceptsAnyContentType) {
             return true
         }
 
         acceptableContentTypes.forEach { accept ->
-            if (accept.isOneOf("*/*", "*")) {
-                return true
-            }
-
-            contentType.forEach {
-                if (it == accept) return true
-            }
+            return accept.isOneOf(contentType, *contentTypes)
         }
 
         return false
@@ -89,8 +81,7 @@ class Request(private val servletRequest: HttpServletRequest) : Requestable {
     override val isPrefetch get() = header("X-Purpose") == "preview" || header("X-moz") == "prefetch"
     override val isJson get() = servletRequest.isJson
     override val expectsJson get() = (isAjax && !isPjax && acceptsAnyContentType) || wantsJson
-    override val acceptsJson get() = accepts("application/json")
-    override val wantsJson get() = acceptableContentTypes.firstOrNull().isOneOf("application/json")
+    override val wantsJson get() = acceptableContentTypes.contains("application/json")
     override val acceptsHtml get() = accepts("text/html", "application/xhtml+xml")
     override val acceptsAnyContentType
         get() = acceptableContentTypes.isEmpty() || acceptableContentTypes.firstOrNull().isOneOf("*/*", "*")

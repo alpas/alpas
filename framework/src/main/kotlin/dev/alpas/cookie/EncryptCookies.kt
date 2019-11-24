@@ -1,13 +1,9 @@
 package dev.alpas.cookie
 
-import dev.alpas.Handler
-import dev.alpas.Middleware
-import dev.alpas.config
-import dev.alpas.session.SessionConfig
+import dev.alpas.*
 import dev.alpas.encryption.Encrypter
 import dev.alpas.http.HttpCall
-import dev.alpas.isOneOf
-import dev.alpas.make
+import dev.alpas.session.SessionConfig
 import javax.servlet.http.Cookie
 
 class EncryptCookies : Middleware<HttpCall>() {
@@ -40,7 +36,12 @@ class EncryptCookies : Middleware<HttpCall>() {
     private fun cookiesToEncrypt(call: HttpCall): List<Cookie> {
         val config = call.config<SessionConfig>()
         return call.cookie.filterNot {
-            it.name.isOneOf(*config.encryptExcept.toTypedArray(), config.cookieName, "JSESSIONID", "X-CSRF-TOKEN")
+            it.name.isOneOf(
+                config.cookieName,
+                "JSESSIONID",
+                "X-CSRF-TOKEN",
+                *config.encryptExcept.toTypedArray()
+            )
         }
     }
 }
