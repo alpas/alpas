@@ -1,7 +1,6 @@
 package dev.alpas.exceptions
 
 import dev.alpas.http.HttpCall
-import dev.alpas.isOneOf
 import dev.alpas.session.csrfSessionKey
 import dev.alpas.validation.ErrorBag
 import org.eclipse.jetty.http.HttpStatus
@@ -21,9 +20,7 @@ class ValidationException(
         } else {
             call.session.apply {
                 flash("_validation_errors", errorBag.asMap())
-                flash("_old_inputs", call.params.filterNot {
-                    it.key.isOneOf("password", "password_confirmation", csrfSessionKey)
-                })
+                flash("_old_inputs", call.paramsExcept("password", "password_confirmation", csrfSessionKey))
             }
             call.redirect().back()
         }

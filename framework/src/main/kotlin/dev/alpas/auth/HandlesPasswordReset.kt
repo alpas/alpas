@@ -24,7 +24,7 @@ interface HandlesPasswordReset {
 
     @Suppress("unused")
     fun showResetForm(call: HttpCall) {
-        call.render("auth.passwords.reset", call.only("email", "token"))
+        call.render("auth.passwords.reset", call.onlyParams("email", "token"))
     }
 
     @Suppress("unused")

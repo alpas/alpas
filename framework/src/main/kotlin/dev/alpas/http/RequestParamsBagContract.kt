@@ -1,5 +1,7 @@
 package dev.alpas.http
 
+import dev.alpas.filterNotNullValues
+import dev.alpas.isOneOf
 import dev.alpas.routing.RouteResult
 
 interface RequestParamsBagContract {
@@ -48,13 +50,16 @@ interface RequestParamsBagContract {
         return queryParams?.get(key)
     }
 
-    fun only(key: String, vararg keys: String): Map<String, Any?> {
-        val map = mutableMapOf<String, Any?>()
-        keys.toMutableSet().apply { add(key) }
-            .forEach { k ->
-                map[k] = param(k)
-            }
-        return map
+    fun onlyParams(key: String, vararg keys: String): Map<String, List<Any>> {
+        return params?.filterKeys {
+            it.isOneOf(key, *keys)
+        }?.filterNotNullValues() ?: emptyMap()
+    }
+
+    fun paramsExcept(key: String, vararg keys: String): Map<String, List<Any>> {
+        return params?.filterKeys {
+            !it.isOneOf(key, *keys)
+        }?.filterNotNullValues() ?: emptyMap()
     }
 }
 
