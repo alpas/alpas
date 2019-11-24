@@ -191,9 +191,8 @@ abstract class RoutableBase(
         val childGroupPrefix = fullPath(prefix)
         val childGroup = RouteGroup(childGroupPrefix, middleware.toMutableSet()).apply {
             block()
-            // the name of child group could have been set whlie calling the block
-            // above so we need to reassign the groupname for all the routes here.
-            // Same goes for child group's middleware as well.
+            // The name of child group could have been set while calling the block above. So, we need to reassign
+            // the group name for all the routes here. Same goes for child group's middleware as well.
             routes.forEach { route ->
                 route.middleware(middleware)
                 route.groupName = fullName(route.groupName)
@@ -206,8 +205,12 @@ abstract class RoutableBase(
     fun group(middleware: Set<KClass<out Middleware<HttpCall>>> = mutableSetOf(), block: RouteGroup.() -> Unit) =
         group("", middleware, block)
 
-    fun group(vararg middleware: KClass<out Middleware<HttpCall>>, block: RouteGroup.() -> Unit) =
-        group("", middleware.toSet(), block)
+    fun group(
+        middleware: KClass<out Middleware<HttpCall>>,
+        vararg others: KClass<out Middleware<HttpCall>>,
+        block: RouteGroup.() -> Unit
+    ) =
+        group("", listOf(middleware, *others).toSet(), block)
 
     fun group(block: RouteGroup.() -> Unit) = group("", mutableSetOf(), block)
     fun group(prefix: String, block: RouteGroup.() -> Unit) = group(prefix, mutableSetOf(), block)

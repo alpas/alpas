@@ -46,8 +46,8 @@ abstract class Command(
         subcommands(commands)
     }
 
-    internal open fun addCommands(vararg command: Command) {
-        subcommands(*command)
+    internal open fun addCommands(command: Command, vararg commands: Command) {
+        subcommands(command, *commands)
     }
 
     protected fun error(msg: String) {

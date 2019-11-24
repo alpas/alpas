@@ -18,7 +18,7 @@ open class Controller {
     fun middlewareFor(methodName: String, call: HttpCall): List<KClass<out Middleware<HttpCall>>> {
         return middleware(call)
             .filter { it.matches(methodName) }
-            .flatMap { it.middleware.toList() }
+            .flatMap { it.all }
     }
 
     open fun middleware(call: HttpCall): Iterable<ControllerMiddleware> {
@@ -52,8 +52,18 @@ open class Controller {
     protected fun <T : Authenticatable> caller(): T = call.caller()
 }
 
-class ControllerMiddleware(val method: String? = null, vararg val middleware: KClass<out Middleware<HttpCall>>) {
-    constructor(vararg middleware: KClass<out Middleware<HttpCall>>) : this(method = null, middleware = *middleware)
+class ControllerMiddleware(
+    val method: String? = null,
+    private val middleware: KClass<out Middleware<HttpCall>>,
+    private vararg val others: KClass<out Middleware<HttpCall>>
+) {
+    val all by lazy { listOf(middleware, *others) }
+
+    constructor(middleware: KClass<out Middleware<HttpCall>>, vararg others: KClass<out Middleware<HttpCall>>) : this(
+        method = null,
+        middleware = middleware,
+        others = *others
+    )
 
     fun matches(method: String): Boolean {
         return this.method == null || this.method == method

@@ -51,8 +51,8 @@ class Session(private val request: HttpServletRequest) {
         return this.pull(key) ?: default()
     }
 
-    fun forget(vararg key: String) {
-        key.forEach {
+    fun forget(key: String, vararg keys: String) {
+        listOf(key, *keys).forEach {
             session.removeAttribute(it)
         }
     }

@@ -35,9 +35,7 @@ interface HandlesUserLogin {
     }
 
     fun onLoginFail(call: HttpCall) {
-        val errorBag = ErrorBag().apply {
-            add(RequestError(username(), message = "Credentials don't match"))
-        }
+        val errorBag = ErrorBag(RequestError(username(), message = "Credentials don't match"))
         throw ValidationException(errorBag = errorBag)
     }
 
@@ -47,7 +45,10 @@ interface HandlesUserLogin {
     }
 
     fun attemptLogin(call: HttpCall): Boolean {
-        return call.authChannel.attempt(call.paramAsString(username()).orAbort(), call.paramAsString("password").orAbort())
+        return call.authChannel.attempt(
+            call.paramAsString(username()).orAbort(),
+            call.paramAsString("password").orAbort()
+        )
     }
 
     fun validate(call: HttpCall) {

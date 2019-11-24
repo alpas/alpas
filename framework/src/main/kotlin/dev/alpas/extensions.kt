@@ -16,8 +16,7 @@ import java.security.SecureRandom
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Base64
-import java.util.Date
+import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.servlet.http.HttpServletResponse
@@ -63,8 +62,9 @@ fun String.base64DecodedBytes(): ByteArray {
     return Base64.getUrlDecoder().decode(this)
 }
 
-fun <T> T?.isOneOf(vararg list: T): Boolean {
-    return list.isNotEmpty() && list.contains(this)
+fun <T> T?.isOneOf(item: T?, vararg items: T): Boolean {
+    if (this == item) return true
+    return items.isNotEmpty() && items.contains(this)
 }
 
 fun String.urlDecode(): String {
@@ -156,3 +156,6 @@ fun String.mustStartWith(prefix: Char): String {
 fun String.mustStartWith(prefix: String): String {
     return mustStartWith(prefix)
 }
+
+@Suppress("UNCHECKED_CAST")
+fun <K, V> Map<K, V?>.filterNotNullValues() = filterValues { it != null } as Map<K, V>

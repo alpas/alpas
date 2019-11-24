@@ -3,8 +3,8 @@ package dev.alpas.validation
 import dev.alpas.JsonSerializer
 import dev.alpas.http.RequestError
 
-class ErrorBag(vararg error: RequestError) {
-    private val errors = mutableListOf(*error)
+class ErrorBag(vararg errors: RequestError) {
+    private val errors = mutableListOf(*errors)
     fun add(requestError: RequestError) {
         errors.add(requestError)
     }

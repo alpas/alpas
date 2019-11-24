@@ -15,8 +15,8 @@ class Pipeline<T : Any> {
         return this
     }
 
-    fun through(vararg pipes: Middleware<T>): Pipeline<T> {
-        return through(pipes.toList())
+    fun through(pipe: Middleware<T>, vararg pipes: Middleware<T>): Pipeline<T> {
+        return through(pipes.toMutableList().apply { add(0, pipe) })
     }
 
     fun through(pipes: Iterable<Middleware<T>>): Pipeline<T> {
