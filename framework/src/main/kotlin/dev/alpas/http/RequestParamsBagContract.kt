@@ -31,7 +31,7 @@ interface RequestParamsBagContract {
     }
 
     fun params(key: String): List<Any>? {
-        return queryParams?.get(key)
+        return params?.get(key)
     }
 
     fun routeParam(key: String): Any? {
