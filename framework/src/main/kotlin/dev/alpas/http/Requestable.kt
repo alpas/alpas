@@ -49,6 +49,7 @@ interface Requestable {
 
     fun accepts(vararg contentType: String): Boolean {
         if (acceptableContentTypes.isEmpty()) {
+    fun headers(name: String): List<String>?
             return true
         }
 
@@ -72,6 +73,7 @@ class Request(private val servletRequest: HttpServletRequest) : Requestable {
     override val jettyRequest by lazy { servletRequest.getAttribute("jetty-request") as JettyRequest }
     override val cookie: CookieJar by lazy { CookieJar(servletRequest.cookies ?: arrayOf()) }
     override fun header(name: String): String? = servletRequest.getHeader(name)
+    override fun headers(name: String): List<String>? = servletRequest.getHeaders(name).toList()
     override val method by lazy { Method.valueOf(servletRequest.method.toUpperCase()) }
     override val remoteAddr: String get() = servletRequest.remoteAddr
     override val referrer: String? get() = header("referer")
