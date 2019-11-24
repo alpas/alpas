@@ -133,8 +133,8 @@ class HttpCall internal constructor(
         }
     }
 
-    fun routeNamed(name: String): String {
-        return make<UrlGenerator>().route(name)
+    fun routeNamed(name: String, params: Map<String, Any>? = null, absolute: Boolean = true): String {
+        return urlGenerator.route(name, params, absolute)
     }
 
     fun timezone(): ZoneOffset {

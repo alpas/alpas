@@ -5,7 +5,6 @@ import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.http.HttpCall
 import dev.alpas.http.middleware.VerifyCsrfToken
-import dev.alpas.routing.UrlGenerator
 import io.restassured.RestAssured
 import io.restassured.config.SessionConfig
 import io.restassured.http.ContentType
@@ -221,7 +220,7 @@ abstract class TestBase(entryClass: Class<*>) {
     }
 
     fun routeNamed(name: String, params: Map<String, Any>? = null, absolute: Boolean = true): String {
-        return container().make<UrlGenerator>().route(name, params, absolute)
+        return call().routeNamed(name, params, absolute)
     }
 }
 
