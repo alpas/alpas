@@ -69,9 +69,9 @@ class Session(private val request: HttpServletRequest) {
         }
     }
 
-    private fun previousFlashBag(default: Map<String, Any?>? = null): Map<String, Any?> {
+    private fun previousFlashBag(default: Map<String, Any?> = emptyMap()): Map<String, Any?> {
         return getOrCreate("_previous_flash_bag") {
-            default ?: mapOf()
+            default
         }
     }
 

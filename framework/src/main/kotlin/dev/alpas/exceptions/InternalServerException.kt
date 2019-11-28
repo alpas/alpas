@@ -7,7 +7,7 @@ import org.eclipse.jetty.http.HttpStatus
 class InternalServerException(
     message: String? = null,
     cause: Throwable? = null,
-    headers: Map<String, String> = mapOf()
+    headers: Map<String, String> = emptyMap()
 ) :
     HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, message ?: "Internal Server Error", cause, headers) {
     override fun report(call: HttpCall) {

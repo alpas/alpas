@@ -8,7 +8,7 @@ import org.eclipse.jetty.http.HttpStatus
 open class SignatureMismatchException(
     message: String? = null,
     cause: Throwable? = null,
-    headers: Map<String, String> = mapOf()
+    headers: Map<String, String> = emptyMap()
 ) : HttpException(HttpStatus.FORBIDDEN_403, message ?: "Signature is invalid.", cause, headers) {
     override fun report(call: HttpCall) {
         call.logger.warn { this }

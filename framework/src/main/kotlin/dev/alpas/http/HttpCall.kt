@@ -145,7 +145,7 @@ class HttpCall internal constructor(
         return ZonedDateTime.now(timezone())
     }
 
-    fun redirect(to: String, status: Int = HttpStatus.MOVED_TEMPORARILY_302, headers: Map<String, String> = mapOf()) {
+    fun redirect(to: String, status: Int = HttpStatus.MOVED_TEMPORARILY_302, headers: Map<String, String> = emptyMap()) {
         redirect().to(to, status, headers)
     }
 

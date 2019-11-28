@@ -45,7 +45,7 @@ open class ValidationGuard(val shouldFailFast: Boolean = false) {
         }
     }
 
-    protected open fun rules(): Map<String, Iterable<Rule>> = mapOf()
+    protected open fun rules(): Map<String, Iterable<Rule>> = emptyMap()
     open fun handleError(errorBag: ErrorBag): Boolean {
         return false
     }

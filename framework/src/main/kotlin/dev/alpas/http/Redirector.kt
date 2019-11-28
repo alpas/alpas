@@ -10,33 +10,33 @@ interface Redirectable {
     fun to(
         to: String,
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
-        headers: Map<String, String> = mapOf()
+        headers: Map<String, String> = emptyMap()
     )
 
     fun toExternal(
         url: String,
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
-        headers: Map<String, String> = mapOf()
+        headers: Map<String, String> = emptyMap()
     )
 
     fun back(
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
-        headers: Map<String, String> = mapOf(),
+        headers: Map<String, String> = emptyMap(),
         default: String = "/"
     )
 
     fun intended(
         default: String = "/",
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
-        headers: Map<String, String> = mapOf()
+        headers: Map<String, String> = emptyMap()
     )
 
-    fun home(status: Int = HttpStatus.MOVED_TEMPORARILY_302, headers: Map<String, String> = mapOf())
+    fun home(status: Int = HttpStatus.MOVED_TEMPORARILY_302, headers: Map<String, String> = emptyMap())
     fun toRouteNamed(
         name: String,
         params: Map<String, Any>? = null,
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
-        headers: Map<String, String> = mapOf()
+        headers: Map<String, String> = emptyMap()
     )
 }
 

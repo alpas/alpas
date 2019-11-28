@@ -60,7 +60,7 @@ interface Responsable {
         servletResponse.status = code
     }
 
-    fun abort(statusCode: Int, message: String? = null, headers: Map<String, String> = mapOf()): Nothing {
+    fun abort(statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()): Nothing {
         throw statusCode.toHttpException(message, headers)
     }
 

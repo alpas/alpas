@@ -8,7 +8,7 @@ import org.eclipse.jetty.http.HttpStatus
 open class AuthenticationException(
     message: String? = null,
     cause: Throwable? = null,
-    headers: Map<String, String> = mapOf()
+    headers: Map<String, String> = emptyMap()
 ) : HttpException(HttpStatus.UNAUTHORIZED_401, message ?: "Unauthenticated.", cause, headers) {
     override fun report(call: HttpCall) {
         call.logger.warn { "Unauthenticated" }

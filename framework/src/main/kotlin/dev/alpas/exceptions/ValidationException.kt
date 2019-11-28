@@ -7,7 +7,7 @@ import org.eclipse.jetty.http.HttpStatus
 
 class ValidationException(
     message: String? = null,
-    headers: Map<String, String> = mapOf(),
+    headers: Map<String, String> = emptyMap(),
     private val errorBag: ErrorBag
 ) : HttpException(HttpStatus.UNPROCESSABLE_ENTITY_422, message ?: "Validation Exception", headers = headers) {
     override fun report(call: HttpCall) {

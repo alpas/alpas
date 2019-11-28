@@ -45,7 +45,7 @@ class UrlGenerator(private val serverURI: URI, private val router: Router, priva
         }).toString()
     }
 
-    fun url(url: String, params: Map<String, Any> = mapOf(), absolute: Boolean = true): String {
+    fun url(url: String, params: Map<String, Any> = emptyMap(), absolute: Boolean = true): String {
         val uri = buildUri(url)
             .addQueryParams(*params.map { it.key to it.value.toString() }.toTypedArray())
             .build()

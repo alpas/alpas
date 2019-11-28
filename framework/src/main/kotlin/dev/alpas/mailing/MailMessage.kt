@@ -40,7 +40,7 @@ open class MailMessage {
 
     open fun render(viewRenderer: ViewRenderer) {
         if (view != null) {
-            text = viewRenderer.render(view, viewBag ?: mapOf())
+            text = viewRenderer.render(view, viewBag ?: emptyMap())
         }
     }
 }

@@ -7,7 +7,7 @@ open class HttpException(
     val statusCode: Int,
     msg: String,
     cause: Throwable? = null,
-    val headers: Map<String, String> = mapOf()
+    val headers: Map<String, String> = emptyMap()
 ) : RuntimeException(msg, cause) {
     open fun report(call: HttpCall) {}
     open fun render(call: HttpCall) {
@@ -21,7 +21,7 @@ open class HttpException(
     }
 }
 
-internal fun Int.toHttpException(message: String? = null, headers: Map<String, String> = mapOf()): HttpException {
+internal fun Int.toHttpException(message: String? = null, headers: Map<String, String> = emptyMap()): HttpException {
     return when (this) {
         HttpStatus.NOT_FOUND_404 -> NotFoundHttpException(message, headers)
         HttpStatus.METHOD_NOT_ALLOWED_405 -> MethodNotAllowedException(message, headers = headers)

@@ -3,7 +3,7 @@ package dev.alpas.exceptions
 import dev.alpas.http.HttpCall
 import org.eclipse.jetty.http.HttpStatus
 
-class NotFoundHttpException(message: String? = null, headers: Map<String, String> = mapOf()) :
+class NotFoundHttpException(message: String? = null, headers: Map<String, String> = emptyMap()) :
     HttpException(HttpStatus.NOT_FOUND_404, message ?: "Not Found", headers = headers) {
     override fun report(call: HttpCall) {
         call.logger.warn { "Resource not found: ${call.fullUrl}" }

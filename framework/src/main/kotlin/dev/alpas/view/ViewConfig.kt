@@ -17,5 +17,5 @@ open class ViewConfig(env: Environment) : Config {
         cacheTemplates = app.env.isProduction
     }
 
-    open fun configsAvailableForView(): Map<String, String?> = mapOf()
+    open fun configsAvailableForView(): Map<String, String?> = emptyMap()
 }
