@@ -25,6 +25,7 @@ internal fun Int.toHttpException(message: String? = null, headers: Map<String, S
     return when (this) {
         HttpStatus.NOT_FOUND_404 -> NotFoundHttpException(message, headers)
         HttpStatus.METHOD_NOT_ALLOWED_405 -> MethodNotAllowedException(message, headers = headers)
-        else -> InternalServerException(message, headers = headers)
+        HttpStatus.INTERNAL_SERVER_ERROR_500 -> InternalServerException(message, headers = headers)
+        else -> HttpException(this, message ?: "", headers = headers)
     }
 }
