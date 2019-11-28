@@ -6,6 +6,7 @@ import dev.alpas.http.HttpCall
 import dev.alpas.make
 import dev.alpas.session.SessionConfig
 
+@Suppress("unused")
 class SessionAuthChannel(private val call: HttpCall, override val userProvider: UserProvider) : AuthChannel {
     private val config = call.config { AuthConfig(call.make()) }
     private val sessionKey = config.authSessionKey
@@ -65,7 +66,7 @@ class SessionAuthChannel(private val call: HttpCall, override val userProvider: 
         // todo: clear remember me cookie
         user = null
         val config = call.config<SessionConfig>()
-        call.cookie.forget(config.cookieName, path = config.path, domain = config.domain)
+        call.forgetCookie(config.cookieName, path = config.path, domain = config.domain)
         call.session.invalidate()
     }
 }

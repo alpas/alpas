@@ -1,18 +1,14 @@
 package dev.alpas.http
 
-import dev.alpas.AppConfig
-import dev.alpas.Container
-import dev.alpas.Environment
+import dev.alpas.*
 import dev.alpas.auth.AuthChannel
 import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.auth.UserProvider
-import dev.alpas.config
 import dev.alpas.exceptions.ExceptionHandler
 import dev.alpas.exceptions.HttpException
 import dev.alpas.exceptions.ValidationException
 import dev.alpas.lodestar.orAbort
-import dev.alpas.make
 import dev.alpas.routing.RouteResult
 import dev.alpas.routing.UrlGenerator
 import dev.alpas.validation.ErrorBag
@@ -40,7 +36,7 @@ class HttpCall internal constructor(
     RequestParamsBagContract by RequestParamsBag(request, route) {
 
     internal constructor(container: Container, req: HttpServletRequest, res: HttpServletResponse, route: RouteResult)
-        : this(container, Request(req), Response(res), route)
+            : this(container, Request(req), Response(res), route)
 
     val logger by lazy { KotlinLogging.logger {} }
     var isDropped = false
@@ -76,10 +72,10 @@ class HttpCall internal constructor(
 
     fun close() {
         if (!jettyRequest.isHandled) {
-            response.send(this)
+            response.finalize(this)
         }
 
-        // By this time we have send a response back to the client and now we need to clear the
+        // By this time we have sent a response back to the client and now we need to clear the
         // previous flash messages to avoid showing these messages again in the next request.
         if (sessionIsValid()) {
             session.clearPreviousFlashBag()

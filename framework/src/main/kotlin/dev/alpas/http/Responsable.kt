@@ -10,6 +10,8 @@ import dev.alpas.view.View
 import dev.alpas.view.ViewRenderer
 import org.eclipse.jetty.http.HttpStatus
 import java.io.InputStream
+import java.time.Duration
+import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
 
 interface Responsable {
@@ -18,46 +20,53 @@ interface Responsable {
     var responseStream: InputStream
     var view: View
 
-    fun addHeaders(headers: Map<String, String>)
-    fun addHeader(key: String, value: String)
+    fun addHeaders(headers: Map<String, String>): Responsable
+
+    fun addHeader(key: String, value: String): Responsable
 
     fun <T> reply(payload: T? = null, statusCode: Int = HttpStatus.OK_200): Responsable {
-        asHtml()
         responseStream = (payload?.toString() ?: "").byteInputStream(servletResponse.charset())
         servletResponse.status = statusCode
+        asHtml()
         return this
     }
 
-    // todo: decide the default status code. 204 makes sense or not?
+    fun <T> replyAsJson(payload: T? = null, statusCode: Int = HttpStatus.OK_200): Responsable {
+        reply(payload, statusCode)
+        asJson()
+        return this
+    }
+
+    fun replyAsJson(obj: JsonSerializable, statusCode: Int = HttpStatus.OK_200): Responsable {
+        return replyAsJson(obj.toJson(), statusCode)
+    }
+
+    fun render(view: View, statusCode: Int = HttpStatus.OK_200) {
+        this.view = view
+        status(statusCode)
+        asHtml()
+    }
+
+    fun render(templateName: String, args: Map<String, Any?>? = null, statusCode: Int = HttpStatus.OK_200): View {
+        return View(templateName.replace(".", "/"), args).also { render(it, statusCode) }
+    }
+
     fun acknowledge(statusCode: Int = HttpStatus.NO_CONTENT_204): Responsable {
-        asJson()
         servletResponse.status = statusCode
+        asJson()
         return this
     }
 
-    fun send(obj: JsonSerializable, statusCode: Int = 200): Responsable {
-        asJson()
-        responseStream = obj.toJson().byteInputStream(servletResponse.charset())
-        servletResponse.status = statusCode
-        return this
+    fun contentType(type: String) {
+        servletResponse.contentType = type
     }
 
     fun asHtml() {
-        servletResponse.contentType = "text/html; charset=UTF-8"
+        contentType("text/html; charset=UTF-8")
     }
 
     fun asJson() {
-        servletResponse.contentType = "application/json; charset=UTF-8"
-    }
-
-    fun reply(view: View): Responsable {
-        asHtml()
-        this.view = view
-        return this
-    }
-
-    private fun status(code: Int) {
-        servletResponse.status = code
+        contentType("application/json; charset=UTF-8")
     }
 
     fun abort(statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()): Nothing {
@@ -68,44 +77,88 @@ interface Responsable {
         condition: Boolean,
         statusCode: Int,
         message: String? = null,
-        headers: Map<String, String> = mapOf()
+        headers: Map<String, String> = emptyMap()
     ) {
         if (!condition) {
             abort(statusCode, message, headers)
         }
     }
 
-    fun render(templateName: String, args: Map<String, Any?>? = null, statusCode: Int = HttpStatus.OK_200): View {
-        status(statusCode)
-        return View(templateName.replace(".", "/"), args).also {
-            reply(it)
+    fun abortIf(
+        condition: Boolean,
+        statusCode: Int,
+        message: String? = null,
+        headers: Map<String, String> = emptyMap()
+    ) {
+        if (condition) {
+            abort(statusCode, message, headers)
         }
     }
 
     fun shareWithView(key: String, value: Any?)
 
-    // todo: this is confusing when calling call.send() from like a controller
-    fun send(call: HttpCall)
+    fun finalize(call: HttpCall)
+
+    fun status(code: Int): Responsable {
+        servletResponse.status = code
+        return this
+    }
+
+    fun addCookie(
+        name: String,
+        value: String?,
+        lifetime: Duration = Duration.ofSeconds(-1),
+        path: String? = null,
+        domain: String? = null,
+        secure: Boolean = false,
+        httpOnly: Boolean = true
+    ): Responsable
+
+    fun addCookie(cookie: Cookie): Responsable
+    fun forgetCookie(name: String, path: String? = null, domain: String? = null): Responsable
 }
 
 class Response internal constructor(override val servletResponse: HttpServletResponse) : Responsable {
-
-    private var headers: MutableMap<String, String> = mutableMapOf()
+    private var headers = mutableMapOf<String, String>()
+    private var cookies = mutableListOf<Cookie>()
     override val errorBag: ErrorBag by lazy { ErrorBag() }
     override lateinit var view: View
     override lateinit var responseStream: InputStream
     private val viewBag by lazy { mutableMapOf<String, Any?>() }
 
-    override fun addHeaders(headers: Map<String, String>) {
+    override fun addHeaders(headers: Map<String, String>): Responsable {
         this.headers.putAll(headers)
+        return this
     }
 
-    override fun addHeader(key: String, value: String) {
+    override fun addHeader(key: String, value: String): Responsable {
         this.headers[key] = value
+        return this
     }
 
-    override fun send(call: HttpCall) {
-        saveCookies(call)
+    override fun addCookie(
+        name: String,
+        value: String?,
+        lifetime: Duration,
+        path: String?,
+        domain: String?,
+        secure: Boolean,
+        httpOnly: Boolean
+    ): Responsable {
+        return addCookie(makeCookie(name, value, lifetime, path, domain, secure, httpOnly))
+    }
+
+    override fun addCookie(cookie: Cookie): Responsable {
+        cookies.add(cookie)
+        return this
+    }
+
+    override fun forgetCookie(name: String, path: String?, domain: String?): Responsable {
+        return addCookie(name, "", lifetime = Duration.ZERO, path = path, domain = domain)
+    }
+
+    override fun finalize(call: HttpCall) {
+        saveCookies()
         copyHeaders()
         copyContent(call)
     }
@@ -116,8 +169,8 @@ class Response internal constructor(override val servletResponse: HttpServletRes
         }
     }
 
-    private fun saveCookies(call: HttpCall) {
-        call.cookie.forEach {
+    private fun saveCookies() {
+        cookies.forEach {
             servletResponse.addCookie(it)
         }
     }
@@ -178,5 +231,23 @@ class Response internal constructor(override val servletResponse: HttpServletRes
 
     override fun shareWithView(key: String, value: Any?) {
         viewBag[key] = value
+    }
+}
+
+private fun makeCookie(
+    name: String,
+    value: String?,
+    lifetime: Duration = Duration.ofSeconds(-1),
+    path: String? = null,
+    domain: String? = null,
+    secure: Boolean = false,
+    httpOnly: Boolean = true
+): Cookie {
+    return Cookie(name, value).also { cookie ->
+        cookie.maxAge = lifetime.seconds.toInt()
+        path?.let { cookie.path = it }
+        domain?.let { cookie.domain = it }
+        cookie.secure = secure
+        cookie.isHttpOnly = httpOnly
     }
 }

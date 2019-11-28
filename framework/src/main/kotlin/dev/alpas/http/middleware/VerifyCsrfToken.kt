@@ -1,13 +1,9 @@
 package dev.alpas.http.middleware
 
-import dev.alpas.Handler
-import dev.alpas.Middleware
-import dev.alpas.config
+import dev.alpas.*
 import dev.alpas.encryption.Encrypter
 import dev.alpas.http.HttpCall
 import dev.alpas.http.Method
-import dev.alpas.isOneOf
-import dev.alpas.make
 import dev.alpas.session.SessionConfig
 import dev.alpas.session.TokenMismatchException
 import dev.alpas.session.csrfSessionKey
@@ -28,7 +24,7 @@ open class VerifyCsrfToken : Middleware<HttpCall>() {
     private fun addXSRFToken(call: HttpCall) {
         val config = call.config<SessionConfig>()
 
-        call.cookie.add(
+        call.addCookie(
             "XSRF-TOKEN",
             call.make<Encrypter>().encrypt(call.session.csrfToken() ?: ""),
             lifetime = config.lifetime,
