@@ -4,10 +4,7 @@ import dev.alpas.*
 import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.console.MakeAuthCommand
 import dev.alpas.console.Command
-import dev.alpas.routing.console.MakeControllerCommand
-import dev.alpas.routing.console.MakeMiddlewareCommand
-import dev.alpas.routing.console.MakeValidationGuardCommand
-import dev.alpas.routing.console.RouteListCommand
+import dev.alpas.routing.console.*
 
 @Suppress("unused")
 open class RouteServiceProvider : ServiceProvider {
@@ -26,7 +23,8 @@ open class RouteServiceProvider : ServiceProvider {
             MakeAuthCommand(app.srcPackage),
             MakeMiddlewareCommand(app.srcPackage),
             RouteListCommand(app.make(), app.config { AuthConfig(app.make()) }),
-            MakeValidationGuardCommand(app.srcPackage)
+            MakeValidationGuardCommand(app.srcPackage),
+            MakeValidationRuleCommand(app.srcPackage)
         )
     }
 

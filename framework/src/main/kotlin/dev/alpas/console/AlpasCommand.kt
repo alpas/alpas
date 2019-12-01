@@ -1,9 +1,14 @@
 package dev.alpas.console
 
 class AlpasCommand(private val commandAliases: Map<String, List<String>> = emptyMap()) :
-    Command(help = "Webframework for the rest of us", name = "") {
+    Command(help = "A modern web framework for Kotliners", name = "") {
 
-    override fun aliases() = mapOf("migrate" to listOf("db:migrate")) + commandAliases
+    override fun aliases() =
+        mapOf(
+            "migrate" to listOf("db:migrate"),
+            "make:rule" to listOf("make:validation-rule"),
+            "make:guard" to listOf("make:validation-guard")
+        ) + commandAliases
 
     fun execute(args: Array<String>) {
         main(args)

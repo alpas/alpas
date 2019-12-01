@@ -48,5 +48,30 @@ internal class Stubs {
                 }
             """.trimIndent()
         }
+
+        fun validationRuleStub(): String {
+            return """
+                import dev.alpas.validation.ErrorMessage
+                import dev.alpas.validation.Rule
+                import dev.alpas.validation.ValidationGuard
+
+                class StubClazzName(private val message: ErrorMessage = null) : Rule() {
+                    override fun check(attribute: String, value: Any?): Boolean {
+                        // todo: perform your actual validation here
+                        val isValid = value != null
+
+                        if (!isValid) {
+                            // todo: set the proper error message
+                            error = message?.let { it(attribute, value) } ?: "StubClazzName validation failed."
+                        }
+                        return isValid
+                    }
+                }
+
+                fun ValidationGuard.StubFunctionName(message: ErrorMessage = null): Rule {
+                    return rule(StubClazzName(message))
+                }
+            """.trimIndent()
+        }
     }
 }
