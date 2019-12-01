@@ -1,6 +1,7 @@
 package dev.alpas.validation
 
 import dev.alpas.http.HttpCall
+import org.hazlewood.connor.bottema.emailaddress.EmailAddressCriteria
 import org.hazlewood.connor.bottema.emailaddress.EmailAddressValidator
 
 typealias ErrorMessage = ((String, Any?) -> String)?
@@ -32,7 +33,8 @@ class Required(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         return (!value?.toString().isNullOrBlank()).also {
             if (!it) {
-                error = message?.let { it(attribute, value) } ?: "The required field '$attribute' is missing, null, or empty."
+                error = message?.let { it(attribute, value) }
+                    ?: "The required field '$attribute' is missing, null, or empty."
             }
         }
     }
@@ -41,7 +43,7 @@ class Required(private val message: ErrorMessage = null) : Rule() {
 // Attribute must be present and the value must not be null. It can be empty.
 class NotNull(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
-        return (value != null).also{
+        return (value != null).also {
             if (!it) {
                 error = message?.let { it(attribute, value) } ?: "The non null field '$attribute' is null."
             }
@@ -71,11 +73,25 @@ class MustBeString(private val message: ErrorMessage = null) : Rule() {
     }
 }
 
+class Email(private val message: ErrorMessage = null) : Rule() {
+    override fun check(attribute: String, value: Any?): Boolean {
+        return (!value?.toString().isNullOrBlank() && EmailAddressValidator.isValid(
+            value?.toString(),
+            EmailAddressCriteria.RFC_COMPLIANT
+        )).also {
+            if (!it) {
+                error = message?.let { it(attribute, value) } ?: "$attribute is not a valid email address."
+            }
+        }
+    }
+}
+
 class MatchesRegularExpression(private val expression: String, private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         return (value?.toString()?.matches(expression.toRegex()) == true).also {
             if (!it) {
-                error = message?.let { it(attribute, value) } ?: "The field '$attribute' did not match the required format."
+                error =
+                    message?.let { it(attribute, value) } ?: "The field '$attribute' did not match the required format."
             }
         }
     }
@@ -90,16 +106,6 @@ class Confirm(private val message: ErrorMessage = null) : Rule() {
         return (!valueConfirm?.toString().isNullOrBlank() && value == valueConfirm).also {
             if (!it) {
                 error = message?.let { it(attribute, valueConfirm) } ?: "The $attribute confirmation does not match."
-            }
-        }
-    }
-}
-
-class Email(private val message: ErrorMessage = null) : Rule() {
-    override fun check(attribute: String, value: Any?): Boolean {
-        return (!value?.toString().isNullOrBlank() && EmailAddressValidator.isValid(value?.toString())).also {
-            if (!it) {
-                error = message?.let { it(attribute, value) } ?: "$attribute is not a valid email address."
             }
         }
     }
