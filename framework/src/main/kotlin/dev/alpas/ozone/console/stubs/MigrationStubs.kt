@@ -6,7 +6,7 @@ internal class MigrationStubs {
             return """
                 package StubPackageName
 
-                import dev.alpas.lodestar.migration.Migration
+                import dev.alpas.ozone.migration.Migration
 
                 class StubClazzName : Migration() {
                     override fun up() {
@@ -26,7 +26,7 @@ internal class MigrationStubs {
             return """
                 package StubPackageName
 
-                import dev.alpas.lodestar.migration.Migration
+                import dev.alpas.ozone.migration.Migration
 
                 class StubClazzName : Migration() {
                     override fun up() {

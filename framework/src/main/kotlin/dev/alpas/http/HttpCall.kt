@@ -8,7 +8,7 @@ import dev.alpas.auth.UserProvider
 import dev.alpas.exceptions.ExceptionHandler
 import dev.alpas.exceptions.HttpException
 import dev.alpas.exceptions.ValidationException
-import dev.alpas.lodestar.orAbort
+import dev.alpas.ozone.orAbort
 import dev.alpas.routing.RouteResult
 import dev.alpas.routing.UrlGenerator
 import dev.alpas.validation.ErrorBag

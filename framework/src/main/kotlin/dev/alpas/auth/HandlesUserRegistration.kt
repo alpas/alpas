@@ -3,8 +3,8 @@ package dev.alpas.auth
 import dev.alpas.auth.notifications.VerifyEmail
 import dev.alpas.hashing.Hasher
 import dev.alpas.http.HttpCall
-import dev.alpas.lodestar.orAbort
-import dev.alpas.lodestar.validation.Unique
+import dev.alpas.ozone.orAbort
+import dev.alpas.ozone.validation.Unique
 import dev.alpas.make
 import dev.alpas.notifications.NotificationDispatcher
 import dev.alpas.validation.Confirm

@@ -4,7 +4,7 @@ import dev.alpas.Container
 import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.config
-import dev.alpas.lodestar.orAbort
+import dev.alpas.ozone.orAbort
 import dev.alpas.mailing.MailMessage
 import dev.alpas.make
 import dev.alpas.notifications.Notification

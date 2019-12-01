@@ -5,7 +5,7 @@ import dev.alpas.exceptions.ValidationException
 import dev.alpas.hashing.Hasher
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
-import dev.alpas.lodestar.orAbort
+import dev.alpas.ozone.orAbort
 import dev.alpas.make
 import dev.alpas.validation.Confirm
 import dev.alpas.validation.Email

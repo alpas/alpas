@@ -3,7 +3,7 @@ package dev.alpas.routing
 import dev.alpas.PackageClassLoader
 import dev.alpas.Pipeline
 import dev.alpas.http.HttpCall
-import dev.alpas.lodestar.orAbort
+import dev.alpas.ozone.orAbort
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 

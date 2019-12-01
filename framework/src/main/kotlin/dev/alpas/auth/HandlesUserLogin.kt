@@ -3,7 +3,7 @@ package dev.alpas.auth
 import dev.alpas.exceptions.ValidationException
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
-import dev.alpas.lodestar.orAbort
+import dev.alpas.ozone.orAbort
 import dev.alpas.validation.ErrorBag
 import dev.alpas.validation.Required
 import dev.alpas.validation.Rule
