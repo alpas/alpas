@@ -6,7 +6,7 @@ import dev.alpas.base64Encoded
 
 class Hasher(private val config: HashConfig) {
     private val argon by lazy { Argon2Factory.create() }
-    // hash hash of the given value
+    // hash of the given value
     fun hash(value: CharArray, encode: Boolean = true): String {
         try {
             return argon.hash(config.iterations, config.memory, config.threads, value).let {
@@ -19,7 +19,7 @@ class Hasher(private val config: HashConfig) {
 
     fun hash(rawString: String, encode: Boolean = true) = hash(rawString.toCharArray(), encode)
 
-    // verify the given value agains the hased value
+    // verify the given value against the hashed value
     fun verify(value: String?, hashedValue: String?, decode: Boolean = true): Boolean {
         if (value == null || hashedValue == null) return false
         val realHash = if (decode) hashedValue.base64Decoded() else hashedValue

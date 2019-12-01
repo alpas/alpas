@@ -29,7 +29,7 @@ internal class HasFlashFunction : Function {
 
     @Suppress("UNCHECKED_CAST")
     override fun execute(args: Map<String, Any>?, self: PebbleTemplate, ctx: EvaluationContext, line: Int): Any {
-        if (args.isNullOrEmpty()) throw Exception("hasFlash() requires the flash key.")
+        if (args.isNullOrEmpty()) throw Exception("hasFlash() requires the flash key. Called from (${self.name} line no. $line)")
 
         val name = args["key"] as String
         val flash = ctx.getVariable("_flash") as? Map<*, Any?>
