@@ -34,7 +34,7 @@ interface Redirectable {
     fun home(status: Int = HttpStatus.MOVED_TEMPORARILY_302, headers: Map<String, String> = emptyMap())
     fun toRouteNamed(
         name: String,
-        params: Map<String, Any>? = null,
+        params: Map<String, Any> = emptyMap(),
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
         headers: Map<String, String> = emptyMap()
     )
@@ -57,11 +57,6 @@ class Redirector(
         commit(Redirect(to, status, headers, request.cookie))
     }
 
-    override fun toExternal(url: String, status: Int, headers: Map<String, String>) {
-        copyHeaders(headers)
-        sendRedirect(Redirect(url, status, headers))
-    }
-
     override fun back(status: Int, headers: Map<String, String>, default: String) {
         val url = request.header("referrer") ?: request.session.pull("_previous_url", default)
         to(url, status, headers)
@@ -72,8 +67,17 @@ class Redirector(
         to(url, status, headers)
     }
 
+    override fun toRouteNamed(name: String, params: Map<String, Any>, status: Int, headers: Map<String, String>) {
+        to(urlGenerator.route(name, params = params), status, headers)
+    }
+
     override fun home(status: Int, headers: Map<String, String>) {
         to(urlGenerator.route("home", defaultPath = "/"), status, headers)
+    }
+
+    override fun toExternal(url: String, status: Int, headers: Map<String, String>) {
+        copyHeaders(headers)
+        sendRedirect(Redirect(url, status, headers))
     }
 
     private fun commit(redirectObj: Redirect) {
@@ -98,10 +102,6 @@ class Redirector(
         cookie?.forEach {
             response.servletResponse.addCookie(it)
         }
-    }
-
-    override fun toRouteNamed(name: String, params: Map<String, Any>?, status: Int, headers: Map<String, String>) {
-        to(urlGenerator.route(name, params = params), status, headers)
     }
 }
 
