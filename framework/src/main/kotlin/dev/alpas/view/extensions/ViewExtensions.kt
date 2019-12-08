@@ -1,13 +1,13 @@
 package dev.alpas.view.extensions
 
+import com.mitchellbosecke.pebble.extension.AbstractExtension
 import com.mitchellbosecke.pebble.extension.Filter
 import com.mitchellbosecke.pebble.extension.Function
 import com.mitchellbosecke.pebble.tokenParser.TokenParser
 import dev.alpas.Container
 import dev.alpas.make
-import dev.alpas.view.ViewExtension
 
-internal class BuiltInExtensions(private val container: Container) : ViewExtension() {
+internal class BuiltInExtensions(private val container: Container) : AbstractExtension() {
     override fun getFunctions(): Map<String, Function> {
         return mapOf(
             "mix" to MixFunction(container.make()),

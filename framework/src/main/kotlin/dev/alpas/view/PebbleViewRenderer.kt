@@ -1,6 +1,7 @@
 package dev.alpas.view
 
 import com.mitchellbosecke.pebble.PebbleEngine
+import com.mitchellbosecke.pebble.extension.AbstractExtension
 import com.mitchellbosecke.pebble.loader.ClasspathLoader
 import dev.alpas.Application
 import dev.alpas.config
@@ -26,9 +27,10 @@ internal class PebbleViewRenderer(private val app: Application) : ViewRenderer {
     }
 
     override fun boot() {
+        // no-op
     }
 
-    override fun extend(extension: ViewExtension, vararg extensions: ViewExtension) {
+    override fun extend(extension: AbstractExtension, vararg extensions: AbstractExtension) {
         engineBuilder.extension(extension)
         engineBuilder.extension(*extensions)
     }

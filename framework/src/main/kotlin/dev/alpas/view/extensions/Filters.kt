@@ -55,7 +55,7 @@ class AgoFilter : Filter {
     ): Any? {
         return when (input) {
             is Instant -> TimeAgo.using(input.toEpochMilli())
-            // todo: extract zoneoffset from context and use it here
+            // todo: extract zoneoffset from the context and use it here
             is LocalDateTime -> TimeAgo.using(input.toInstant(ZoneOffset.UTC).toEpochMilli())
             else -> {
                 val inputType = input?.javaClass?.name

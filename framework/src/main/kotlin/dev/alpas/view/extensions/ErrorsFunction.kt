@@ -16,7 +16,7 @@ internal class ErrorsFunction : Function {
 
         val name = args["key"] as String
         val default = args["default"]
-        val errors = ctx.getVariable("errors") as? Map<*, ArrayList<Any>>
+        val errors = ctx.getVariable("errors") as? Map<*, List<Any>>
         val value = errors?.get(name)
         if (value?.size == 1) {
             return value.firstOrNull() ?: default ?: ""
@@ -32,10 +32,10 @@ internal class FirstErrorFunction : Function {
 
     @Suppress("UNCHECKED_CAST")
     override fun execute(args: Map<String, Any>?, self: PebbleTemplate, ctx: EvaluationContext, line: Int): Any {
-        if (args.isNullOrEmpty()) throw Exception("firstError() requires the error key.")
+        if (args.isNullOrEmpty()) throw Exception("firstError() requires the error key. Called from (${self.name} line no. $line)")
 
         val name = args["key"] as String
-        val errors = ctx.getVariable("errors") as? Map<*, ArrayList<Any>>
+        val errors = ctx.getVariable("errors") as? Map<*, List<Any>>
         val value = errors?.get(name)
         return value?.firstOrNull() ?: args["default"] ?: ""
     }
@@ -48,29 +48,29 @@ internal class HasErrorFunction : Function {
 
     @Suppress("UNCHECKED_CAST")
     override fun execute(args: Map<String, Any>?, self: PebbleTemplate, ctx: EvaluationContext, line: Int): Any {
-        if (args.isNullOrEmpty()) throw Exception("hasError() requires the error key.")
+        if (args.isNullOrEmpty()) throw Exception("hasError() requires the error key. Called from (${self.name} line no. $line)")
 
         val name = args["key"] as String
-        val errors = ctx.getVariable("errors") as? Map<*, ArrayList<Any>>
+        val errors = ctx.getVariable("errors") as? Map<*, List<Any>>
         return errors?.containsKey(name) == true
     }
 }
 
 internal class WhenErrorFunction : Function {
     override fun getArgumentNames(): List<String> {
-        return listOf("field", "apply")
+        return listOf("key", "value", "default")
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun execute(args: Map<String, Any>?, self: PebbleTemplate, ctx: EvaluationContext, line: Int): Any? {
-        if (args.isNullOrEmpty()) throw Exception("whenError() requires the error key.")
+        if (args.isNullOrEmpty()) throw Exception("whenError() requires the error key. Called from (${self.name} line no. $line)")
 
-        val field = args["field"] as String
-        val errors = ctx.getVariable("errors") as? Map<*, ArrayList<Any>>
-        return if (errors?.containsKey(field) == true) {
-            args["apply"]
+        val key = args["key"] as String
+        val errors = ctx.getVariable("errors") as? Map<*, List<Any>>
+        return if (errors?.containsKey(key) == true) {
+            args["value"]
         } else {
-            ""
+            args["default"] ?: ""
         }
     }
 }
