@@ -4,6 +4,8 @@ import dev.alpas.JsonSerializable
 import dev.alpas.charset
 import dev.alpas.exceptions.toHttpException
 import dev.alpas.make
+import dev.alpas.session.OLD_INPUTS_KEY
+import dev.alpas.session.VALIDATION_ERRORS_KEY
 import dev.alpas.stackTraceString
 import dev.alpas.validation.ErrorBag
 import dev.alpas.view.View
@@ -201,8 +203,8 @@ class Response internal constructor(override val servletResponse: HttpServletRes
         val flash = call.session.flashBag().toMutableMap()
         shareWithView("_csrf", call.session.csrfToken())
         shareWithView("call", call)
-        shareWithView("_old_inputs", flash.remove("_old_inputs") ?: mapOf<String, Any>())
-        shareWithView("errors", flash.remove("_validation_errors") ?: mapOf<String, Any>())
+        shareWithView(OLD_INPUTS_KEY, flash.remove(OLD_INPUTS_KEY) ?: mapOf<String, List<Any>>())
+        shareWithView("errors", flash.remove(VALIDATION_ERRORS_KEY) ?: mapOf<String, List<Any>>())
         if (!call.isDropped) {
             shareWithView("_route", call.route.target())
             shareWithView("_flash", flash)

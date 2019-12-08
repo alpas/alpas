@@ -1,7 +1,9 @@
 package dev.alpas.exceptions
 
 import dev.alpas.http.HttpCall
-import dev.alpas.session.csrfSessionKey
+import dev.alpas.session.CSRF_SESSION_KEY
+import dev.alpas.session.OLD_INPUTS_KEY
+import dev.alpas.session.VALIDATION_ERRORS_KEY
 import dev.alpas.validation.ErrorBag
 import org.eclipse.jetty.http.HttpStatus
 
@@ -19,8 +21,11 @@ class ValidationException(
             call.reply(errorBag.asJson(), statusCode).asJson()
         } else {
             call.session.apply {
-                flash("_validation_errors", errorBag.asMap())
-                flash("_old_inputs", call.paramsExcept("password", "password_confirmation", csrfSessionKey))
+                flash(VALIDATION_ERRORS_KEY, errorBag.asMap())
+                flash(
+                    OLD_INPUTS_KEY,
+                    call.paramsExcept("password", "password_confirm", "confirm_password", CSRF_SESSION_KEY)
+                )
             }
             call.redirect().back()
         }

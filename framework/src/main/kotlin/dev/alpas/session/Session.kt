@@ -2,7 +2,9 @@ package dev.alpas.session
 
 import javax.servlet.http.HttpServletRequest
 
-const val csrfSessionKey = "_csrf"
+const val CSRF_SESSION_KEY = "_csrf"
+const val VALIDATION_ERRORS_KEY = "_validation_errors"
+const val OLD_INPUTS_KEY = "_old_inputs"
 
 @Suppress("UNCHECKED_CAST", "unused")
 class Session(private val request: HttpServletRequest) {
@@ -144,7 +146,7 @@ class Session(private val request: HttpServletRequest) {
     }
 
     fun csrfToken(): String? {
-        return this[csrfSessionKey]
+        return this[CSRF_SESSION_KEY]
     }
 
     fun savePreviousUrl(url: String) {

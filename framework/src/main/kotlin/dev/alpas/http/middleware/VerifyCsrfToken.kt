@@ -6,7 +6,7 @@ import dev.alpas.http.HttpCall
 import dev.alpas.http.Method
 import dev.alpas.session.SessionConfig
 import dev.alpas.session.TokenMismatchException
-import dev.alpas.session.csrfSessionKey
+import dev.alpas.session.CSRF_SESSION_KEY
 import java.security.MessageDigest
 
 open class VerifyCsrfToken : Middleware<HttpCall>() {
@@ -49,7 +49,7 @@ open class VerifyCsrfToken : Middleware<HttpCall>() {
     }
 
     private fun getCallToken(call: HttpCall): String? {
-        val token = call.paramAsString(csrfSessionKey) ?: call.header("X-CSRF-TOKEN")
+        val token = call.paramAsString(CSRF_SESSION_KEY) ?: call.header("X-CSRF-TOKEN")
         val header = call.header("X-XSRF-TOKEN")
         return if (token == null && header != null) {
             return call.make<Encrypter>().decrypt(header)

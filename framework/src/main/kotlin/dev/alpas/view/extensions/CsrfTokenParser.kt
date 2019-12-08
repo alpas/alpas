@@ -8,7 +8,7 @@ import com.mitchellbosecke.pebble.parser.Parser
 import com.mitchellbosecke.pebble.template.EvaluationContextImpl
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl
 import com.mitchellbosecke.pebble.tokenParser.TokenParser
-import dev.alpas.session.csrfSessionKey
+import dev.alpas.session.CSRF_SESSION_KEY
 import java.io.Writer
 
 class CsrfTokenParser : TokenParser {
@@ -27,8 +27,8 @@ class CsrfTokenParser : TokenParser {
 
 class CsrfTokenTag(lineNumber: Int) : AbstractRenderableNode(lineNumber) {
     override fun render(self: PebbleTemplateImpl?, writer: Writer, context: EvaluationContextImpl) {
-        val csrf = context.getVariable(csrfSessionKey)
-        writer.write("""<input type="hidden" name="$csrfSessionKey" value="$csrf">""")
+        val csrf = context.getVariable(CSRF_SESSION_KEY)
+        writer.write("""<input type="hidden" name="$CSRF_SESSION_KEY" value="$csrf">""")
     }
 
     override fun accept(visitor: NodeVisitor) {
