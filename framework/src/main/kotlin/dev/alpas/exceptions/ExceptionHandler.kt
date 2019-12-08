@@ -21,8 +21,6 @@ open class ExceptionHandler {
     // InternalServerError() exception. User shouldn't throw any exception from this handler but
     // rather call this super method and let it report and render the exception.
     open fun handle(exception: Throwable, call: HttpCall) {
-        InternalServerException(exception.message, exception).apply {
-            handle(this, call)
-        }
+        handle(InternalServerException(exception.message, exception), call)
     }
 }
