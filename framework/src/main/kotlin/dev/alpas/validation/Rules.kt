@@ -6,7 +6,7 @@ import org.hazlewood.connor.bottema.emailaddress.EmailAddressValidator
 
 typealias ErrorMessage = ((String, Any?) -> String)?
 
-class Max(private val length: Int, private val message: ErrorMessage = null) : Rule() {
+open class Max(private val length: Int, private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         return ((value ?: "").toString().length < length).also {
             if (!it) {
@@ -17,7 +17,7 @@ class Max(private val length: Int, private val message: ErrorMessage = null) : R
     }
 }
 
-class Min(private val length: Int, private val message: ErrorMessage = null) : Rule() {
+open class Min(private val length: Int, private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         return ((value ?: "").toString().length >= length).also {
             if (!it) {
@@ -29,7 +29,7 @@ class Min(private val length: Int, private val message: ErrorMessage = null) : R
 }
 
 // Attribute must be present and the value must not be null or empty.
-class Required(private val message: ErrorMessage = null) : Rule() {
+open class Required(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         return (!value?.toString().isNullOrBlank()).also {
             if (!it) {
@@ -41,7 +41,7 @@ class Required(private val message: ErrorMessage = null) : Rule() {
 }
 
 // Attribute must be present and the value must not be null. It can be empty.
-class NotNull(private val message: ErrorMessage = null) : Rule() {
+open class NotNull(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         return (value != null).also {
             if (!it) {
@@ -51,9 +51,10 @@ class NotNull(private val message: ErrorMessage = null) : Rule() {
     }
 }
 
-class MustBeInteger(private val message: ErrorMessage = null) : Rule() {
+open class MustBeInteger(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
-        val isValid = value?.toString()?.toLongOrNull() != null
+        val valueStr = value?.toString()
+        val isValid = valueStr?.toIntOrNull() ?: valueStr?.toLongOrNull() != null
         return isValid.also {
             if (!it) {
                 error = message?.let { it(attribute, value) } ?: "The field '$attribute' must be an integer."
@@ -62,7 +63,7 @@ class MustBeInteger(private val message: ErrorMessage = null) : Rule() {
     }
 }
 
-class MustBeString(private val message: ErrorMessage = null) : Rule() {
+open class MustBeString(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         val isValid = value is String
         return isValid.also {
@@ -73,7 +74,7 @@ class MustBeString(private val message: ErrorMessage = null) : Rule() {
     }
 }
 
-class Email(private val message: ErrorMessage = null) : Rule() {
+open class Email(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         return (!value?.toString().isNullOrBlank() && EmailAddressValidator.isValid(
             value?.toString(),
@@ -86,7 +87,7 @@ class Email(private val message: ErrorMessage = null) : Rule() {
     }
 }
 
-class MatchesRegularExpression(private val expression: String, private val message: ErrorMessage = null) : Rule() {
+open class MatchesRegularExpression(private val expression: String, private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
         return (value?.toString()?.matches(expression.toRegex()) == true).also {
             if (!it) {
@@ -97,7 +98,7 @@ class MatchesRegularExpression(private val expression: String, private val messa
     }
 }
 
-class Confirm(private val message: ErrorMessage = null) : Rule() {
+open class Confirm(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, call: HttpCall): Boolean {
         val confirmAttribute1 = "${attribute}_confirm"
         val confirmAttribute2 = "confirm_$attribute"
@@ -111,19 +112,19 @@ class Confirm(private val message: ErrorMessage = null) : Rule() {
     }
 }
 
-class JsonField(private val rules: List<Rule>) : Rule() {
+open class JsonField(private val rules: List<Rule>) : Rule() {
+    constructor(rule: Rule, vararg rules: Rule) : this(listOf(rule, *rules))
+
     override fun check(attribute: String, call: HttpCall): Boolean {
         if (!call.isJson || call.jsonBody == null) {
-            return false.also {
-                error = "The body does not have a valid json format"
-            }
+            error = "Call isn't a JSON or the body isn't a valid JSON."
+            return false
         }
         val value = call.jsonBody[attribute]
         rules.forEach { rule ->
             if (!rule.check(attribute, value)) {
-                return false.also {
-                    error = rule.error
-                }
+                error = rule.error
+                return false
             }
         }
         return true
@@ -162,8 +163,12 @@ fun ValidationGuard.mustBeString(message: ErrorMessage = null): Rule {
     return rule(MustBeString(message))
 }
 
-fun ValidationGuard.regEx(expression: String, message: ErrorMessage = null): Rule {
+fun ValidationGuard.matchesRegularExpression(expression: String, message: ErrorMessage = null): Rule {
     return rule(MatchesRegularExpression(expression, message))
+}
+
+fun ValidationGuard.jsonField(rules: List<Rule>): Rule {
+    return rule(JsonField(rules))
 }
 
 fun ValidationGuard.inJsonBody(rules: ValidationGuard.() -> Rule) {
