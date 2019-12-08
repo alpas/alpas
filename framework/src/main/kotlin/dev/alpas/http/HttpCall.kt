@@ -84,7 +84,7 @@ class HttpCall internal constructor(
         jettyRequest.isHandled = true
     }
 
-    fun applyRules(attribute: String, failfast: Boolean = false, rules: ValidationGuard.() -> Unit) {
+    fun applyRules(attribute: String, failfast: Boolean = false, rules: ValidationGuard.() -> Unit): HttpCall {
         ValidationGuard(failfast).also {
             it.call = this
             it.rules()
@@ -95,6 +95,18 @@ class HttpCall internal constructor(
                 }
             }
         }
+        return this
+    }
+
+    fun applyRules(rules: Map<String, Iterable<Rule>>, failfast: Boolean = false): HttpCall {
+        ValidationGuard(failfast).also {
+            it.call = this
+            it.validate(rules, errorBag)
+            checkValidationErrors { errorBag ->
+                it.handleError(errorBag)
+            }
+        }
+        return this
     }
 
     fun validate() {
@@ -105,16 +117,6 @@ class HttpCall internal constructor(
         return validator.createInstance().also {
             it.call = this
             it.validate(errorBag)
-            checkValidationErrors { errorBag ->
-                it.handleError(errorBag)
-            }
-        }
-    }
-
-    fun applyRules(rules: Map<String, Iterable<Rule>>, failfast: Boolean = false) {
-        ValidationGuard(failfast).also {
-            it.call = this
-            it.validate(rules, errorBag)
             checkValidationErrors { errorBag ->
                 it.handleError(errorBag)
             }
@@ -141,7 +143,11 @@ class HttpCall internal constructor(
         return ZonedDateTime.now(timezone())
     }
 
-    fun redirect(to: String, status: Int = HttpStatus.MOVED_TEMPORARILY_302, headers: Map<String, String> = emptyMap()) {
+    fun redirect(
+        to: String,
+        status: Int = HttpStatus.MOVED_TEMPORARILY_302,
+        headers: Map<String, String> = emptyMap()
+    ) {
         redirect().to(to, status, headers)
     }
 
