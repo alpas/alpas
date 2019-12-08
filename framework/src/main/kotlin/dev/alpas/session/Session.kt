@@ -156,4 +156,14 @@ class Session(private val request: HttpServletRequest) {
     fun saveIntendedUrl(url: String) {
         this.put("_intended_url", url)
     }
+
+    fun old(): Map<String, List<Any>> {
+        val flash = flashBag()
+        return flash[OLD_INPUTS_KEY] as? Map<String, List<Any>> ?: emptyMap()
+    }
+
+    fun errors(): Map<String, List<Any>> {
+        val flash = flashBag()
+        return flash[VALIDATION_ERRORS_KEY] as? Map<String, List<Any>> ?: emptyMap()
+    }
 }
