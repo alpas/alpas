@@ -1,7 +1,6 @@
 package dev.alpas
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import me.liuwj.ktorm.jackson.KtormModule
@@ -15,7 +14,7 @@ class JsonSerializer {
         fun serialize(input: Any?, dti: ObjectMapper.DefaultTyping? = null): String {
             return mapper.apply {
                 if (dti != null) {
-                    activateDefaultTyping(LaissezFaireSubTypeValidator(), dti)
+                    enableDefaultTyping(dti)
                 }
             }.writeValueAsString(input)
         }
@@ -23,7 +22,7 @@ class JsonSerializer {
         inline fun <reified T> deserialize(input: String, dti: ObjectMapper.DefaultTyping? = null): T {
             return mapper.apply {
                 if (dti != null) {
-                    activateDefaultTyping(LaissezFaireSubTypeValidator(), dti)
+                    enableDefaultTyping(dti)
                 }
             }.readValue(input)
         }

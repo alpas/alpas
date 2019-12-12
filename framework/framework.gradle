@@ -28,5 +28,5 @@ dependencies {
     compile "me.liuwj.ktorm:ktorm-core:${ktormVersion}"
     compile "me.liuwj.ktorm:ktorm-jackson:${ktormVersion}"
     compile "com.github.marlonlom:timeago:4.0.1"
-    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1"
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
 }
