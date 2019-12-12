@@ -159,3 +159,9 @@ fun String.mustStartWith(prefix: String): String {
 
 @Suppress("UNCHECKED_CAST")
 fun <K, V> Map<K, V?>.filterNotNullValues() = filterValues { it != null } as Map<K, V>
+
+inline fun <R> executeAndMeasureTimeMillis(block: () -> R): Pair<R, Long> {
+    val start = System.currentTimeMillis()
+    val result = block()
+    return result to (System.currentTimeMillis() - start)
+}
