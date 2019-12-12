@@ -7,7 +7,8 @@ class AlpasCommand(private val commandAliases: Map<String, List<String>> = empty
         mapOf(
             "migrate" to listOf("db:migrate"),
             "make:rule" to listOf("make:validation-rule"),
-            "make:guard" to listOf("make:validation-guard")
+            "make:guard" to listOf("make:validation-guard"),
+            "make:key" to listOf("key:generate")
         ) + commandAliases
 
     fun execute(args: Array<String>) {
