@@ -23,6 +23,6 @@ class Hasher(private val config: HashConfig) {
     fun verify(value: String?, hashedValue: String?, decode: Boolean = true): Boolean {
         if (value == null || hashedValue == null) return false
         val realHash = if (decode) hashedValue.base64Decoded() else hashedValue
-        return argon.verify(realHash, value)
+        return argon.verify(realHash, value.toCharArray())
     }
 }
