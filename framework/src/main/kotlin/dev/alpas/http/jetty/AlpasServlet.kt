@@ -1,15 +1,11 @@
 package dev.alpas.http.jetty
 
-import dev.alpas.Application
-import dev.alpas.ChildContainer
-import dev.alpas.Middleware
-import dev.alpas.Pipeline
+import dev.alpas.*
 import dev.alpas.exceptions.MethodNotAllowedException
 import dev.alpas.exceptions.NotFoundHttpException
 import dev.alpas.http.HttpCall
 import dev.alpas.http.Method
 import dev.alpas.http.StaticAssetHandler
-import dev.alpas.make
 import dev.alpas.routing.Route
 import dev.alpas.routing.RouteMatchStatus
 import dev.alpas.routing.Router
@@ -75,11 +71,13 @@ class AlpasServlet(
     private fun HttpCall.sendCallThroughServerEntryMiddleware(): Pipeline<HttpCall> {
         return Pipeline<HttpCall>().send(this).through(makeMiddleware(serverEntryMiddleware))
     }
-}
 
-private fun HttpServletRequest.method(): String {
-    if (method != Method.POST.name) {
-        return method
+    private fun HttpServletRequest.method(): String {
+        // If method is not a POST method, no need to check it further. We just return the method as it is.
+        // If method spoofing is not allowed we return the method name as it is.
+        if (method != Method.POST.name || !app.config<AppConfig>().allowMethodSpoofing) {
+            return method
+        }
+        return parameterMap["_method"]?.firstOrNull()?.toUpperCase() ?: method
     }
-    return parameterMap["_method"]?.firstOrNull()?.toUpperCase() ?: method
 }
