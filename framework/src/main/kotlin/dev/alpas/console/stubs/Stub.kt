@@ -51,15 +51,15 @@ internal class Stubs {
                 package StubPackageName 
 
                 import dev.alpas.Application
-                import dev.alpas.ServiceProvide
+                import dev.alpas.ServiceProvider
 
-                class StubClazzName() {
-                    override fun register(container: Application) {
+                class StubClazzName() : ServiceProvider {
+                    override fun register(app: Application) {
                         // register your bindings here like so: container.bind(MyApiService())
                         // Do not ask for any dependencies here as they might not have been registered yet.
                     }
 
-                    override fun boot(container: Application) {
+                    override fun boot(app: Application) {
                         // do some initial setup here
                         // Feel free to ask for any dependencies here as they should be all registered by now.
                     }
