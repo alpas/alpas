@@ -50,12 +50,12 @@ internal class Stubs {
 
         private fun loginViewStub(): String {
             return """
-                {% extends "../layout/app.twig" %}
+                {% extends "../layout/app.peb" %}
                 {% block content %}
 
                     <div class="h-full mt-10 pt-10">
                         <div class="w-full max-w-md mx-auto">
-                            {% include "./_header.twig" %}
+                            {% include "./_header.peb" %}
                             <form class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4 {{ errors.isEmpty() ? '' : 'border-red-500 border' }}"
                                   method="POST" action="{{ route('login') }}">
                                 {% csrf %}
@@ -113,12 +113,12 @@ internal class Stubs {
 
         private fun registerViewStub(): String {
             return """
-                {% extends "../layout/app.twig" %}
+                {% extends "../layout/app.peb" %}
                 {% block content %}
 
                     <div class="h-full mt-10 pt-10">
                         <div class="w-full max-w-md mx-auto">
-                            {% include "./_header.twig" %}
+                            {% include "./_header.peb" %}
                             <form class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4 {{ errors.isEmpty() ? '' : 'border-red-500 border' }}"
                                   method="POST" action="{{ route('register') }}">
                                 {% csrf %}
@@ -183,12 +183,12 @@ internal class Stubs {
 
         private fun verifyViewStub(): String {
             return """
-                {% extends "../layout/app.twig" %}
+                {% extends "../layout/app.peb" %}
                 {% block content %}
 
                     <div class="h-full mt-10 pt-10">
                         <div class="w-full max-w-md mx-auto">
-                            {% include "./_header.twig" %}
+                            {% include "./_header.peb" %}
                             <div class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4">
                                 <div class="pb-8">
                                     <div class="text-blue-500 my-12">
@@ -610,12 +610,12 @@ internal class Stubs {
 
         private fun passwordResetEmailViewStub(): String {
             return """
-                {% extends "../../layout/app.twig" %}
+                {% extends "../../layout/app.peb" %}
                 {% block content %}
 
                     <div class="h-full mt-10 pt-10">
                         <div class="w-full max-w-md mx-auto">
-                            {% include "../_header.twig" %}
+                            {% include "../_header.peb" %}
                             <form class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4 {{ errors.isEmpty() ? '' : 'border-red-500 border' }}"
                                   method="POST" action="{{ route('password.email') }}">
                                 {% csrf %}
@@ -655,12 +655,12 @@ internal class Stubs {
 
         private fun passwordResetViewStub(): String {
             return """
-                {% extends "../../layout/app.twig" %}
+                {% extends "../../layout/app.peb" %}
                 {% block content %}
 
                     <div class="h-full mt-10 pt-10">
                         <div class="w-full max-w-md mx-auto">
-                            {% include "../_header.twig" %}
+                            {% include "../_header.peb" %}
                             <form class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4 {{ errors.isEmpty() ? '' : 'border-red-500 border' }}"
                                   method="POST" action="{{ route('password.update') }}">
                                 {% csrf %}
@@ -792,7 +792,7 @@ internal class Stubs {
 
         private fun homeViewStub(): String {
             return """
-                {% extends "layout/app.twig" %}
+                {% extends "layout/app.peb" %}
                 {% block content %}
 
                     <div class="bg-white h-full max-w-4xl mt-10 mx-auto p-10 pt-10 w-full">

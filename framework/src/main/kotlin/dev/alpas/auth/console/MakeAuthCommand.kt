@@ -33,7 +33,7 @@ class MakeAuthCommand(srcPackage: String) :
         val target = if (filename.endsWith("Controller")) {
             File(sourceOutputPath(*parentDirs), "$filename.kt")
         } else {
-            File(templatesOutputPath(*parentDirs), "$filename.twig")
+            File(templatesOutputPath(*parentDirs), "$filename.peb")
         }
         return OutputFile()
             .target(target)

@@ -8,7 +8,7 @@ open class ViewConfig(env: Environment) : Config {
     open val isEnabled = true
     open val mixManifestDirectory = env("MIX_MANIFEST_DIRECTORY", "")
     open val templatesDirectory = "templates"
-    open val templateExtension = "twig"
+    open val templateExtension = "peb"
     open val webDirectory = "web"
     open var cacheTemplates = false
         protected set
