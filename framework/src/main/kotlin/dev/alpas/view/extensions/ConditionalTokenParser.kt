@@ -6,8 +6,10 @@ import com.mitchellbosecke.pebble.node.BodyNode
 import com.mitchellbosecke.pebble.node.RenderableNode
 import com.mitchellbosecke.pebble.parser.Parser
 import com.mitchellbosecke.pebble.tokenParser.TokenParser
+import dev.alpas.http.HttpCall
 
-class AuthTokenParser(private val tag: String) : TokenParser {
+class ConditionalTokenParser(private val tag: String, private val condition: (call: HttpCall) -> Boolean) :
+    TokenParser {
     private val endTag = "end$tag"
 
     override fun parse(token: Token, parser: Parser): RenderableNode {
@@ -52,10 +54,7 @@ class AuthTokenParser(private val tag: String) : TokenParser {
         }
 
         stream.expect(Token.Type.EXECUTE_END)
-        return if (getTag() == "auth")
-            AuthNode(lineNumber, authBody, elseBody)
-        else
-            GuestNode(lineNumber, authBody, elseBody)
+        return ConditionalNode(lineNumber, authBody, elseBody, condition)
     }
 
     override fun getTag() = tag

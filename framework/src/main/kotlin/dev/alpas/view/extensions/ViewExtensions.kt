@@ -7,7 +7,10 @@ import com.mitchellbosecke.pebble.tokenParser.TokenParser
 import dev.alpas.Container
 import dev.alpas.make
 
-internal class BuiltInExtensions(private val container: Container) : AbstractExtension() {
+internal class BuiltInExtensions(
+    private val container: Container,
+    private val userTags: List<ConditionalTokenParser>
+) : AbstractExtension() {
     override fun getFunctions(): Map<String, Function> {
         return mapOf(
             "mix" to MixFunction(container.make()),
@@ -36,10 +39,10 @@ internal class BuiltInExtensions(private val container: Container) : AbstractExt
     }
 
     override fun getTokenParsers(): List<TokenParser> {
-        return listOf(
+        return mutableListOf(
             CsrfTokenParser(),
-            AuthTokenParser("auth"),
-            AuthTokenParser("guest")
-        )
+            ConditionalTokenParser("auth") { it.isAuthenticated },
+            ConditionalTokenParser("guest") { !it.isAuthenticated }
+        ).apply { addAll(userTags) }
     }
 }

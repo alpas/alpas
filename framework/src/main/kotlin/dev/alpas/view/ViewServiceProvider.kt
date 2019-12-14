@@ -4,8 +4,10 @@ import com.mitchellbosecke.pebble.extension.AbstractExtension
 import dev.alpas.Application
 import dev.alpas.ServiceProvider
 import dev.alpas.config
+import dev.alpas.http.HttpCall
 import dev.alpas.make
 import dev.alpas.view.extensions.BuiltInExtensions
+import dev.alpas.view.extensions.ConditionalTokenParser
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
@@ -28,7 +30,10 @@ open class ViewServiceProvider : ServiceProvider {
         }
 
         app.make<ViewRenderer>().also {
-            it.extend(BuiltInExtensions(app))
+            val registrar = ConditionalTagsRegistrar()
+            registerConditionalTags(registrar)
+
+            it.extend(BuiltInExtensions(app, registrar.tags))
             loadExtensions(app).forEach { ext ->
                 it.extend(ext)
             }
@@ -41,6 +46,9 @@ open class ViewServiceProvider : ServiceProvider {
 
     protected open fun loadExtensions(app: Application): Iterable<AbstractExtension> {
         return emptyList()
+    }
+
+    protected open fun registerConditionalTags(registrar: ConditionalTagsRegistrar) {
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -62,5 +70,11 @@ open class ViewServiceProvider : ServiceProvider {
         } else {
             null
         }
+    }
+}
+
+class ConditionalTagsRegistrar(val tags: MutableList<ConditionalTokenParser> = mutableListOf()) {
+    fun register(tagName: String, condition: (call: HttpCall) -> Boolean) {
+        tags.add(ConditionalTokenParser(tagName, condition))
     }
 }
