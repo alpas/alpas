@@ -73,7 +73,7 @@ open class ViewServiceProvider : ServiceProvider {
     }
 }
 
-class ConditionalTagsRegistrar(val tags: MutableList<ConditionalTokenParser> = mutableListOf()) {
+class ConditionalTagsRegistrar(internal val tags: MutableList<ConditionalTokenParser> = mutableListOf()) {
     fun register(tagName: String, condition: (call: HttpCall) -> Boolean) {
         tags.add(ConditionalTokenParser(tagName, condition))
     }

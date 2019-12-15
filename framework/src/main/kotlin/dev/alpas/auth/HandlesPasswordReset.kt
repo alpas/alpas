@@ -5,19 +5,10 @@ import dev.alpas.exceptions.ValidationException
 import dev.alpas.hashing.Hasher
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
-import dev.alpas.ozone.orAbort
 import dev.alpas.make
-import dev.alpas.validation.Confirm
-import dev.alpas.validation.Email
-import dev.alpas.validation.ErrorBag
-import dev.alpas.validation.Min
-import dev.alpas.validation.Required
-import dev.alpas.validation.Rule
-import me.liuwj.ktorm.dsl.delete
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.dsl.select
-import me.liuwj.ktorm.dsl.update
-import me.liuwj.ktorm.dsl.where
+import dev.alpas.ozone.orAbort
+import dev.alpas.validation.*
+import me.liuwj.ktorm.dsl.*
 
 interface HandlesPasswordReset {
     fun afterResetRedirectTo(call: HttpCall) = "/"
@@ -37,7 +28,7 @@ interface HandlesPasswordReset {
             onResetFail(call, RequestError("token", message = "Invalid token"))
         }
 
-        TokensTable.delete { it.email eq user.email.orAbort() }
+        PasswordResetTokens.delete { it.email eq user.email.orAbort() }
         resetPassword(call, user)
         onResetSuccess(call)
     }
@@ -57,14 +48,14 @@ interface HandlesPasswordReset {
 
     private fun verifyToken(call: HttpCall, user: Authenticatable): Boolean {
         val email = user.email.orAbort()
-        val resetTokenQuery = TokensTable.select(
-            TokensTable.email,
-            TokensTable.token,
-            TokensTable.createdAt
-        ).where { TokensTable.email eq email }.firstOrNull() ?: return false
+        val resetTokenQuery = PasswordResetTokens.select(
+            PasswordResetTokens.email,
+            PasswordResetTokens.token,
+            PasswordResetTokens.createdAt
+        ).where { PasswordResetTokens.email eq email }.firstOrNull() ?: return false
 
-        val createdAt = resetTokenQuery[TokensTable.createdAt]
-        val resetToken = resetTokenQuery[TokensTable.token]
+        val createdAt = resetTokenQuery[PasswordResetTokens.createdAt]
+        val resetToken = resetTokenQuery[PasswordResetTokens.token]
 
         val tokenExpirationMinutes = call.config<AuthConfig>().passwordResetTokenExpiration.toMinutes()
         val hasExpired = createdAt

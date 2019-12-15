@@ -54,11 +54,11 @@ interface HandlesForgottenPassword {
     private fun createToken(call: HttpCall, user: Authenticatable): String {
         val email = user.email.orAbort()
         // delete existing password forgot tokens for this user, if any
-        TokensTable.delete { it.email eq email }
+        PasswordResetTokens.delete { it.email eq email }
         val hasher = call.make<Hasher>()
         val rawToken = secureRandomString(40)
         val token = hasher.hash(rawToken)
-        TokensTable.insert {
+        PasswordResetTokens.insert {
             it.email to email
             it.token to token
             it.createdAt to call.nowInCurrentTimezone().toInstant()
