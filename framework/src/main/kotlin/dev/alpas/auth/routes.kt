@@ -4,9 +4,9 @@ import dev.alpas.routing.Router
 
 fun Router.authRoutes(
     middlewareGroup: List<String> = listOf("web"),
-    supportRegistration: Boolean = true,
-    supportPasswordReset: Boolean = true,
-    supportEmailVerification: Boolean = true,
+    allowRegistration: Boolean = true,
+    allowPasswordReset: Boolean = true,
+    requireEmailVerification: Boolean = true,
     packageName: String = "auth"
 ) {
     group {
@@ -16,13 +16,13 @@ fun Router.authRoutes(
         post("login", loginController, "login").mustBeGuest()
         post("logout", loginController, "logout").name("logout").mustBeAuthenticated()
 
-        if (supportRegistration) {
+        if (allowRegistration) {
             val registerController = "controllers.$packageName.RegisterController"
             get("register", registerController, "showRegistrationForm").name("register").mustBeGuest()
             post("register", registerController, "register").mustBeGuest()
         }
 
-        if (supportPasswordReset) {
+        if (allowPasswordReset) {
             group("password") {
                 val forgotPasswordController = "controllers.$packageName.ForgotPasswordController"
                 get("reset", forgotPasswordController, "showResetLinkRequestForm").name("request")
@@ -34,7 +34,7 @@ fun Router.authRoutes(
             }.name("password").mustBeGuest()
         }
 
-        if (supportEmailVerification) {
+        if (requireEmailVerification) {
             group("email") {
                 val verificationController = "controllers.$packageName.EmailVerificationController"
                 get("verify", verificationController, "showVerificationRequiredNotice").name("notice")
