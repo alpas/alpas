@@ -22,6 +22,7 @@ interface HandlesEmailVerification {
 
     @Suppress("unused")
     fun verify(call: HttpCall) {
+        // The user is authenticated by this time
         val user = call.user
         if (call.param("id") != user.properties[user.primaryKey()].toString()) {
             throw AuthorizationException()

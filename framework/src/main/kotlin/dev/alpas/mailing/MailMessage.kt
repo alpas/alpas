@@ -6,31 +6,13 @@ import dev.alpas.view.ViewRenderer
 
 open class MailMessage {
     lateinit var to: String
-        protected set
     lateinit var subject: String
-        protected set
-    lateinit var text: String
-        protected set
+    lateinit var message: String
 
     @JsonIgnore
     protected var view: View? = null
     @JsonIgnore
     protected var viewBag: Map<String, Any?>? = null
-
-    open fun toEmail(address: String): MailMessage {
-        to = address
-        return this
-    }
-
-    open fun subject(subject: String): MailMessage {
-        this.subject = subject
-        return this
-    }
-
-    open fun text(text: String): MailMessage {
-        this.text = text
-        return this
-    }
 
     open fun view(templateName: String, args: Map<String, Any?>? = null): MailMessage {
         view = View(templateName.replace(".", "/"), args)
@@ -40,7 +22,7 @@ open class MailMessage {
 
     open fun render(viewRenderer: ViewRenderer) {
         if (view != null) {
-            text = viewRenderer.render(view, viewBag ?: emptyMap())
+            message = viewRenderer.render(view, viewBag ?: emptyMap())
         }
     }
 }

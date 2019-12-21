@@ -21,14 +21,14 @@ class ResetPassword(private val token: String, private val container: Container)
 
     override fun toMail(notifiable: Authenticatable): MailMessage {
         val tokenExpirationDuration = container.config<AuthConfig>().passwordResetTokenExpiration.toHours()
-        val resetUrl =
-            container.make<UrlGenerator>().route("password.reset", mapOf("token" to token))
-        return MailMessage()
-            .toEmail(notifiable.email.orAbort())
-            .subject("Reset Password")
-            .view(
-                "auth.emails.reset",
-                mapOf("resetUrl" to resetUrl, "tokenExpirationDuration" to tokenExpirationDuration)
+        val resetUrl = container.make<UrlGenerator>().route("password.reset", mapOf("token" to token))
+
+        return MailMessage().apply {
+            to = notifiable.email.orAbort()
+            subject = "Reset Password"
+            view(
+                "auth.emails.reset", mapOf("resetUrl" to resetUrl, "tokenExpirationDuration" to tokenExpirationDuration)
             )
+        }
     }
 }

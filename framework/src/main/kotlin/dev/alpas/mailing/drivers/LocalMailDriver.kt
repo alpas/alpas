@@ -30,7 +30,7 @@ class LocalMailDriver(env: Environment) : MailDriver {
                    --> 
                 """.trimIndent()
                 )
-                appendText(mail.text)
+                appendText(mail.message)
             }
             logger.info("Email for ${mail.to} written to: $path")
         }
