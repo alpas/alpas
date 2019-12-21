@@ -6,15 +6,14 @@ import dev.alpas.auth.Authenticatable
 import dev.alpas.ozone.orAbort
 import dev.alpas.mailing.MailMessage
 import dev.alpas.make
-import dev.alpas.notifications.Notification
+import dev.alpas.notifications.MailableNotification
 import dev.alpas.notifications.channels.MailChannel
 import dev.alpas.notifications.channels.NotificationChannel
 import dev.alpas.routing.UrlGenerator
 import kotlin.reflect.KClass
 
-class VerifyEmail(private val container: Container) :
-    Notification<Authenticatable> {
-    override fun channels(): List<KClass<out NotificationChannel>> {
+class VerifyEmail(private val container: Container) : MailableNotification<Authenticatable> {
+    override fun channels(notifiable: Authenticatable): List<KClass<out NotificationChannel>> {
         return listOf(MailChannel::class)
     }
 

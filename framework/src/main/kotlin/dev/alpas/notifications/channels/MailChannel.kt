@@ -16,16 +16,14 @@ class MailChannel(
     private val serializer: JobSerializer
 ) : NotificationChannel {
 
-    override fun <T : Notifiable> send(notification: Notification<T>, notifiables: List<T>) {
+    override fun <T : Notifiable> send(notification: Notification<T>, notifiable: T) {
         val not = notification as MailableNotification<T>
-        notifiables.forEach {
-            val message = not.toMail(it).apply { render(viewRenderer) }
-            val job = SendMailJob(message)
-            if (notification.shouldQueue(it)) {
-                queue.enqueue(job, serializer = serializer)
-            } else {
-                job(mailer)
-            }
+        val message = not.toMail(notifiable).apply { render(viewRenderer) }
+        val job = SendMailJob(message)
+        if (notification.shouldQueue(notifiable)) {
+            queue.enqueue(job, serializer = serializer)
+        } else {
+            job(mailer)
         }
     }
 

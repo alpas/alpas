@@ -6,9 +6,11 @@ import dev.alpas.notifications.channels.NotificationChannel
 
 class NotificationDispatcher(private val container: Container) {
     fun <T : Notifiable> dispatch(notification: Notification<T>, notifiables: List<T>) {
-        notification.channels().forEach {
-            val channel = container.ephemeral(it) as NotificationChannel
-            channel.send(notification, notifiables)
+        notifiables.forEach { notifiable ->
+            notification.channels(notifiable).forEach {
+                val channel = container.ephemeral(it) as NotificationChannel
+                channel.send(notification, notifiable)
+            }
         }
     }
 

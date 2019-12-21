@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
 
 class ResetPassword(private val token: String, private val container: Container) :
     MailableNotification<Authenticatable> {
-    override fun channels(): List<KClass<out NotificationChannel>> {
+    override fun channels(notifiable: Authenticatable): List<KClass<out NotificationChannel>> {
         return listOf(MailChannel::class)
     }
 
