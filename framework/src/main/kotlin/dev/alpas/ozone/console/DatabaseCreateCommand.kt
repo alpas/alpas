@@ -11,7 +11,7 @@ class DatabaseCreateCommand : Command(name = "db:create", help = "Create a datab
     private val names by argument().multiple()
     protected val dryRun by option("--dry-run", help = "Don't execute the query but only print it.").flag()
 
-    internal val adapter: DbAdapter by lazy { DbAdapter.make(dryRun) }
+    internal val adapter: DbAdapter by lazy { DbAdapter.make(dryRun, quiet) }
 
     override fun run() {
         names.forEach {

@@ -2,6 +2,7 @@ package dev.alpas.ozone.console
 
 import dev.alpas.ozone.migration.DbAdapter
 import dev.alpas.ozone.migration.MigrationRunner
+import dev.alpas.printAsWarning
 import java.io.File
 
 class DatabaseRefreshCommand(srcPackage: String) : MigrationCommand(
@@ -10,12 +11,11 @@ class DatabaseRefreshCommand(srcPackage: String) : MigrationCommand(
     help = "Refresh a database by first dropping all the tables and then running all your migrations."
 ) {
     internal val adapter: DbAdapter by lazy {
-        DbAdapter.make(
-            dryRun
-        )
+        DbAdapter.make(dryRun, quiet)
     }
 
     override fun run() {
+        "Dropping all tables".printAsWarning()
         adapter.dropAllTables()
         MigrationRunner(File(migrationsDirectory.toUri()), dryRun, packageClassLoader, quiet)
             .migrate()

@@ -5,7 +5,7 @@ import dev.alpas.ozone.ColumnMetadata
 import me.liuwj.ktorm.database.TransactionIsolation
 import me.liuwj.ktorm.database.useTransaction
 
-internal class SqliteAdapter(isDryRun: Boolean) : DbAdapter(isDryRun) {
+internal class SqliteAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDryRun, quiet) {
     override fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean) {
         val notExists = if (ifNotExists) " IF NOT EXISTS " else " "
         val sb = StringBuilder("CREATE TABLE$notExists${tableBuilder.tableName}")

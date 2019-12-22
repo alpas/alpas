@@ -9,29 +9,31 @@ internal class MigrationRunner(
     private val migrationDirectory: File,
     private val isDryRun: Boolean,
     private val packageClassLoader: PackageClassLoader,
-    private val quiet: Boolean
+    quiet: Boolean
 ) {
 
-    private val adapter by lazy { DbAdapter.make(isDryRun) }
+    private val adapter by lazy { DbAdapter.make(isDryRun, quiet) }
     private val migrationRepo by lazy { MigrationRepo(adapter) }
     private val migrationFiles by lazy {
         (migrationDirectory.listFiles() ?: emptyArray()).map { it.nameWithoutExtension }
     }
 
+    private val shouldTalk = !(quiet || isDryRun)
+
     fun migrate() {
         val migrations = migrationsToRun()
-        if (!quiet && migrations.isEmpty()) {
+        if (shouldTalk && migrations.isEmpty()) {
             "Everything is already migrated!".printAsInfo()
             return
         }
         migrations.forEach {
-            if (!quiet && !isDryRun) {
+            if (shouldTalk) {
                 "Migrating: ${it.filename}".printAsWarning()
             }
             it.up()
             if (!isDryRun) {
                 migrationRepo.saveMigration(it.filename)
-                if (!isDryRun) {
+                if (shouldTalk) {
                     "Migrated: ${it.filename}".printAsSuccess()
                 }
             }
@@ -40,16 +42,16 @@ internal class MigrationRunner(
 
     fun rollback() {
         val (migrations, batch) = migrationsToRollback()
-        if (!quiet && migrations.isEmpty()) {
+        if (shouldTalk && migrations.isEmpty()) {
             "Nothing to rollback!".printAsInfo()
             return
         }
         migrations.forEach {
-            if (!quiet && !isDryRun) {
+            if (shouldTalk) {
                 "Rolling back: ${it.filename}".printAsWarning()
             }
             it.down()
-            if (!quiet && !isDryRun) {
+            if (shouldTalk) {
                 "Rolled back: ${it.filename}".printAsSuccess()
             }
         }

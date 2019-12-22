@@ -7,7 +7,9 @@ import dev.alpas.printAsInfo
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.useConnection
 
-abstract class DbAdapter(val isDryRun: Boolean = false) {
+abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
+    protected val shouldTalk = !(quiet || isDryRun)
+
     fun createTable(tableName: String, ifNotExists: Boolean = false, block: TableBuilder.() -> Any) {
         createTable(TableBuilder(tableName).apply {
             block()
@@ -43,11 +45,11 @@ abstract class DbAdapter(val isDryRun: Boolean = false) {
     abstract fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean = false)
 
     companion object {
-        fun make(isDryRun: Boolean): DbAdapter {
+        fun make(isDryRun: Boolean, quiet: Boolean): DbAdapter {
             val db = Database.global
             return when {
-                db.isMySql() -> MySqlAdapter(isDryRun)
-                db.isSqlite() -> SqliteAdapter(isDryRun)
+                db.isMySql() -> MySqlAdapter(isDryRun, quiet)
+                db.isSqlite() -> SqliteAdapter(isDryRun, quiet)
                 else -> throw Exception("Database adapter not supported: '${db.productName}'.")
             }
         }

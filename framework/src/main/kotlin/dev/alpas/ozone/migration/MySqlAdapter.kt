@@ -10,7 +10,7 @@ import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.useConnection
 import me.liuwj.ktorm.schema.Column
 
-internal class MySqlAdapter(isDryRun: Boolean) : DbAdapter(isDryRun) {
+internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDryRun, quiet) {
     override fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean) {
         val notExists = if (ifNotExists) " IF NOT EXISTS " else " "
         val sb = StringBuilder("CREATE TABLE$notExists${tableBuilder.tableName}")
@@ -92,7 +92,10 @@ internal class MySqlAdapter(isDryRun: Boolean) : DbAdapter(isDryRun) {
         try {
             execute("SET FOREIGN_KEY_CHECKS = 0")
             val db = Database.global.name
-            "Dropping all tables of $db".printAsWarning()
+
+            if (shouldTalk) {
+                "Dropping all tables of $db".printAsWarning()
+            }
             val tableNames = mutableListOf<String>()
             val selectSql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '$db'"
             useConnection {
@@ -108,7 +111,9 @@ internal class MySqlAdapter(isDryRun: Boolean) : DbAdapter(isDryRun) {
             val sql = tableNames.joinToString(",")
             if (sql.isNotEmpty()) {
                 execute("DROP TABLE IF EXISTS $sql")
-                "Done!".printAsSuccess()
+                if (shouldTalk) {
+                    "Done!".printAsSuccess()
+                }
             }
         } finally {
             execute("SET FOREIGN_KEY_CHECKS = 1")
