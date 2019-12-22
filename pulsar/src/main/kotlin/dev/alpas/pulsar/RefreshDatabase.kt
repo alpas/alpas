@@ -6,6 +6,6 @@ import dev.alpas.make
 
 interface RefreshDatabase {
     fun refreshDatabase(container: Container) {
-        container.make<AlpasCommand>().execute("db:refresh")
+        container.make<AlpasCommand>().execute(arrayOf("db:refresh", "-q"))
     }
 }
