@@ -2,8 +2,6 @@ name: Auto Upload Packages
 
 on:
   push:
-    branches:
-      - master
     tags:
       - v0.*.*
 jobs:
