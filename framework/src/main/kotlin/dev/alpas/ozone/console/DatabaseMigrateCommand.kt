@@ -7,6 +7,6 @@ class DatabaseMigrateCommand(srcPackage: String) :
     MigrationCommand(srcPackage, name = "db:migrate", help = "Run the database migrations.") {
 
     override fun run() {
-        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, packageClassLoader).migrate()
+        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, packageClassLoader, quiet).migrate()
     }
 }

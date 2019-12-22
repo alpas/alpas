@@ -17,7 +17,7 @@ class DatabaseRefreshCommand(srcPackage: String) : MigrationCommand(
 
     override fun run() {
         adapter.dropAllTables()
-        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, packageClassLoader)
+        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, packageClassLoader, quiet)
             .migrate()
     }
 }

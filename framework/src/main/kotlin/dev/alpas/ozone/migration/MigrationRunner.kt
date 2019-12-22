@@ -1,18 +1,15 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.PackageClassLoader
+import dev.alpas.*
 import dev.alpas.extensions.toPascalCase
-import dev.alpas.printAsError
-import dev.alpas.printAsInfo
-import dev.alpas.printAsSuccess
-import dev.alpas.printAsWarning
 import java.io.File
 import kotlin.reflect.full.createInstance
 
 internal class MigrationRunner(
     private val migrationDirectory: File,
     private val isDryRun: Boolean,
-    private val packageClassLoader: PackageClassLoader
+    private val packageClassLoader: PackageClassLoader,
+    private val quiet: Boolean
 ) {
 
     private val adapter by lazy { DbAdapter.make(isDryRun) }
@@ -23,34 +20,36 @@ internal class MigrationRunner(
 
     fun migrate() {
         val migrations = migrationsToRun()
-        if (migrations.isEmpty()) {
+        if (!quiet && migrations.isEmpty()) {
             "Everything is already migrated!".printAsInfo()
             return
         }
         migrations.forEach {
-            if (!isDryRun) {
+            if (!quiet && !isDryRun) {
                 "Migrating: ${it.filename}".printAsWarning()
             }
             it.up()
             if (!isDryRun) {
                 migrationRepo.saveMigration(it.filename)
-                "Migrated: ${it.filename}".printAsSuccess()
+                if (!isDryRun) {
+                    "Migrated: ${it.filename}".printAsSuccess()
+                }
             }
         }
     }
 
     fun rollback() {
         val (migrations, batch) = migrationsToRollback()
-        if (migrations.isEmpty()) {
+        if (!quiet && migrations.isEmpty()) {
             "Nothing to rollback!".printAsInfo()
             return
         }
         migrations.forEach {
-            if (!isDryRun) {
+            if (!quiet && !isDryRun) {
                 "Rolling back: ${it.filename}".printAsWarning()
             }
             it.down()
-            if (!isDryRun) {
+            if (!quiet && !isDryRun) {
                 "Rolled back: ${it.filename}".printAsSuccess()
             }
         }

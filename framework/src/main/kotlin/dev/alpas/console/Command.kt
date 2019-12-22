@@ -2,13 +2,10 @@ package dev.alpas.console
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.TermColors
-import dev.alpas.ROOT_DIR_KEY
-import dev.alpas.SRC_DIR_KEY
-import dev.alpas.printAsError
-import dev.alpas.printAsInfo
-import dev.alpas.printAsSuccess
-import dev.alpas.printAsWarning
+import dev.alpas.*
 import java.io.File
 import java.nio.file.Paths
 
@@ -39,6 +36,7 @@ abstract class Command(
     }
     protected val resourcesDir by lazy { File(Paths.get(File(srcDir).parentFile.absolutePath, "resources").toUri()) }
     protected val templatesDir by lazy { File(resourcesDir, "templates") }
+    protected val quiet by option("--quiet", help = "Don't print any non-error messages.").flag()
 
     override fun run() = Unit
 
@@ -55,15 +53,21 @@ abstract class Command(
     }
 
     protected fun info(msg: String) {
-        msg.printAsInfo()
+        if (!quiet) {
+            msg.printAsInfo()
+        }
     }
 
     protected fun success(msg: String) {
-        msg.printAsSuccess()
+        if (!quiet) {
+            msg.printAsSuccess()
+        }
     }
 
     protected fun warning(msg: String) {
-        msg.printAsWarning()
+        if (!quiet) {
+            msg.printAsWarning()
+        }
     }
 
     fun showHelp() {

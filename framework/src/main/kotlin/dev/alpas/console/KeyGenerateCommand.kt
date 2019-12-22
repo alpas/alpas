@@ -6,6 +6,6 @@ import dev.alpas.secureRandomString
 
 class KeyGenerateCommand : Command(name = "key:generate", help = "Generate a base64 encoded API key.") {
     override fun run() {
-        "base64:${secureRandomString(32).base64Encoded()}".printAsSuccess()
+        success("base64:${secureRandomString(32).base64Encoded()}")
     }
 }
