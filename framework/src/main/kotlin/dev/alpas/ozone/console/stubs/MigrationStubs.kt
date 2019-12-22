@@ -6,17 +6,15 @@ internal class MigrationStubs {
             return """
                 package StubPackageName
 
+                import StubEntityPackageName.StubTableName
                 import dev.alpas.ozone.migration.Migration
 
                 class StubClazzName : Migration() {
                     override fun up() {
-                        createTable("StubTableName") {
-                            bigIncrements("id")
-                            timestamps()
-                        }
+                        createTable(StubTableName)
                     }
                     override fun down() {
-                        dropTable("StubTableName")
+                        dropTable(StubTableName)
                     }
                 }
             """.trimIndent()

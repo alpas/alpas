@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import dev.alpas.console.GeneratorCommand
 import dev.alpas.console.OutputFile
+import dev.alpas.extensions.toPascalCase
 import dev.alpas.ozone.console.stubs.MigrationStubs
 import java.io.File
 import java.time.LocalDateTime
@@ -19,12 +20,16 @@ private class CreateTable(name: String) : MigrationTable(name)
 class MakeMigrationCommand(srcPackage: String) :
     GeneratorCommand(srcPackage, name = "make:migration", help = "Create a new migration class.") {
     private val action by mutuallyExclusiveOptions<MigrationTable>(
-        option("--create", help = "The name of the table to create.").convert { CreateTable(it) },
-        option("--table", help = "The name of the table to modify.").convert { ModifyTable(it) }
+        option("--create", help = "The name of the entity table to create. e.g. --create=Users")
+            .convert { CreateTable(it) },
+        option("--modify", help = "The name of the entity table to modify. e.g. --modify=Users")
+            .convert { ModifyTable(it) }
     ).single().required()
+
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val packageName = makePackageName("database", "migrations", *parentDirs)
+        val entityPackageName = makePackageName("entities", *parentDirs)
         val outputPath = sourceOutputPath("database", "migrations", *parentDirs)
         val datePrefix = LocalDateTime.now()
             .format(DateTimeFormatter.ofPattern("y_MM_dd_Hmmss"))
@@ -33,7 +38,12 @@ class MakeMigrationCommand(srcPackage: String) :
             .target(File(outputPath, "${datePrefix}_$filename.kt"))
             .packageName(packageName)
             .className(filename)
-            .replacements(mapOf("StubTableName" to action.name))
+            .replacements(
+                mapOf(
+                    "StubTableName" to action.name.toPascalCase(),
+                    "StubEntityPackageName" to entityPackageName
+                )
+            )
             .stub(stubFor(action))
     }
 

@@ -19,6 +19,7 @@ internal class EntityStubs {
                 
                 import me.liuwj.ktorm.dsl.QueryRowSet
                 import me.liuwj.ktorm.schema.BaseTable
+                import dev.alpas.ozone.MigratingTable
                 import me.liuwj.ktorm.schema.long
                 import me.liuwj.ktorm.schema.timestamp
                 import java.time.Instant
@@ -29,7 +30,7 @@ internal class EntityStubs {
 
         private fun simpleTableStub(): String {
             return """
-                object StubTableClazzName : BaseTable<StubClazzName>("StubTableName") {
+                object StubTableClazzName : MigratingTable<StubClazzName>("StubTableName") {
                     val id by long("id").primaryKey()
                     val createdAt by timestamp("created_at")
                     val updatedAt by timestamp("updated_at")
@@ -57,11 +58,11 @@ internal class EntityStubs {
             return """package StubPackageName
                 
                 import me.liuwj.ktorm.entity.Entity
-                import me.liuwj.ktorm.schema.Table
+                import dev.alpas.ozone.MigratingTable
                 import me.liuwj.ktorm.schema.long
                 import me.liuwj.ktorm.schema.timestamp
                 import java.time.Instant
-                
+
                 interface StubClazzName : Entity<StubClazzName> {
                     val id: Long
                     val createdAt: Instant?
@@ -74,7 +75,7 @@ internal class EntityStubs {
 
         private fun tableStub(): String {
             return """
-                object StubTableClazzName : Table<StubClazzName>("StubTableName") {
+                object StubTableClazzName : MigratingTable<StubClazzName>("StubTableName") {
                     val id by long("id").primaryKey().bindTo { it.id }
                     val createdAt by timestamp("created_at").bindTo { it.createdAt }
                     val updatedAt by timestamp("updated_at").bindTo { it.updatedAt }

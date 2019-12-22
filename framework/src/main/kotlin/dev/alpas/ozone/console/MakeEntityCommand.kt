@@ -14,12 +14,12 @@ class MakeEntityCommand(srcPackage: String) :
     GeneratorCommand(
         srcPackage,
         name = "make:entity",
-        help = "Create an entity class with or without the corresponding table."
+        help = "Create an entity class with a corresponding entity table."
     ) {
-    // todo: make mututally exclusive
-    private val skipTable by option("--no-table", help = "Don't create the corresponding entity table.").flag()
-    private val tableName by option("--table", help = "Name of the table.")
+
+    private val tableName by option("--table", help = "Name of the table. e.g. --table=users")
     private val simple by option("--simple", help = "Create a simple data based entity.").flag()
+    private val migration by option("--migration", "-m", help = "Create a migration for the entity.").flag()
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val table = tableName ?: filename.pluralize()
@@ -36,13 +36,17 @@ class MakeEntityCommand(srcPackage: String) :
     }
 
     private fun entityStub(): String {
-        return if (simple) EntityStubs.simpleStub(!skipTable) else EntityStubs.stub(!skipTable)
+        return if (simple) EntityStubs.simpleStub(tableName != null) else EntityStubs.stub(tableName != null)
     }
 
     override fun onCompleted(outputFile: OutputFile) {
         withColors {
             echo(green("ENTITY CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+        }
+        if (migration) {
+            val table = tableName ?: outputFile.target.nameWithoutExtension.pluralize()
+            MakeMigrationCommand(srcPackage).main(arrayOf("create_${table.toSnakeCase()}_table", "--create=${table}"))
         }
     }
 }

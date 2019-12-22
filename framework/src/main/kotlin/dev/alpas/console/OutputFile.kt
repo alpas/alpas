@@ -5,7 +5,7 @@ import java.io.File
 
 class OutputFile {
     private var packageName: String? = null
-    private var clazzName: String? = null
+    var clazzName: String? = null
     private var replacements = mapOf<String, String>()
     lateinit var target: File
         private set
