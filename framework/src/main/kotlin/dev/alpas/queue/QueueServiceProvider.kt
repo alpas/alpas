@@ -12,7 +12,10 @@ import dev.alpas.queue.console.QueueWorkCommand
 @Suppress("unused")
 open class QueueServiceProvider : ServiceProvider {
     override fun register(app: Application) {
-        app.singleton(Queue::class, app.config { QueueConfig(app.env) }.connection())
+        val queueConfig = app.config { QueueConfig(app.env) }
+        if (queueConfig.canConnect()) {
+            app.singleton(Queue::class, queueConfig.connection(app))
+        }
         app.bind(JobSerializer::class, JobSerializerImpl())
     }
 

@@ -1,16 +1,23 @@
 package dev.alpas.queue
 
 import dev.alpas.Config
+import dev.alpas.Container
 import dev.alpas.Environment
 
+@Suppress("unused")
 open class QueueConfig(env: Environment) : Config {
-    private val connectionConfigs = mutableMapOf<String, QueueConnectionConfig>()
-    protected open val defaultConnection = env("QUEUE_CONNECTION", "activemq")
-    fun addConnection(connectionConfig: QueueConnectionConfig) {
-        connectionConfigs.putIfAbsent(connectionConfig.name, connectionConfig)
+    private val connections = mutableMapOf<String, Lazy<QueueConnection>>()
+    open val defaultConnection = env("QUEUE_CONNECTION", "activemq")
+
+    fun addConnection(key: String, connection: Lazy<QueueConnection>) {
+        connections[key] = connection
     }
 
-    fun connection(name: String = defaultConnection): Queue {
-        return connectionConfigs[name]?.queue ?: throw Exception("No such connection $name")
+    fun canConnect(): Boolean {
+        return connections.isNotEmpty()
+    }
+
+    fun connection(container: Container, name: String = defaultConnection): Queue {
+        return connections[name]?.value?.connect(container) ?: throw Exception("Unsupported queue connection: '$name'.")
     }
 }

@@ -57,7 +57,7 @@ class QueueTablesCommand(srcPackage: String) :
         help = "Create all the required migrations for a database queue."
     ) {
 
-    override val names = listOf("CreateQueueJobsTables")
+    override val names = listOf("create_queue_jobs_tables")
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val packageName = makePackageName("database", "migrations", *parentDirs)
