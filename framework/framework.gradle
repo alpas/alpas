@@ -27,6 +27,7 @@ dependencies {
     compile "io.github.microutils:kotlin-logging:1.7.8"
     compile "me.liuwj.ktorm:ktorm-core:${ktormVersion}"
     compile "me.liuwj.ktorm:ktorm-jackson:${ktormVersion}"
+    compile "me.liuwj.ktorm:ktorm-support-mysql:${ktormVersion}"
     compile "com.github.marlonlom:timeago:4.0.1"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
 }

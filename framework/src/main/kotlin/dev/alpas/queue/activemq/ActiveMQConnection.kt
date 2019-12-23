@@ -1,7 +1,12 @@
-package dev.alpas.queue
+package dev.alpas.queue.activemq
 
 import dev.alpas.Container
 import dev.alpas.Environment
+import dev.alpas.make
+import dev.alpas.queue.ConnectionConfig
+import dev.alpas.queue.Queue
+import dev.alpas.queue.QueueConnection
+import dev.alpas.queue.jms.JMSQueue
 
 @Suppress("unused")
 open class ActiveMQConnection(env: Environment, config: ConnectionConfig? = null) :
@@ -23,7 +28,8 @@ open class ActiveMQConnection(env: Environment, config: ConnectionConfig? = null
             username = username,
             password = password,
             defaultQueueName = defaultQueueName,
-            failedQueueName = failedQueueName
+            failedQueueName = failedQueueName,
+            serializer = container.make()
         )
     }
 }

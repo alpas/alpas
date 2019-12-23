@@ -7,7 +7,7 @@ import dev.alpas.make
 import dev.alpas.notifications.Notifiable
 import dev.alpas.notifications.Notification
 import dev.alpas.notifications.NotificationDispatcher
-import dev.alpas.queue.Job
+import dev.alpas.queue.job.Job
 import dev.alpas.queue.Queue
 import kotlin.reflect.KClass
 
@@ -34,7 +34,7 @@ open class Controller {
     }
 
     protected fun queue(job: Job, onQueue: String? = null) {
-        call.make<Queue>().enqueue(job, onQueue, serializer = call.make())
+        call.make<Queue>().enqueue(job, onQueue)
     }
 
     protected fun <T : Notifiable> send(notification: Notification<T>, notifiable: T, vararg notifiables: T) {

@@ -11,6 +11,8 @@ import me.liuwj.ktorm.schema.varchar
 import java.time.Instant
 
 interface JobRecord : Entity<JobRecord> {
+    companion object : Entity.Factory<JobRecord>()
+
     var id: Long
     var queue: String
     var payload: String

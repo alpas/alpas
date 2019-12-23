@@ -27,9 +27,7 @@ class QueueWorkCommand(private val container: Container) :
             }
         }
         do {
-            container.make<Queue>().dequeue(queueName, container.make()) {
-                it?.invoke(container)
-            }
+            container.make<Queue>().dequeue(queueName) { it?.invoke(container) }
         } while (true)
     }
 }

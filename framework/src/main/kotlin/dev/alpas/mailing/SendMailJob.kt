@@ -3,7 +3,7 @@ package dev.alpas.mailing
 import dev.alpas.Container
 import dev.alpas.config
 import dev.alpas.mailing.drivers.MailDriver
-import dev.alpas.queue.Job
+import dev.alpas.queue.job.Job
 
 class SendMailJob(val mail: MailMessage) : Job() {
     override fun invoke(container: Container) {
