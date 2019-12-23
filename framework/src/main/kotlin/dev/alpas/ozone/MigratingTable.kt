@@ -5,6 +5,7 @@ import me.liuwj.ktorm.schema.DecimalSqlType
 import me.liuwj.ktorm.schema.DoubleSqlType
 import me.liuwj.ktorm.schema.FloatSqlType
 import me.liuwj.ktorm.schema.Table
+import java.time.temporal.Temporal
 import kotlin.reflect.KClass
 
 abstract class MigratingTable<E : Entity<E>>(tableName: String, alias: String? = null, entityClass: KClass<E>? = null) :
@@ -31,6 +32,18 @@ abstract class MigratingTable<E : Entity<E>>(tableName: String, alias: String? =
             metadataMap[columnName] = ColumnMetadata(defaultValue = default)
         } else {
             metadataMap[columnName] = metadata.copy(defaultValue = default)
+        }
+
+        return this
+    }
+
+    fun <T : Temporal> ColumnRegistration<T>.useCurrent(): ColumnRegistration<T> {
+        val columnName = getColumn().name
+        val metadata = metadataMap[columnName]
+        if (metadata == null) {
+            metadataMap[columnName] = ColumnMetadata(useCurrentTimestamp = true)
+        } else {
+            metadataMap[columnName] = metadata.copy(useCurrentTimestamp = true)
         }
 
         return this
@@ -121,7 +134,8 @@ internal data class ColumnMetadata(
     val nullable: Boolean = false,
     val unique: Boolean = false,
     val index: Boolean = true,
-    val precision: Precision? = null
+    val precision: Precision? = null,
+    val useCurrentTimestamp: Boolean = false
 )
 
 internal data class Precision(val total: Int = 8, val places: Int = 2)
