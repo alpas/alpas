@@ -48,3 +48,4 @@ out/
 
 build/
 .gradle/
+QuickTest.kt

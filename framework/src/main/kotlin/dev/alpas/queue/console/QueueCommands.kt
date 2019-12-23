@@ -8,9 +8,12 @@ import dev.alpas.console.GeneratorCommand
 import dev.alpas.console.OutputFile
 import dev.alpas.extensions.toPascalCase
 import dev.alpas.make
+import dev.alpas.ozone.console.MIGRATION_FILE_DATE_FORMAT
 import dev.alpas.queue.Queue
 import dev.alpas.queue.console.stubs.Stubs
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class QueueWorkCommand(private val container: Container) :
     Command(name = "queue:work", help = "Start a queue worker.") {
@@ -20,7 +23,7 @@ class QueueWorkCommand(private val container: Container) :
             if (queueName == null) {
                 echo(green("Running default queue..."))
             } else {
-                echo(green("Running queue: $queueName..."))
+                echo(green("Running '$queueName' queue..."))
             }
         }
         do {
@@ -46,3 +49,33 @@ class MakeJobCommand(srcPackage: String) : GeneratorCommand(srcPackage, name = "
         }
     }
 }
+
+class QueueTablesCommand(srcPackage: String) :
+    GeneratorCommand(
+        srcPackage,
+        name = "queue:tables",
+        help = "Create all the required migrations for a database queue."
+    ) {
+
+    override val names = listOf("CreateQueueJobsTables")
+
+    override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
+        val packageName = makePackageName("database", "migrations", *parentDirs)
+        val outputPath = sourceOutputPath("database", "migrations", *parentDirs)
+        val datePrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern(MIGRATION_FILE_DATE_FORMAT))
+
+        return OutputFile()
+            .target(File(outputPath, "${datePrefix}_$filename.kt"))
+            .packageName(packageName)
+            .className(filename)
+            .stub(Stubs.queueTablesStub())
+    }
+
+    override fun onCompleted(outputFile: OutputFile) {
+        withColors {
+            echo(green("MIGRATIONS CREATED 🙌"))
+            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+        }
+    }
+}
+

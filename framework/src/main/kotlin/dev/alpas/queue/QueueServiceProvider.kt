@@ -6,8 +6,10 @@ import dev.alpas.config
 import dev.alpas.console.Command
 import dev.alpas.make
 import dev.alpas.queue.console.MakeJobCommand
+import dev.alpas.queue.console.QueueTablesCommand
 import dev.alpas.queue.console.QueueWorkCommand
 
+@Suppress("unused")
 open class QueueServiceProvider : ServiceProvider {
     override fun register(app: Application) {
         app.singleton(Queue::class, app.config { QueueConfig(app.env) }.connection())
@@ -20,6 +22,6 @@ open class QueueServiceProvider : ServiceProvider {
     }
 
     override fun commands(app: Application): List<Command> {
-        return listOf(QueueWorkCommand(app), MakeJobCommand(app.srcPackage))
+        return listOf(QueueWorkCommand(app), MakeJobCommand(app.srcPackage), QueueTablesCommand(app.srcPackage))
     }
 }

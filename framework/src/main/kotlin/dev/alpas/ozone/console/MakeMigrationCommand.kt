@@ -17,6 +17,8 @@ private sealed class MigrationTable(val name: String)
 private class ModifyTable(name: String) : MigrationTable(name)
 private class CreateTable(name: String) : MigrationTable(name)
 
+const val MIGRATION_FILE_DATE_FORMAT = "y_MM_dd_Hmmss"
+
 class MakeMigrationCommand(srcPackage: String) :
     GeneratorCommand(srcPackage, name = "make:migration", help = "Create a new migration class.") {
     private val action by mutuallyExclusiveOptions<MigrationTable>(
@@ -31,8 +33,7 @@ class MakeMigrationCommand(srcPackage: String) :
         val packageName = makePackageName("database", "migrations", *parentDirs)
         val entityPackageName = makePackageName("entities", *parentDirs)
         val outputPath = sourceOutputPath("database", "migrations", *parentDirs)
-        val datePrefix = LocalDateTime.now()
-            .format(DateTimeFormatter.ofPattern("y_MM_dd_Hmmss"))
+        val datePrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern(MIGRATION_FILE_DATE_FORMAT))
 
         return OutputFile()
             .target(File(outputPath, "${datePrefix}_$filename.kt"))
