@@ -5,7 +5,7 @@ import dev.alpas.ozone.bigIncrements
 import dev.alpas.ozone.longText
 import dev.alpas.ozone.tinyInt
 import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.int
+import me.liuwj.ktorm.schema.long
 import me.liuwj.ktorm.schema.timestamp
 import me.liuwj.ktorm.schema.varchar
 import java.time.Instant
@@ -15,9 +15,9 @@ interface JobRecord : Entity<JobRecord> {
     var queue: String
     var payload: String
     var tries: Int
-    var reservedAt: Int?
-    var availableAt: Int
-    var createdAt: Int
+    var reservedAt: Long?
+    var availableAt: Long
+    var createdAt: Long
 }
 
 interface FailedJobRecord : Entity<FailedJobRecord> {
@@ -34,9 +34,9 @@ object JobRecords : MigratingTable<JobRecord>("jobs") {
     val queue by varchar("queue").index().bindTo { it.queue }
     val payload by longText("payload").bindTo { it.payload }
     val tries by tinyInt("tries").unsigned().bindTo { it.tries }
-    val reservedAt by int("reserved_at").unsigned().bindTo { it.reservedAt }
-    val availableAt by int("available_at").unsigned().bindTo { it.availableAt }
-    val createdAt by int("created_at").unsigned().bindTo { it.createdAt }
+    val reservedAt by long("reserved_at").unsigned().bindTo { it.reservedAt }
+    val availableAt by long("available_at").unsigned().bindTo { it.availableAt }
+    val createdAt by long("created_at").unsigned().bindTo { it.createdAt }
 }
 
 object FailedJobRecords : MigratingTable<FailedJobRecord>("failed_jobs") {
