@@ -21,7 +21,7 @@ dependencies {
     implementation "com.github.cesarferreira:kotlin-pluralizer:0.2.9"
     implementation "com.github.freva:ascii-table:1.1.0"
 
-    compile "io.pebbletemplates:pebble:3.1.1"
+    compile "io.pebbletemplates:pebble:3.1.2"
     compile "com.github.ajalt:clikt:2.3.0"
     compile "com.github.ajalt:mordant:1.2.1"
     compile "io.github.microutils:kotlin-logging:1.7.8"
