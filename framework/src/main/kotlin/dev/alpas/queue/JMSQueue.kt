@@ -13,42 +13,49 @@ class JMSQueue(
     private val failedQueueName: String
 ) : Queue {
     private val factory by lazy { JmsConnectionFactory(url) }
-    val logger by lazy { KotlinLogging.logger {} }
+    private val logger by lazy { KotlinLogging.logger {} }
 
-    override fun <T : Job> enqueue(
+    override fun <T : Job> enqueue(job: T, onQueue: String?, serializer: JobSerializer) {
+        enqueue(job, onQueue, serializer, {})
+    }
+
+    override fun dequeue(from: String?, serializer: JobSerializer, listener: (Job?) -> Unit) {
+        factory.createContext(username, password, JMSContext.SESSION_TRANSACTED).use { context ->
+            val queue = context.createQueue(from ?: defaultQueueName)
+            try {
+                val message = context.createConsumer(queue).receive()
+                val deliveryCount = message.getIntProperty("JMSXDeliveryCount")
+                val job = serializer.deserialize(message.getBody(String::class.java))
+                if (deliveryCount > job.retries) {
+                    logger.warn { "Job '$job' has exceeded its retries count. Putting this job in the '$failedQueueName' queue." }
+                    // move this job to the failed queue
+                    enqueue(job, failedQueueName, serializer = serializer) {
+                        setProperty("JMS_AMQP_MA__AMQ_ORIG_ADDRESS", queue.queueName)
+                    }
+                    context.commit()
+                } else {
+                    listener(job)
+                    context.commit()
+                }
+            } catch (exception: Throwable) {
+                context.rollback()
+                logger.error { exception.printStackTrace() }
+            }
+        }
+    }
+
+    private fun <T : Job> enqueue(
         job: T,
         onQueue: String?,
         serializer: JobSerializer,
         setProperties: (JMSProducer.() -> Unit)
     ) {
-        factory.createContext(username, password).use {
-            val queue = it.createQueue(onQueue ?: defaultQueueName)
-            it.createProducer().also(setProperties).setDeliveryDelay(job.delayInSeconds * 1000)
-                .send(queue, serializer.serialize(job))
-        }
-    }
-
-    override fun dequeue(from: String?, serializer: JobSerializer, listener: (Job?) -> Unit) {
-        factory.createContext(username, password, JMSContext.SESSION_TRANSACTED).use {
-            val queue = it.createQueue(from ?: defaultQueueName)
-            try {
-                val message = it.createConsumer(queue).receive()
-                val deliveryCount = message.getIntProperty("JMSXDeliveryCount")
-                val job = serializer.deserialize(message.getBody(String::class.java))
-                if (deliveryCount > job.retries) {
-                    logger.warn { "Job '$job' has exceeded its retries count. Putting this job in the '$failedQueueName' queue." }
-                    // move this job to failed queue
-                    enqueue(job, failedQueueName, serializer = serializer) {
-                        setProperty("JMS_AMQP_MA__AMQ_ORIG_ADDRESS", queue.queueName)
-                    }
-                    it.commit()
-                } else {
-                    listener(job)
-                    it.commit()
-                }
-            } catch (exception: Throwable) {
-                it.rollback()
-                logger.error { exception.printStackTrace() }
+        factory.createContext(username, password).use { context ->
+            val queue = context.createQueue(onQueue ?: defaultQueueName)
+            context.createProducer().apply {
+                setProperties()
+                deliveryDelay = job.delayInSeconds * 1000
+                send(queue, serializer.serialize(job))
             }
         }
     }

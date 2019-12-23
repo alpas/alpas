@@ -1,15 +1,7 @@
 package dev.alpas.queue
 
-import javax.jms.JMSProducer
-
 interface Queue {
-    fun <T : Job> enqueue(
-        job: T,
-        onQueue: String? = null,
-        serializer: JobSerializer,
-        setProperties: (JMSProducer.() -> Unit) = { }
-    )
-
+    fun <T : Job> enqueue(job: T, onQueue: String? = null, serializer: JobSerializer)
     fun dequeue(from: String? = null, serializer: JobSerializer, listener: (Job?) -> Unit)
     fun close() {}
 }
