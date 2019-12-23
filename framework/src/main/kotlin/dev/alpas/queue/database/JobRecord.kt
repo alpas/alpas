@@ -26,7 +26,7 @@ interface FailedJobRecord : Entity<FailedJobRecord> {
     var queue: String
     var payload: String
     var exception: String
-    val failedAt: Instant?
+    val failedAt: Instant
 }
 
 object JobRecords : MigratingTable<JobRecord>("jobs") {
@@ -34,7 +34,7 @@ object JobRecords : MigratingTable<JobRecord>("jobs") {
     val queue by varchar("queue").index().bindTo { it.queue }
     val payload by longText("payload").bindTo { it.payload }
     val tries by tinyInt("tries").unsigned().bindTo { it.tries }
-    val reservedAt by long("reserved_at").unsigned().bindTo { it.reservedAt }
+    val reservedAt by long("reserved_at").nullable().unsigned().bindTo { it.reservedAt }
     val availableAt by long("available_at").unsigned().bindTo { it.availableAt }
     val createdAt by long("created_at").unsigned().bindTo { it.createdAt }
 }
