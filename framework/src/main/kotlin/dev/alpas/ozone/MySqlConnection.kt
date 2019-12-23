@@ -3,6 +3,7 @@ package dev.alpas.ozone
 import dev.alpas.Environment
 import me.liuwj.ktorm.database.Database
 
+@Suppress("unused")
 open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) : DatabaseConnection {
     open val host = config?.host ?: env("DB_HOST", "localhost")
     open val port = config?.port ?: env("DB_PORT", 3306)

@@ -1,4 +1,4 @@
-package dev.alpas.queue
+package dev.alpas.queue.job
 
 import dev.alpas.Container
 
