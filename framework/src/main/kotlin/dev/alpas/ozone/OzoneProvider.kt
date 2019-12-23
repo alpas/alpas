@@ -15,7 +15,7 @@ import dev.alpas.ozone.console.MakeMigrationCommand
 class OzoneProvider : ServiceProvider {
     override fun register(app: Application) {
         val dbConfig = app.config { DatabaseConfig(it.make()) }
-        if (dbConfig.hasAnyConnection()) {
+        if (dbConfig.canConnect()) {
             dbConfig.connect()
         }
     }

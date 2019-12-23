@@ -12,7 +12,7 @@ open class DatabaseConfig(env: Environment) : Config {
         connections[key] = connection
     }
 
-    fun hasAnyConnection(): Boolean {
+    fun canConnect(): Boolean {
         return connections.isNotEmpty()
     }
 

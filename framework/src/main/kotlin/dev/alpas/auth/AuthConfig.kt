@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference
 typealias AuthChannelFactory = (call: HttpCall) -> AuthChannel
 typealias AuthChannelFilter = (authChannel: AuthChannel) -> Unit
 
+@Suppress("unused")
 open class AuthConfig(env: Environment) : Config {
     private val channels = mutableMapOf<String, AuthChannelFactory>()
     open val authSessionKey = "alpas-auth"
