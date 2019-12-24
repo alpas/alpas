@@ -1,12 +1,12 @@
-package dev.alpas.queue.sync
+package dev.alpas.queue.passthrough
 
 import dev.alpas.Container
 import dev.alpas.queue.Queue
 import dev.alpas.queue.QueueConnection
 
 @Suppress("unused")
-class SyncQueueConnection : QueueConnection {
+class PassThroughQueueConnection : QueueConnection {
     override fun connect(container: Container): Queue {
-        return SyncQueue(container)
+        return PassThroughQueue(container)
     }
 }
