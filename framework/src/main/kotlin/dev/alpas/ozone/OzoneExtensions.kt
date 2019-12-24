@@ -2,10 +2,15 @@ package dev.alpas.ozone
 
 import dev.alpas.exceptions.toHttpException
 import me.liuwj.ktorm.database.Database
+import me.liuwj.ktorm.database.DialectFeatureNotSupportedException
 import me.liuwj.ktorm.dsl.AssignmentsBuilder
+import me.liuwj.ktorm.dsl.Query
 import me.liuwj.ktorm.dsl.insertAndGenerateKey
+import me.liuwj.ktorm.dsl.limit
 import me.liuwj.ktorm.entity.findById
 import me.liuwj.ktorm.entity.findOne
+import me.liuwj.ktorm.expression.SelectExpression
+import me.liuwj.ktorm.expression.UnionExpression
 import me.liuwj.ktorm.schema.BaseTable
 import me.liuwj.ktorm.schema.ColumnDeclaring
 import me.liuwj.ktorm.schema.SqlType
@@ -69,3 +74,22 @@ inline fun <E : Any, T : BaseTable<E>> T.findOneOrFail(
 }
 
 internal fun <T : Any> SqlType<T>.isVarChar(): Boolean = this.typeName.toLowerCase() == "varchar"
+
+fun Query.selectFirst() = apply {
+    try {
+        limit(0, 1).firstOrNull()
+    } catch (e: DialectFeatureNotSupportedException) {
+        firstOrNull()
+    }
+}
+
+internal fun Query.forUpdate(): Query {
+    val expr = this.expression
+
+    val exprForUpdate = when (expr) {
+        is SelectExpression -> expr.copy(extraProperties = expr.extraProperties + Pair("forUpdate", true))
+        is UnionExpression -> expr.copy(extraProperties = expr.extraProperties + Pair("forUpdate", true))
+    }
+
+    return this.copy(expression = exprForUpdate)
+}

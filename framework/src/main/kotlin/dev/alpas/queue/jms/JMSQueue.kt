@@ -1,9 +1,9 @@
 package dev.alpas.queue.jms
 
+import dev.alpas.queue.JobHolder
 import dev.alpas.queue.Queue
 import dev.alpas.queue.job.Job
 import dev.alpas.queue.job.JobSerializer
-import mu.KotlinLogging
 import org.apache.qpid.jms.JmsConnectionFactory
 import javax.jms.JMSContext
 import javax.jms.JMSProducer
@@ -17,44 +17,40 @@ class JMSQueue(
     private val serializer: JobSerializer
 ) : Queue {
     private val factory by lazy { JmsConnectionFactory(url) }
-    private val logger by lazy { KotlinLogging.logger {} }
 
     override fun <T : Job> enqueue(job: T, onQueue: String?) {
-        enqueue(job, onQueue, {})
+        pushToQueue(serializer.serialize(job), onQueue ?: defaultQueueName, job.delayInSeconds)
     }
 
-    override fun dequeue(from: String?, listener: (Job?) -> Unit) {
-        factory.createContext(username, password, JMSContext.SESSION_TRANSACTED).use { context ->
-            val queue = context.createQueue(from ?: defaultQueueName)
-            try {
-                val message = context.createConsumer(queue).receive()
-                val deliveryCount = message.getIntProperty("JMSXDeliveryCount")
-                val job = serializer.deserialize(message.getBody(String::class.java))
-                val jobId = message.jmsMessageID
-                if (deliveryCount > job.retries) {
-                    logger.warn { "Job '$jobId' has exceeded its retries count. Moving this job to the '$failedQueueName' queue." }
-                    enqueue(job, failedQueueName) { setProperty("JMS_AMQP_MA__AMQ_ORIG_ADDRESS", queue.queueName) }
-                    context.commit()
-                } else {
-                    listener(job)
-                    context.commit()
-                    logger.info { "Job $jobId successfully processed!" }
-                }
-            } catch (exception: Throwable) {
-                context.rollback()
-                logger.error { exception.printStackTrace() }
-            }
-        }
+    override fun dequeue(from: String?): JobHolder? {
+        val queueName = from ?: defaultQueueName
+        val context = factory.createContext(username, password, JMSContext.SESSION_TRANSACTED)
+        val queue = context.createQueue(queueName)
+        val message = context.createConsumer(queue).receive()
+        val payload = message.getBody(String::class.java)
+        val job = serializer.deserialize(payload)
+
+        return JMSJobHolder(job, context, message, queueName, payload, this)
     }
 
-    private fun <T : Job> enqueue(job: T, onQueue: String?, setProperties: (JMSProducer.() -> Unit)) {
+    private fun pushToQueue(
+        payload: String,
+        queueName: String,
+        delayInSeconds: Long = 0,
+        setProperties: (JMSProducer.() -> Unit) = {}
+    ) {
         factory.createContext(username, password).use { context ->
-            val queue = context.createQueue(onQueue ?: defaultQueueName)
+            val queue = context.createQueue(queueName)
             context.createProducer().apply {
                 setProperties()
-                deliveryDelay = job.delayInSeconds * 1000
-                send(queue, serializer.serialize(job))
+                deliveryDelay = delayInSeconds * 1000
+                send(queue, payload)
             }
         }
     }
+
+    internal fun markAsFailedJob(payload: String, srcQueue: String, delayInSeconds: Long) {
+        pushToQueue(payload, failedQueueName, delayInSeconds) { setProperty("JMS_AMQP_MA__AMQ_ORIG_ADDRESS", srcQueue) }
+    }
 }
+
