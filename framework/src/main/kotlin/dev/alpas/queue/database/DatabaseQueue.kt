@@ -1,53 +1,31 @@
 package dev.alpas.queue.database
 
+import dev.alpas.ozone.forUpdate
+import dev.alpas.ozone.selectFirst
+import dev.alpas.queue.JobHolder
 import dev.alpas.queue.Queue
 import dev.alpas.queue.job.Job
 import dev.alpas.queue.job.JobSerializer
 import dev.alpas.stackTraceString
-import me.liuwj.ktorm.database.DialectFeatureNotSupportedException
 import me.liuwj.ktorm.database.useTransaction
 import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.expression.SelectExpression
-import me.liuwj.ktorm.expression.UnionExpression
-import mu.KotlinLogging
 import java.time.Instant
 
 class DatabaseQueue(private val defaultQueueName: String, private val serializer: JobSerializer) : Queue {
-    private val logger by lazy { KotlinLogging.logger {} }
 
-    override fun dequeue(from: String?, listener: (Job?) -> Unit) {
-        val queue = from ?: defaultQueueName
-        // get the next available job and reserve it
-        useTransaction { nextJob(queue)?.apply(this::reserveJob) }
-            ?.let { handleJob(it, listener) }
+    override fun <T : Job> enqueue(job: T, onQueue: String?) {
+        pushToDatabase(serializer.serialize(job), onQueue, job.delayInSeconds)
     }
 
-    private fun handleJob(record: JobRecord, listener: (Job?) -> Unit) {
-        val job = serializer.deserialize(record.payload)
-        try {
-            listener(job)
-            deleteJob(record)
-            logger.info { "Job ${record.id} successfully processed!" }
-        } catch (e: Exception) {
-            val tries = record.tries + 1
-            logger.warn { "Job ${record.id} processing failed. Tries: $tries." }
-            logger.error { e.stackTraceString }
-            if (tries > job.retries) {
-                logger.warn { "Job '${record.id}' has exceeded its retries count. Moving this job to the failed jobs queue." }
-                markAsFailedJob(record, e)
-                deleteJob(record)
-            } else {
-                JobRecords.update {
-                    JobRecords.tries to tries
-                    JobRecords.reservedAt to null
-                    JobRecords.availableAt to epochNow(job.delayInSeconds)
-                    where { JobRecords.id eq record.id }
-                }
-            }
+    override fun dequeue(from: String?): JobHolder? {
+        val queue = from ?: defaultQueueName
+        // get the next available job and reserve it
+        return useTransaction { nextJob(queue)?.apply(this::reserveJob) }?.let {
+            DatabaseJobHolder(serializer.deserialize(it.payload), it, this)
         }
     }
 
-    private fun markAsFailedJob(record: JobRecord, e: Exception) {
+    internal fun markAsFailedJob(record: JobRecord, e: Exception) {
         FailedJobRecords.insert {
             FailedJobRecords.connection to "database"
             FailedJobRecords.queue to record.queue
@@ -56,7 +34,7 @@ class DatabaseQueue(private val defaultQueueName: String, private val serializer
         }
     }
 
-    private fun deleteJob(record: JobRecord) {
+    internal fun deleteJob(record: JobRecord) {
         JobRecords.delete { JobRecords.id eq record.id }
     }
 
@@ -78,17 +56,17 @@ class DatabaseQueue(private val defaultQueueName: String, private val serializer
             .firstOrNull()
     }
 
-    override fun <T : Job> enqueue(job: T, onQueue: String?) {
+    internal fun pushToDatabase(payload: String, onQueue: String?, delayInSeconds: Long = 0, tries: Int = 0) {
         JobRecords.insert {
-            JobRecords.payload to serializer.serialize(job)
+            JobRecords.payload to payload
             JobRecords.queue to (onQueue ?: defaultQueueName)
-            JobRecords.tries to 0
-            JobRecords.availableAt to epochNow(job.delayInSeconds)
+            JobRecords.tries to tries
+            JobRecords.availableAt to epochNow(delayInSeconds)
             JobRecords.createdAt to epochNow()
         }
     }
 
-    private fun epochNow(delay: Long = 0) = Instant.now().plusSeconds(delay).epochSecond
+    private fun epochNow(delayInSeconds: Long = 0) = Instant.now().plusSeconds(delayInSeconds).epochSecond
 
     private fun makeJobRecord(row: QueryRowSet): JobRecord {
         return JobRecord {
@@ -101,23 +79,4 @@ class DatabaseQueue(private val defaultQueueName: String, private val serializer
             createdAt = row[JobRecords.createdAt]!!
         }
     }
-}
-
-fun Query.selectFirst() = apply {
-    try {
-        limit(0, 1).firstOrNull()
-    } catch (e: DialectFeatureNotSupportedException) {
-        firstOrNull()
-    }
-}
-
-fun Query.forUpdate(): Query {
-    val expr = this.expression
-
-    val exprForUpdate = when (expr) {
-        is SelectExpression -> expr.copy(extraProperties = expr.extraProperties + Pair("forUpdate", true))
-        is UnionExpression -> expr.copy(extraProperties = expr.extraProperties + Pair("forUpdate", true))
-    }
-
-    return this.copy(expression = exprForUpdate)
 }
