@@ -12,6 +12,7 @@ class JMSQueue(
     url: String,
     private val username: String,
     private val password: String,
+    private val namespace: String,
     private val defaultQueueName: String,
     private val failedQueueName: String,
     private val serializer: JobSerializer
@@ -19,11 +20,12 @@ class JMSQueue(
     private val factory by lazy { JmsConnectionFactory(url) }
 
     override fun <T : Job> enqueue(job: T, onQueue: String?) {
-        pushToQueue(serializer.serialize(job), onQueue ?: defaultQueueName, job.delayInSeconds)
+        val queueName = queueName(onQueue)
+        pushToQueue(serializer.serialize(job), queueName, job.delayInSeconds)
     }
 
     override fun dequeue(from: String?): JobHolder? {
-        val queueName = from ?: defaultQueueName
+        val queueName = queueName(from)
         val context = factory.createContext(username, password, JMSContext.SESSION_TRANSACTED)
         val queue = context.createQueue(queueName)
         val message = context.createConsumer(queue).receive()
@@ -31,6 +33,11 @@ class JMSQueue(
         val job = serializer.deserialize(payload)
 
         return JMSJobHolder(job, context, message, queueName, payload, this)
+    }
+
+    private fun queueName(name: String?): String {
+        val queueName = name ?: defaultQueueName
+        return "$namespace::$queueName"
     }
 
     private fun pushToQueue(
