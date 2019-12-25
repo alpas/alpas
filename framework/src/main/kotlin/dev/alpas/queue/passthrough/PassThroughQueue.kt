@@ -7,7 +7,7 @@ import dev.alpas.queue.job.Job
 
 class PassThroughQueue(val container: Container) : Queue {
     override fun <T : Job> enqueue(job: T, onQueue: String?) {
-        job.invoke(container)
+        job(container)
     }
 
     override fun dequeue(from: String?): JobHolder? {

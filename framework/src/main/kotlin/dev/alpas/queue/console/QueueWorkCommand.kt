@@ -45,7 +45,7 @@ class QueueWorkCommand(private val container: Container) :
     private inline fun dequeue(container: Container, queue: Queue, name: String? = null) {
         queue.dequeue(name)?.let {
             try {
-                it.job.invoke(container)
+                it.process(container)
                 it.commit()
             } catch (ex: Exception) {
                 it.rollback(ex)

@@ -1,10 +1,12 @@
 package dev.alpas.queue.jms
 
 import dev.alpas.queue.JobHolder
+import dev.alpas.queue.NoOpJobHolder
 import dev.alpas.queue.Queue
 import dev.alpas.queue.job.Job
 import dev.alpas.queue.job.JobSerializer
 import org.apache.qpid.jms.JmsConnectionFactory
+import javax.jms.InvalidDestinationRuntimeException
 import javax.jms.JMSContext
 import javax.jms.JMSProducer
 
@@ -28,11 +30,15 @@ class JMSQueue(
         val queueName = queueName(from)
         val context = factory.createContext(username, password, JMSContext.SESSION_TRANSACTED)
         val queue = context.createQueue(queueName)
-        val message = context.createConsumer(queue).receive()
-        val payload = message.getBody(String::class.java)
-        val job = serializer.deserialize(payload)
+        return try {
+            val message = context.createConsumer(queue).receive()
+            val payload = message.getBody(String::class.java)
+            val job = serializer.deserialize(payload)
 
-        return JMSJobHolder(job, context, message, queueName, payload, this)
+            JMSJobHolder(job, context, message, queueName, payload, this)
+        } catch (ex: InvalidDestinationRuntimeException) {
+            NoOpJobHolder
+        }
     }
 
     private fun queueName(name: String?): String {

@@ -1,5 +1,6 @@
 package dev.alpas.queue
 
+import dev.alpas.Container
 import dev.alpas.queue.job.Job
 import mu.KotlinLogging
 
@@ -12,7 +13,18 @@ interface Queue {
 }
 
 interface JobHolder {
-    val job: Job
     fun commit()
     fun rollback(ex: Exception)
+    fun process(container: Container)
+}
+
+object NoOpJobHolder : JobHolder {
+    override fun commit() {
+    }
+
+    override fun rollback(ex: Exception) {
+    }
+
+    override fun process(container: Container) {
+    }
 }

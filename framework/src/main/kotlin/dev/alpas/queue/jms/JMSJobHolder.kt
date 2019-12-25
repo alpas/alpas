@@ -1,5 +1,6 @@
 package dev.alpas.queue.jms
 
+import dev.alpas.Container
 import dev.alpas.queue.JobHolder
 import dev.alpas.queue.job.Job
 import dev.alpas.queue.queueLogger
@@ -8,7 +9,7 @@ import javax.jms.JMSContext
 import javax.jms.Message
 
 class JMSJobHolder(
-    override val job: Job,
+    private val job: Job,
     private val context: JMSContext,
     private val message: Message,
     private val queueName: String,
@@ -37,5 +38,9 @@ class JMSJobHolder(
         }
 
         context.close()
+    }
+
+    override fun process(container: Container) {
+        job(container)
     }
 }

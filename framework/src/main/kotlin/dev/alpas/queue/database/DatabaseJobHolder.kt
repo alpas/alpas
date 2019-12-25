@@ -1,12 +1,13 @@
 package dev.alpas.queue.database
 
+import dev.alpas.Container
 import dev.alpas.queue.JobHolder
 import dev.alpas.queue.job.Job
 import dev.alpas.queue.queueLogger
 import dev.alpas.stackTraceString
 
 class DatabaseJobHolder(
-    override val job: Job,
+    private val job: Job,
     private val record: JobRecord,
     private val queue: DatabaseQueue
 ) : JobHolder {
@@ -30,5 +31,9 @@ class DatabaseJobHolder(
             queueLogger.warn { "Job '${record.id}' has exceeded its retries count. Moving this job to the failed jobs queue." }
             queue.markAsFailedJob(record, ex)
         }
+    }
+
+    override fun process(container: Container) {
+        job(container)
     }
 }
