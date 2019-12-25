@@ -17,7 +17,13 @@ open class QueueConfig(env: Environment) : Config {
         return connections.isNotEmpty()
     }
 
-    fun connection(container: Container, name: String = defaultConnection): Queue {
-        return connections[name]?.value?.connect(container) ?: throw Exception("Unsupported queue connection: '$name'.")
+    fun connection(container: Container, name: String? = null): Queue {
+        val connectionName = name ?: defaultConnection
+        return connections[connectionName]?.value?.connect(container)
+            ?: throw Exception("Unsupported queue connection: '$connectionName'.")
+    }
+
+    internal fun registeredConnectionNames(): List<String> {
+        return connections.keys.toList()
     }
 }
