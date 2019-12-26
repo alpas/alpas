@@ -22,7 +22,7 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
     override val env by lazy { make<Environment>() }
     override val configs by lazy { makeMany<Config>() }
 
-    protected val kernel by lazy { if (env.inConsoleMode) make { ConsoleKernel() } else make { HttpKernel() } }
+    override val kernel by lazy { if (env.inConsoleMode) make { ConsoleKernel() } else make { HttpKernel() } }
 
     // The following methods sort of describe the lifecycle of an Alpas application
     // 1. Initialization: First the command line args and the caller classes are registered

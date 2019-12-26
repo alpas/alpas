@@ -8,7 +8,7 @@ import dev.alpas.make
 class ConsoleCommandsServiceProvider(private val args: Array<String>) : ServiceProvider {
     override fun register(app: Application) {
         app.bufferDebugLog("Registering $this")
-        val alpas = AlpasCommand(app.appConfig().topLevelCommandAliases)
+        val alpas = AlpasCommand(app.appConfig().commandAliases)
         app.singleton(alpas)
     }
 
@@ -24,6 +24,6 @@ class ConsoleCommandsServiceProvider(private val args: Array<String>) : ServiceP
             MakeCommandCommand(app.srcPackage),
             MakeServiceProviderCommand(app.srcPackage),
             KeyGenerateCommand()
-        )
+        ) + app.kernel.commands(app)
     }
 }

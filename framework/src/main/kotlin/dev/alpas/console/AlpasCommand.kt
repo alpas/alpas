@@ -1,7 +1,7 @@
 package dev.alpas.console
 
 class AlpasCommand(private val commandAliases: Map<String, List<String>> = emptyMap()) :
-    Command(help = "A modern web framework for Kotliners", name = "") {
+    Command(help = "Rapid web development with Kotlin. Simple, easy, elegant, and productive 🚀⚡️", name = "") {
 
     override fun aliases() =
         mapOf(

@@ -1,5 +1,6 @@
 package dev.alpas
 
+import dev.alpas.console.Command
 import kotlin.reflect.KClass
 
 interface Kernel {
@@ -7,4 +8,5 @@ interface Kernel {
     fun boot(app: Application) {}
     fun serviceProviders(app: Application): Iterable<KClass<out ServiceProvider>> = emptyList()
     fun stop(app: Application) {}
+    fun commands(app: Application) = emptyList<Command>()
 }
