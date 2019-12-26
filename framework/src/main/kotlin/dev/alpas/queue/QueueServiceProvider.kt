@@ -16,9 +16,7 @@ open class QueueServiceProvider : ServiceProvider {
     override fun register(app: Application) {
         app.bind(JobSerializer::class, JobSerializerImpl())
         val queueConfig = app.config { QueueConfig(app.env) }
-        if (queueConfig.canConnect()) {
-            app.singleton(Queue::class, queueConfig.connection(app))
-        }
+        app.bind(QueueDispatcher(app, queueConfig))
     }
 
     override fun stop(app: Application) {

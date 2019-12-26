@@ -13,10 +13,6 @@ open class QueueConfig(env: Environment) : Config {
         connections[key] = connection
     }
 
-    fun canConnect(): Boolean {
-        return connections.isNotEmpty()
-    }
-
     fun connection(container: Container, name: String? = null): Queue {
         val connectionName = name ?: defaultConnection
         return connections[connectionName]?.value?.connect(container)
