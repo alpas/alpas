@@ -8,7 +8,7 @@ import dev.alpas.stackTraceString
 import javax.jms.JMSContext
 import javax.jms.Message
 
-class JMSJobHolder(
+open class JMSJobHolder(
     private val job: Job,
     private val context: JMSContext,
     private val message: Message,

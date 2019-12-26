@@ -10,7 +10,7 @@ import javax.jms.InvalidDestinationRuntimeException
 import javax.jms.JMSContext
 import javax.jms.JMSProducer
 
-class JMSQueue(
+open class JMSQueue(
     url: String,
     private val username: String,
     private val password: String,
@@ -33,14 +33,36 @@ class JMSQueue(
         return try {
             val message = context.createConsumer(queue).receive()
             val payload = message.getBody(String::class.java)
-            val job = serializer.deserialize(payload)
-
-            JMSJobHolder(job, context, message, queueName, payload, this)
+            if (isMissingQueueDummyPayload(payload, queueName)) {
+                // skip this intermediate job
+                NoOpJobHolder
+            } else {
+                val job = serializer.deserialize(payload)
+                JMSJobHolder(job, context, message, queueName, payload, this)
+            }
         } catch (ex: InvalidDestinationRuntimeException) {
-            context.createProducer()
             context.commit()
             context.close()
+            // So that we don't get into this infinite loop and we certainly don't want to throw
+            // an exception crashing queue:work command and forcing users to restart the queue.
+            createMissingQueue(queueName)
             NoOpJobHolder
+        }
+    }
+
+    private fun isMissingQueueDummyPayload(payload: String?, queueName: String): Boolean {
+        return makeMissingQueueDummyPayload(queueName) == payload
+    }
+
+    private fun makeMissingQueueDummyPayload(queueName: String): String {
+        return "--$queueName--"
+    }
+
+    private fun createMissingQueue(queueName: String) {
+        factory.createContext(username, password, JMSContext.SESSION_TRANSACTED).use { context ->
+            val queue = context.createQueue(queueName)
+            context.createProducer().send(queue, makeMissingQueueDummyPayload(queueName))
+            context.commit()
         }
     }
 
@@ -49,7 +71,7 @@ class JMSQueue(
         return "$namespace::$queueName"
     }
 
-    private fun pushToQueue(
+    protected open fun pushToQueue(
         payload: String,
         queueName: String,
         delayInSeconds: Long = 0,
@@ -65,7 +87,7 @@ class JMSQueue(
         }
     }
 
-    internal fun markAsFailedJob(payload: String, srcQueue: String, delayInSeconds: Long) {
+    open fun markAsFailedJob(payload: String, srcQueue: String, delayInSeconds: Long) {
         pushToQueue(payload, failedQueueName, delayInSeconds) { setProperty("JMS_AMQP_MA__AMQ_ORIG_ADDRESS", srcQueue) }
     }
 }
