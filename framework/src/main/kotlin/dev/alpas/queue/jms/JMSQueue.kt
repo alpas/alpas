@@ -30,11 +30,15 @@ open class JMSQueue(
         val queueName = queueName(from)
         val context = factory.createContext(username, password, JMSContext.SESSION_TRANSACTED)
         val queue = context.createQueue(queueName)
+
         return try {
             val message = context.createConsumer(queue).receive()
             val payload = message.getBody(String::class.java)
+
             if (isMissingQueueDummyPayload(payload, queueName)) {
-                // skip this intermediate job
+                // skip processing this short-lived dummy job
+                context.commit()
+                context.close()
                 NoOpJobHolder
             } else {
                 val job = serializer.deserialize(payload)
@@ -91,4 +95,3 @@ open class JMSQueue(
         pushToQueue(payload, failedQueueName, delayInSeconds) { setProperty("JMS_AMQP_MA__AMQ_ORIG_ADDRESS", srcQueue) }
     }
 }
-
