@@ -9,20 +9,31 @@ import dev.alpas.queue.job.JobSerializer
 import dev.alpas.stackTraceString
 import me.liuwj.ktorm.database.useTransaction
 import me.liuwj.ktorm.dsl.*
+import java.time.Duration
 import java.time.Instant
 
-class DatabaseQueue(private val defaultQueueName: String, private val serializer: JobSerializer) : Queue {
+class DatabaseQueue(
+    private val defaultQueueName: String,
+    private val serializer: JobSerializer,
+    private val sleep: Duration = Duration.ofSeconds(3)
+) : Queue {
 
     override fun <T : Job> enqueue(job: T, onQueue: String?) {
         pushToDatabase(serializer.serialize(job), onQueue, job.delayInSeconds)
     }
 
-    override fun dequeue(from: String?): JobHolder? {
+    override fun dequeue(from: String?, timeout: Duration?): JobHolder? {
         val queue = from ?: defaultQueueName
         // get the next available job and reserve it
-        return useTransaction { nextJob(queue)?.apply(this::reserveJob) }?.let {
+        val job = useTransaction {
+            nextJob(queue)?.apply(this::reserveJob)
+        }?.let {
             DatabaseJobHolder(serializer.deserialize(it.payload), it, this)
         }
+        if (job == null) {
+            Thread.sleep((timeout ?: sleep).toMillis())
+        }
+        return job
     }
 
     internal fun markAsFailedJob(record: JobRecord, e: Exception) {

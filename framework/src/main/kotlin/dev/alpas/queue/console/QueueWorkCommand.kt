@@ -4,11 +4,13 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
+import com.github.ajalt.clikt.parameters.types.int
 import dev.alpas.Container
 import dev.alpas.console.Command
 import dev.alpas.make
 import dev.alpas.queue.Queue
 import dev.alpas.queue.QueueConfig
+import java.time.Duration
 
 class QueueWorkCommand(private val container: Container) :
     Command(name = "queue:work", help = "Start a queue worker.") {
@@ -16,6 +18,9 @@ class QueueWorkCommand(private val container: Container) :
     private val connection by argument(help = "The name of the connection to use.")
         .choice(*queueConfig.registeredConnectionNames().toTypedArray()).default(queueConfig.defaultConnection)
     private val queueName by option("--queue", help = "Name of the queue to process.")
+    private val sleep by option(help = "Seconds to sleep between if there are no new jobs.").int()
+    private val sleepDuration by lazy { sleep?.let { Duration.ofSeconds(it.toLong()) } }
+
     override fun run() {
         printMessage()
         val queue = queueConfig.connection(container, connection)
@@ -40,7 +45,7 @@ class QueueWorkCommand(private val container: Container) :
     }
 
     private fun dequeue(container: Container, queue: Queue, name: String? = null) {
-        queue.dequeue(name)?.let {
+        queue.dequeue(name, sleepDuration)?.let {
             try {
                 it.process(container)
                 it.commit()
