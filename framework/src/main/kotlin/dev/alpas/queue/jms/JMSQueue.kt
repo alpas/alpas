@@ -37,6 +37,9 @@ class JMSQueue(
 
             JMSJobHolder(job, context, message, queueName, payload, this)
         } catch (ex: InvalidDestinationRuntimeException) {
+            context.createProducer()
+            context.commit()
+            context.close()
             NoOpJobHolder
         }
     }
