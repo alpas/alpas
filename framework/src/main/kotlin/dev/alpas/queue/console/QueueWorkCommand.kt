@@ -39,20 +39,21 @@ class QueueWorkCommand(private val container: Container) :
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun dequeue(container: Container, queue: Queue, name: String? = null) {
+    private fun dequeue(container: Container, queue: Queue, name: String? = null) {
         queue.dequeue(name)?.let {
             try {
                 it.process(container)
                 it.commit()
+                // Since we received a non-null JobHolder, we'll continue to dequeue from
+                // the same queue. When we get a null we'll yield to the next queue.
+                this.dequeue(container, queue, name)
             } catch (ex: Exception) {
                 it.rollback(ex)
             }
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun dequeueMultiple(container: Container, queue: Queue, names: List<String>) {
+    private fun dequeueMultiple(container: Container, queue: Queue, names: List<String>) {
         names.forEach { name ->
             dequeue(container, queue, name)
         }

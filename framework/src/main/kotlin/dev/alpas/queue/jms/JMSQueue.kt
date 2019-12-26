@@ -1,11 +1,11 @@
 package dev.alpas.queue.jms
 
 import dev.alpas.queue.JobHolder
-import dev.alpas.queue.NoOpJobHolder
 import dev.alpas.queue.Queue
 import dev.alpas.queue.job.Job
 import dev.alpas.queue.job.JobSerializer
 import org.apache.qpid.jms.JmsConnectionFactory
+import java.time.Duration
 import javax.jms.InvalidDestinationRuntimeException
 import javax.jms.JMSContext
 import javax.jms.JMSProducer
@@ -17,7 +17,8 @@ open class JMSQueue(
     private val namespace: String,
     private val defaultQueueName: String,
     private val failedQueueName: String,
-    private val serializer: JobSerializer
+    private val serializer: JobSerializer,
+    private val timeout: Duration = Duration.ofSeconds(30)
 ) : Queue {
     private val factory by lazy { JmsConnectionFactory(url) }
 
@@ -32,14 +33,14 @@ open class JMSQueue(
         val queue = context.createQueue(queueName)
 
         return try {
-            val message = context.createConsumer(queue).receive()
-            val payload = message.getBody(String::class.java)
+            val message = context.createConsumer(queue).receive(timeout.toMillis())
+            val payload = message?.getBody(String::class.java)
 
-            if (isMissingQueueDummyPayload(payload, queueName)) {
-                // skip processing this short-lived dummy job
+            if (payload == null || isMissingQueueDummyPayload(payload, queueName)) {
+                // Skip processing this short-lived dummy job
                 context.commit()
                 context.close()
-                NoOpJobHolder
+                null
             } else {
                 val job = serializer.deserialize(payload)
                 JMSJobHolder(job, context, message, queueName, payload, this)
@@ -50,7 +51,7 @@ open class JMSQueue(
             // So that we don't get into this infinite loop and we certainly don't want to throw
             // an exception crashing queue:work command and forcing users to restart the queue.
             createMissingQueue(queueName)
-            NoOpJobHolder
+            null
         }
     }
 

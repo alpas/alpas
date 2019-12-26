@@ -7,6 +7,7 @@ import dev.alpas.queue.ConnectionConfig
 import dev.alpas.queue.Queue
 import dev.alpas.queue.QueueConnection
 import dev.alpas.queue.jms.JMSQueue
+import java.time.Duration
 
 @Suppress("unused")
 open class ActiveMQConnection(env: Environment, config: ConnectionConfig? = null) :
@@ -20,7 +21,9 @@ open class ActiveMQConnection(env: Environment, config: ConnectionConfig? = null
         config?.defaultQueueName ?: env("ACTIVEMQ_DEFAULT_QUEUE_NAME", "default")
     open val failedQueueName =
         config?.failedQueueName ?: env("ACTIVEMQ_FAILED_QUEUE_NAME", "failed")
-
+    open val timeout: Duration = config?.timeout ?: Duration.ofSeconds(
+        env("QUEUE_TIMEOUT_IN_SECONDS", 30).toLong()
+    )
 
     override fun connect(container: Container): Queue {
         return JMSQueue(
@@ -30,7 +33,8 @@ open class ActiveMQConnection(env: Environment, config: ConnectionConfig? = null
             namespace = queueNamespace,
             defaultQueueName = defaultQueueName,
             failedQueueName = failedQueueName,
-            serializer = container.make()
+            serializer = container.make(),
+            timeout = timeout
         )
     }
 }

@@ -17,14 +17,3 @@ interface JobHolder {
     fun rollback(ex: Exception)
     fun process(container: Container)
 }
-
-object NoOpJobHolder : JobHolder {
-    override fun commit() {
-    }
-
-    override fun rollback(ex: Exception) {
-    }
-
-    override fun process(container: Container) {
-    }
-}
