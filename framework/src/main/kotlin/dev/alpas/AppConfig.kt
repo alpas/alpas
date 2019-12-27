@@ -4,7 +4,7 @@ import java.time.Duration
 import java.time.ZoneOffset
 
 open class AppConfig(env: Environment) : Config {
-    open val serveExternally = env("SERVE_EXTERNALLY", false)
+    open val enableNetworkShare = env("ENABLE_NETWORK_SHARE", false)
     open val appPort = env("APP_PORT", 8080)
     open val appUrl = env("APP_URL", "")
     open val connectionTimeOut: Duration = Duration.ofMinutes(1)
