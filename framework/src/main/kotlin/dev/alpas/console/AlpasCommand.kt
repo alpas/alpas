@@ -1,7 +1,10 @@
 package dev.alpas.console
 
 class AlpasCommand(private val commandAliases: Map<String, List<String>> = emptyMap()) :
-    Command(help = "Rapid web development with Kotlin. Simple, easy, elegant, and productive 🚀⚡️", name = "") {
+    Command(
+        help = "🚀 Rapid web development with Kotlin. Easy, elegant, and productive.", name = "",
+        autoCompleteEnvvar = "ALPAS_AUTOCOMPLETE_SHELL"
+    ) {
 
     override fun aliases() =
         mapOf(
