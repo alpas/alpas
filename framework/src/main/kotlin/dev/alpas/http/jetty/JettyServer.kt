@@ -32,7 +32,7 @@ internal class JettyServer {
                 addCustomizer(ForwardedRequestCustomizer())
             }
             val connector = ServerConnector(server, HttpConnectionFactory(httpConfig)).apply {
-                if (!config.serveExternally) {
+                if (!config.enableNetworkShare) {
                     host = "localhost"
                 }
                 port = config.appPort
