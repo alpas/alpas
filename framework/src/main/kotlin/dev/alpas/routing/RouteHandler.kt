@@ -63,7 +63,7 @@ class DynamicControllerHandler(private val controllerName: String, val method: S
     override fun toString() = "$controllerName#$method"
 }
 
-class ClosureHandler(private val closure: (HttpCall) -> Unit) : RouteHandler() {
+class ClosureHandler(private val closure: HttpCall.() -> Unit) : RouteHandler() {
     override fun handle(call: HttpCall) {
         closure(call)
     }
