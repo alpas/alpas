@@ -132,7 +132,7 @@ open class AlpasApp(args: Array<String>, entryClass: Class<*>) : Container by De
 
     private fun loadUserlandCoreClasses(loader: PackageClassLoader) {
         loader.load {
-            listOf(Config::class, Kernel::class).forEach { interfaze ->
+            listOf(Config::class).forEach { interfaze ->
                 classesImplementing(interfaze) {
                     bufferDebugLog("Loading $it from $packageName that implement $interfaze")
                     if (it.superclass == null) {

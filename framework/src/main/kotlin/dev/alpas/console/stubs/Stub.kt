@@ -6,9 +6,9 @@ internal class Stubs {
             return """
                 package StubPackageName 
 
-                import Command
+                import dev.alpas.console.Command
                 
-                class StubClazzName(srcPackage: String) : Command(name = "command:name", help = "Command description.") {
+                class StubClazzName : Command(name = "command:name", help = "Command description.") {
                     override fun run() {
                         TODO("Run the command")
                     }

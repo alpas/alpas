@@ -42,7 +42,7 @@ class HttpCall internal constructor(
     var isDropped = false
         private set
 
-    private val exceptionHandler by lazy { make { ExceptionHandler() } }
+    private val exceptionHandler by lazy { makeElse { ExceptionHandler() } }
     val authChannel: AuthChannel by lazy { config<AuthConfig>().channel(this, route.target().authChannel) }
     internal val userProvider: UserProvider? by lazy { authChannel.userProvider }
     val isAuthenticated by lazy { authChannel.isLoggedIn() }

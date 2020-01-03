@@ -7,8 +7,8 @@ import dev.alpas.make
 import dev.alpas.notifications.Notifiable
 import dev.alpas.notifications.Notification
 import dev.alpas.notifications.NotificationDispatcher
-import dev.alpas.queue.Job
-import dev.alpas.queue.Queue
+import dev.alpas.queue.QueueDispatcher
+import dev.alpas.queue.job.Job
 import kotlin.reflect.KClass
 
 open class Controller {
@@ -33,8 +33,8 @@ open class Controller {
         call.session.flash(name, payload)
     }
 
-    protected fun queue(job: Job, onQueue: String? = null) {
-        call.make<Queue>().enqueue(job, onQueue, serializer = call.make())
+    protected fun queue(job: Job, onQueue: String? = null, connection: String? = null) {
+        call.make<QueueDispatcher>().dispatch(job, onQueue, connection)
     }
 
     protected fun <T : Notifiable> send(notification: Notification<T>, notifiable: T, vararg notifiables: T) {

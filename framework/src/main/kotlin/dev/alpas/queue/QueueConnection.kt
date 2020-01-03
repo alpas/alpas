@@ -1,6 +1,7 @@
 package dev.alpas.queue
 
 import dev.alpas.Container
+import java.time.Duration
 
 @Suppress("unused")
 
@@ -14,6 +15,7 @@ open class ConnectionConfig(
     val host: String? = null,
     val port: String? = null,
     val defaultQueueName: String? = null,
-    val failedQueueName: String? = null
+    val failedQueueName: String? = null,
+    val timeout: Duration? = null
 )
 

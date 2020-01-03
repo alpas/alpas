@@ -4,7 +4,7 @@ import java.time.Duration
 import java.time.ZoneOffset
 
 open class AppConfig(env: Environment) : Config {
-    open val serveExternally = env("SERVE_EXTERNALLY", false)
+    open val enableNetworkShare = env("ENABLE_NETWORK_SHARE", false)
     open val appPort = env("APP_PORT", 8080)
     open val appUrl = env("APP_URL", "")
     open val connectionTimeOut: Duration = Duration.ofMinutes(1)
@@ -15,6 +15,6 @@ open class AppConfig(env: Environment) : Config {
     open val timezone: ZoneOffset = ZoneOffset.UTC
     open val appLogConfig: String = env("APP_LOG_CONFIG", "app_log_config.xml")
     open val consoleLogConfig: String = env("CONSOLE_LOG_CONFIG", "console_log_config.xml")
-    open val topLevelCommandAliases: Map<String, List<String>> = emptyMap()
+    open val commandAliases: Map<String, List<String>> = emptyMap()
     open val allowMethodSpoofing = true
 }

@@ -10,6 +10,7 @@ interface Application : Container {
     val srcPackage: String
     val env: Environment
     val configs: List<Config>
+    val kernel: Kernel
     fun ignite()
     fun takeOff()
     fun stop()
