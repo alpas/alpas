@@ -87,6 +87,10 @@ inline fun <reified T : Any> Container.make(): T {
     return picoContainer.getComponent(T::class.java)
 }
 
+inline fun <reified T : Any> Container.make(block: T.() -> Unit): T {
+    return picoContainer.getComponent(T::class.java).also(block)
+}
+
 inline fun <reified T : Any> Container.makeMany(): List<T> {
     return picoContainer.getComponents(T::class.java)
 }
