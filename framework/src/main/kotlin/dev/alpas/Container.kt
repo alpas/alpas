@@ -75,7 +75,7 @@ inline fun <reified T : Any> MutablePicoContainer.factory(crossinline factory: (
     })
 }
 
-inline fun <reified T : Any> Container.make(default: Container.(container: Container) -> T): T {
+inline fun <reified T : Any> Container.makeElse(default: Container.(container: Container) -> T): T {
     return tryMake() ?: default(this)
 }
 

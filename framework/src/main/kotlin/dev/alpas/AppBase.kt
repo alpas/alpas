@@ -22,7 +22,7 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
     override val env by lazy { make<Environment>() }
     override val configs by lazy { makeMany<Config>() }
 
-    override val kernel by lazy { if (env.inConsoleMode) make { ConsoleKernel() } else make { HttpKernel() } }
+    override val kernel by lazy { if (env.inConsoleMode) makeElse { ConsoleKernel() } else makeElse { HttpKernel() } }
 
     // The following methods sort of describe the lifecycle of an Alpas application
     // 1. Initialization: First the command line args and the caller classes are registered
@@ -56,4 +56,4 @@ fun Container.appConfig() = config { AppConfig(it.make()) }
 
 // Returns a config object of type T if already exists in the container otherwise it calls the default callback
 // to get an instance of the type T, registers it to the container and then returns the config object.
-inline fun <reified T : Config> Container.config(default: (container: Container) -> T): T = make { bind(default(this)) }
+inline fun <reified T : Config> Container.config(default: (container: Container) -> T): T = makeElse { bind(default(this)) }
