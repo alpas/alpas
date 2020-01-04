@@ -179,4 +179,8 @@ class HttpCall internal constructor(
     }
 
     internal fun sessionIsValid() = env.supportsSession && !servletResponse.isCommitted && session.isValid()
+
+    operator fun invoke(block: HttpCall.() -> Unit) {
+        this.block()
+    }
 }
