@@ -8,7 +8,7 @@ import dev.alpas.make
 import dev.alpas.notifications.MailableNotification
 import dev.alpas.notifications.channels.MailChannel
 import dev.alpas.notifications.channels.NotificationChannel
-import dev.alpas.ozone.orAbort
+import dev.alpas.orAbort
 import dev.alpas.routing.UrlGenerator
 import kotlin.reflect.KClass
 

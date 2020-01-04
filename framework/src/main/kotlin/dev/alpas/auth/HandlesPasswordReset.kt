@@ -6,7 +6,7 @@ import dev.alpas.hashing.Hasher
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
 import dev.alpas.make
-import dev.alpas.ozone.orAbort
+import dev.alpas.orAbort
 import dev.alpas.validation.*
 import me.liuwj.ktorm.dsl.*
 

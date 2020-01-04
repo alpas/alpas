@@ -4,6 +4,8 @@ package dev.alpas
 
 import com.github.ajalt.clikt.output.TermUi.echo
 import com.github.ajalt.mordant.TermColors
+import dev.alpas.exceptions.toHttpException
+import org.eclipse.jetty.http.HttpStatus
 import org.sagebionetworks.url.UrlData
 import uy.klutter.core.common.mustStartWith
 import java.io.File
@@ -164,4 +166,8 @@ inline fun <R> executeAndMeasureTimeMillis(block: () -> R): Pair<R, Long> {
     val start = System.currentTimeMillis()
     val result = block()
     return result to (System.currentTimeMillis() - start)
+}
+
+fun <E> E?.orAbort(message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): E {
+    return this ?: throw statusCode.toHttpException(message)
 }

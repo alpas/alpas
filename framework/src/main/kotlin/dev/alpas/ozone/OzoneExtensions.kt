@@ -1,6 +1,7 @@
 package dev.alpas.ozone
 
 import dev.alpas.exceptions.toHttpException
+import dev.alpas.orAbort
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.DialectFeatureNotSupportedException
 import me.liuwj.ktorm.dsl.AssignmentsBuilder
@@ -35,11 +36,6 @@ fun Database.isMySql(): Boolean {
  */
 fun Database.isSqlite(): Boolean {
     return isOfType("sqlite")
-}
-
-// todo: move this out from here
-fun <E> E?.orAbort(message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): E {
-    return this ?: throw statusCode.toHttpException(message)
 }
 
 /**
