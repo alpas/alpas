@@ -1,33 +1,32 @@
 package dev.alpas.auth
 
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.Column
-import me.liuwj.ktorm.schema.SqlType
-import me.liuwj.ktorm.schema.Table
-import me.liuwj.ktorm.schema.datetime
-import me.liuwj.ktorm.schema.long
-import me.liuwj.ktorm.schema.varchar
-import java.util.NoSuchElementException
+import org.jetbrains.exposed.dao.LongEntity
+import org.jetbrains.exposed.dao.LongEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.`java-time`.timestamp
 
-open class BaseUsersTable<E : BaseUser<E>> : Table<E>("users") {
-    open val id by long("id").primaryKey().bindTo { it.id }
-    open val password by varchar("password").bindTo { it.password }
-    open val email by varchar("email").bindTo { it.email }
-    open val name by varchar("name").bindTo { it.name }
-    open val createdAt by datetime("created_at").bindTo { it.createdAt }
-    open val updatedAt by datetime("updated_at").bindTo { it.updatedAt }
-
-    fun <T : Any> bind(name: String, ofType: SqlType<T>): Column<*> {
-        return try {
-            this[name]
-        } catch (e: NoSuchElementException) {
-            this.registerColumn(name, ofType).getColumn()
-        }
-    }
+internal object Users : LongIdTable("users") {
+    val password = varchar("password", 255)
+    val email = varchar("email", 255).uniqueIndex()
+    val name = varchar("name", 255).nullable()
+    val createdAt = timestamp("created_at").nullable()
+    val updatedAt = timestamp("updated_at").nullable()
 }
 
-internal object UsersTable : BaseUsersTable<User>() {}
+@Suppress("unused")
+open class User(id: EntityID<Long>) : LongEntity(id), Authenticatable {
+    companion object : LongEntityClass<User>(Users)
 
-internal interface User : BaseUser<User> {
-    companion object : Entity.Factory<User>()
+    override var password by Users.password
+    override var email by Users.email
+    open var name by Users.name
+    open var createdAt by Users.createdAt
+    open var updatedAt by Users.updatedAt
+
+    override fun id() = id.value
+}
+
+internal object VerifiableUsers : LongIdTable("users") {
+    val emailVerifiedAt = timestamp("email_verified_at").nullable()
 }
