@@ -13,7 +13,6 @@ import dev.alpas.routing.UrlGenerator
 import dev.alpas.validation.ErrorBag
 import dev.alpas.validation.Rule
 import dev.alpas.validation.ValidationGuard
-import me.liuwj.ktorm.database.Database
 import mu.KotlinLogging
 import org.eclipse.jetty.http.HttpStatus
 import uy.klutter.core.uri.buildUri
@@ -67,7 +66,7 @@ class HttpCall internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     fun <T : Authenticatable> callerId(): Long {
-        return caller<T>().id
+        return caller<T>().id()
     }
 
     fun close() {
