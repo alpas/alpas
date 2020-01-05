@@ -3,10 +3,16 @@ package dev.alpas.http
 import dev.alpas.Application
 import dev.alpas.Kernel
 import dev.alpas.Middleware
-import dev.alpas.auth.middleware.AuthOnlyMiddleware
+import dev.alpas.ServiceProvider
 import dev.alpas.cookie.EncryptCookies
+import dev.alpas.encryption.EncryptionServiceProvider
+import dev.alpas.hashing.HashServiceProvider
 import dev.alpas.http.middleware.SessionStart
 import dev.alpas.http.middleware.VerifyCsrfToken
+import dev.alpas.logging.LoggerServiceProvider
+import dev.alpas.routing.RouteServiceProvider
+import dev.alpas.session.SessionServiceProvider
+import dev.alpas.view.ViewServiceProvider
 import kotlin.reflect.KClass
 
 open class HttpKernel : AlpasServer(), Kernel {
@@ -44,6 +50,16 @@ open class HttpKernel : AlpasServer(), Kernel {
     override fun stop(app: Application) {
         app.logger.debug { "Stopping kernel $this" }
         super<AlpasServer>.stop(app)
+    }
+
+    override fun serviceProviders(app: Application): Iterable<KClass<out ServiceProvider>> {
+        return listOf(
+            LoggerServiceProvider::class,
+            RouteServiceProvider::class,
+            EncryptionServiceProvider::class,
+            HashServiceProvider::class,
+            SessionServiceProvider::class
+        )
     }
 }
 
