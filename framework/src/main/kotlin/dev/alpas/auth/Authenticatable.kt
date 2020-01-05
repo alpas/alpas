@@ -8,15 +8,8 @@ interface Authenticatable : Notifiable {
     val mustVerifyEmail
         get() = true
 
-    fun isEmailVerified(): Boolean {
-        return false
-    }
-
-    fun primaryKey(): String {
-        return "id"
-    }
-
     fun id(): Long
+    fun isEmailVerified() = false
 }
 
 interface UserProvider {

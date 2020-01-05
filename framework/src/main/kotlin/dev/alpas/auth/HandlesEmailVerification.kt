@@ -4,9 +4,9 @@ import dev.alpas.auth.notifications.VerifyEmail
 import dev.alpas.http.HttpCall
 import dev.alpas.make
 import dev.alpas.notifications.NotificationDispatcher
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.dsl.update
-import me.liuwj.ktorm.schema.InstantSqlType
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 
 interface HandlesEmailVerification {
     fun ifVerifiedRedirectTo(call: HttpCall) = "/home"
@@ -22,16 +22,18 @@ interface HandlesEmailVerification {
 
     @Suppress("unused")
     fun verify(call: HttpCall) {
-        // The user is authenticated by this time
-        val user = call.user
-        if (call.param("id") != user.properties[user.primaryKey()].toString()) {
-            throw AuthorizationException()
-        }
-        if (user.isEmailVerified()) {
-            call.redirect().to(ifVerifiedRedirectTo(call))
-        } else {
-            user.verifyEmail(call)
-            onVerificationSuccess(call)
+        transaction {
+            // The user is authenticated by this time
+            val user = call.user
+            if (call.paramAsLong("id") != user.id()) {
+                throw AuthorizationException()
+            }
+            if (user.isEmailVerified()) {
+                call.redirect().to(ifVerifiedRedirectTo(call))
+            } else {
+                user.verifyEmail(call)
+                onVerificationSuccess(call)
+            }
         }
     }
 
@@ -56,8 +58,9 @@ interface HandlesEmailVerification {
 }
 
 private fun Authenticatable.verifyEmail(call: HttpCall) {
-    UsersTable.update {
-        it.bind("email_verified_at", InstantSqlType) to call.nowInCurrentTimezone().toInstant()
-        where { it.id eq id }
+    val where = VerifiableUsers.id.eq(id())
+
+    VerifiableUsers.update({ where }) {
+        it[emailVerifiedAt] = call.nowInCurrentTimezone().toInstant()
     }
 }

@@ -20,7 +20,8 @@ class VerifyEmail(private val container: Container) : MailableNotification<Authe
     override fun toMail(notifiable: Authenticatable): MailMessage {
         val expiration = container.make<AuthConfig>().emailVerificationExpiration
         val verificationUrl =
-            container.make<UrlGenerator>().signedRoute("verification.verify", mapOf("id" to notifiable.id), expiration)
+            container.make<UrlGenerator>()
+                .signedRoute("verification.verify", mapOf("id" to notifiable.id()), expiration)
 
         return MailMessage().apply {
             to = notifiable.email.orAbort()
@@ -29,7 +30,7 @@ class VerifyEmail(private val container: Container) : MailableNotification<Authe
                 "auth.emails.verify",
                 mapOf(
                     "verificationUrl" to verificationUrl?.toExternalForm(),
-                    "username" to notifiable.properties["name"]
+                    "user" to notifiable
                 )
             )
         }
