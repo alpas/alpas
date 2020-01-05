@@ -19,6 +19,7 @@ dependencies {
     implementation "com.github.alpas:url-signer:0.1.7"
     implementation "com.github.cesarferreira:kotlin-pluralizer:0.2.9"
     implementation "com.github.freva:ascii-table:1.1.0"
+    implementation "com.zaxxer:HikariCP:3.4.1"
 
     compile "io.pebbletemplates:pebble:3.1.2"
     compile "com.github.ajalt:clikt:2.3.0"
@@ -29,4 +30,8 @@ dependencies {
     compile "me.liuwj.ktorm:ktorm-support-mysql:${ktormVersion}"
     compile "com.github.marlonlom:timeago:4.0.1"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
+    compile 'org.jetbrains.exposed:exposed-core:0.20.2'
+    compile 'org.jetbrains.exposed:exposed-dao:0.20.2'
+    compile 'org.jetbrains.exposed:exposed-jdbc:0.20.2'
+    compile 'org.jetbrains.exposed:exposed-java-time:0.20.2'
 }
