@@ -10,7 +10,7 @@ import dev.alpas.notifications.NotificationServiceProvider
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
-open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> Unit = {}) : Container by DefaultContainer(),
+open class Alpas(args: Array<String> = emptyArray(), entryClass: Class<*>, block: Alpas.() -> Unit = {}) : Container by DefaultContainer(),
     AppBase(args, entryClass) {
     constructor(args: Array<String> = emptyArray(), block: Alpas.() -> Unit = {}) : this(
         args,
