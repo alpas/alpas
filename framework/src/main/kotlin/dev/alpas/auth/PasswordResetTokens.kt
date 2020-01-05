@@ -1,11 +1,13 @@
 package dev.alpas.auth
 
-import dev.alpas.ozone.MigratingTable
-import me.liuwj.ktorm.schema.timestamp
-import me.liuwj.ktorm.schema.varchar
+import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.`java-time`.timestamp
+import java.time.Instant
 
-object PasswordResetTokens : MigratingTable<Nothing>("password_reset_tokens") {
-    val email by varchar("email").index()
-    val token by varchar("token")
-    val createdAt by timestamp("created_at").nullable()
+internal object PasswordResetTokens : Table("password_reset_tokens") {
+    val email = varchar("email", 255).index()
+    val token = varchar("token", 255)
+    val createdAt = timestamp("created_at").nullable()
 }
+
+internal data class PasswordResetToken(val token: String, val createdAt: Instant?)
