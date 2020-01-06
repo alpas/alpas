@@ -1,51 +1,46 @@
 package dev.alpas.queue.database
 
-import dev.alpas.ozone.MigratingTable
-import dev.alpas.ozone.bigIncrements
-import dev.alpas.ozone.longText
-import dev.alpas.ozone.tinyInt
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.long
-import me.liuwj.ktorm.schema.timestamp
-import me.liuwj.ktorm.schema.varchar
-import java.time.Instant
+import org.jetbrains.exposed.dao.LongEntity
+import org.jetbrains.exposed.dao.LongEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.`java-time`.CurrentTimestamp
+import org.jetbrains.exposed.sql.`java-time`.timestamp
 
-interface JobRecord : Entity<JobRecord> {
-    companion object : Entity.Factory<JobRecord>()
-
-    var id: Long
-    var queue: String
-    var payload: String
-    var tries: Int
-    var reservedAt: Long?
-    var availableAt: Long
-    var createdAt: Long
+object JobRecords : LongIdTable("jobs") {
+    val queue = varchar("queue", 255).index()
+    val payload = text("payload")
+    val tries = integer("tries")
+    val reservedAt = long("reserved_at").nullable()
+    val availableAt = long("available_at")
+    val createdAt = long("created_at")
 }
 
-interface FailedJobRecord : Entity<FailedJobRecord> {
-    var id: Long
-    var connection: String
-    var queue: String
-    var payload: String
-    var exception: String
-    val failedAt: Instant
+class JobRecord(id: EntityID<Long>) : LongEntity(id) {
+    companion object : LongEntityClass<JobRecord>(JobRecords)
+
+    var queue by JobRecords.queue
+    var payload by JobRecords.payload
+    var tries by JobRecords.tries
+    var reservedAt by JobRecords.reservedAt
+    var availableAt by JobRecords.availableAt
+    var createdAt by JobRecords.createdAt
 }
 
-object JobRecords : MigratingTable<JobRecord>("jobs") {
-    val id by bigIncrements("id").bindTo { it.id }
-    val queue by varchar("queue").index().bindTo { it.queue }
-    val payload by longText("payload").bindTo { it.payload }
-    val tries by tinyInt("tries").unsigned().bindTo { it.tries }
-    val reservedAt by long("reserved_at").nullable().unsigned().bindTo { it.reservedAt }
-    val availableAt by long("available_at").unsigned().bindTo { it.availableAt }
-    val createdAt by long("created_at").unsigned().bindTo { it.createdAt }
+object FailedJobRecords : LongIdTable("failed_jobs") {
+    val connection = varchar("connection", 255).index()
+    val queue = varchar("queue", 255).index()
+    val payload = text("payload")
+    val exception = text("exception")
+    val failedAt = timestamp("failed_at").defaultExpression(CurrentTimestamp())
 }
 
-object FailedJobRecords : MigratingTable<FailedJobRecord>("failed_jobs") {
-    val id by bigIncrements("id").bindTo { it.id }
-    val connection by varchar("connection").index().bindTo { it.connection }
-    val queue by varchar("queue").index().bindTo { it.queue }
-    val payload by longText("payload").bindTo { it.payload }
-    val exception by longText("exception").bindTo { it.exception }
-    val failedAt by timestamp("failed_at").useCurrent().bindTo { it.failedAt }
+class FailedJobRecord(id: EntityID<Long>) : LongEntity(id) {
+    companion object : LongEntityClass<FailedJobRecord>(FailedJobRecords)
+
+    var connection by FailedJobRecords.connection
+    var queue by FailedJobRecords.queue
+    var payload by FailedJobRecords.payload
+    var exception by FailedJobRecords.exception
+    var failedAt by FailedJobRecords.failedAt
 }
