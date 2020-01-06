@@ -17,9 +17,7 @@ class DatabaseCreateCommand(db: Database) : Command(name = "db:create", help = "
     override fun run() {
         names.forEach {
             warning("Creating database")
-            if (adapter.createDatabase(it)) {
-                success("Created database: $it")
-            }
+            success("Created database: $it")
         }
     }
 }

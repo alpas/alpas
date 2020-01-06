@@ -46,8 +46,8 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean, val db: 
     }
 
     protected fun Transaction.execute(sql: String): Boolean {
-        val preparedStatement = connection.prepareStatement(sql, false)
-        return preparedStatement.executeQuery().first()
+        val preparedStatement = connection.prepareStatement(sql, false) as JdbcPreparedStatementImpl
+        return preparedStatement.statement.execute()
     }
 }
 
