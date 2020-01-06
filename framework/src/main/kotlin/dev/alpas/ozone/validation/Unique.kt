@@ -4,7 +4,7 @@ import dev.alpas.http.HttpCall
 import dev.alpas.validation.ErrorMessage
 import dev.alpas.validation.Rule
 import dev.alpas.validation.ValidationGuard
-import me.liuwj.ktorm.database.useConnection
+import org.jetbrains.exposed.sql.transactions.transaction
 
 class Unique(
     private val table: String,
@@ -14,7 +14,7 @@ class Unique(
 ) : Rule() {
     override fun check(attribute: String, call: HttpCall): Boolean {
         val value = call.param(attribute)
-        val exists = useConnection {
+        val exists = transaction {
             val columnToCheck = column ?: attribute
             var query = "SELECT COUNT(1) FROM `$table` WHERE `$columnToCheck` = ?"
             val ignoreProps = ignore?.split(":") ?: emptyList()
@@ -22,10 +22,10 @@ class Unique(
             if (shouldIgnoreField) {
                 query = "$query AND `${ignoreProps[0].trim()}` != ?"
             }
-            val statement = it.prepareStatement(query)
-            statement.setObject(1, value)
+            val statement = connection.prepareStatement(query, false)
+            statement[1] = value
             if (shouldIgnoreField) {
-                statement.setObject(2, ignoreProps[1].trim())
+                statement[2] = ignoreProps[1].trim()
             }
             statement.executeQuery().let { result ->
                 result.next()

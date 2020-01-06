@@ -4,28 +4,21 @@ import dev.alpas.ozone.isMySql
 import dev.alpas.ozone.isSqlite
 import dev.alpas.printAsError
 import dev.alpas.printAsInfo
-import me.liuwj.ktorm.database.Database
-import me.liuwj.ktorm.database.useConnection
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.statements.jdbc.JdbcPreparedStatementImpl
+import org.jetbrains.exposed.sql.transactions.transaction
 
-abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
+abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean, val db: Database) {
     protected val shouldTalk = !(quiet || isDryRun)
-
-    fun createTable(tableName: String, ifNotExists: Boolean = false, block: TableBuilder.() -> Any) {
-        createTable(TableBuilder(tableName).apply {
-            block()
-            normalize()
-        }, ifNotExists)
-    }
 
     protected open fun execute(sql: String): Boolean {
         return if (isDryRun) {
             sql.printAsInfo()
             true
         } else {
-            useConnection {
-                it.prepareStatement(sql).use { statement ->
-                    statement.execute()
-                }
+            transaction {
+                this.execute(sql)
             }
         }
     }
@@ -38,20 +31,23 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
     }
 
     open fun createDatabase(name: String): Boolean {
-        "Creating database is not supported for connection: `${Database.global.productName}`.".printAsError()
+        "Creating database is not supported.".printAsError()
         return false
     }
 
-    abstract fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean = false)
-
     companion object {
-        fun make(isDryRun: Boolean, quiet: Boolean): DbAdapter {
-            val db = Database.global
+        fun make(isDryRun: Boolean, quiet: Boolean, db: Database): DbAdapter {
             return when {
-                db.isMySql() -> MySqlAdapter(isDryRun, quiet)
-                db.isSqlite() -> SqliteAdapter(isDryRun, quiet)
-                else -> throw Exception("Database adapter not supported: '${db.productName}'.")
+                db.isMySql() -> MySqlAdapter(isDryRun, quiet, db)
+                db.isSqlite() -> SqliteAdapter(isDryRun, quiet, db)
+                else -> throw Exception("Database adapter not supported: '${db.vendor}'.")
             }
         }
     }
+
+    protected fun Transaction.execute(sql: String): Boolean {
+        val preparedStatement = connection.prepareStatement(sql, false) as JdbcPreparedStatementImpl
+        return preparedStatement.statement.execute()
+    }
 }
+

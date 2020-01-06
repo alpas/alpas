@@ -1,36 +1,19 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.ozone.MigratingTable
-import dev.alpas.ozone.increments
-import me.liuwj.ktorm.dsl.delete
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.dsl.max
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.entity.add
-import me.liuwj.ktorm.entity.aggregateColumns
-import me.liuwj.ktorm.entity.asSequenceWithoutReferences
-import me.liuwj.ktorm.entity.findAll
-import me.liuwj.ktorm.entity.findList
-import me.liuwj.ktorm.schema.int
-import me.liuwj.ktorm.schema.varchar
+import org.jetbrains.exposed.dao.IntEntity
+import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 
-private const val MIGRATION_TABLE = "migrations"
-private const val ID_COLUMN = "id"
-private const val NAME_COLUMN = "name"
-private const val BATCH_COLUMN = "batch"
-
-internal class MigrationRepo(private val dbAdapter: DbAdapter) {
+internal class MigrationRepo() {
     init {
-        setupMigrationsTable()
+        CreateMigrationMigrations().up()
     }
 
-    private val migrations by lazy { Migrations.findAll() }
-
-    private fun setupMigrationsTable() {
-        CreateMigrationMigrations().also {
-            it.adapter = dbAdapter
-        }.up()
-    }
+    private val migrations by lazy { MigrationRecord.all() }
 
     private val nextBatch by lazy { (migrations.lastOrNull()?.batch ?: 0) + 1 }
 
@@ -39,47 +22,46 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
     }
 
     fun saveMigration(migration: String) {
-        Migration {
-            name = migration
-            batch = nextBatch
-        }.also {
-            Migrations.add(it)
+        MigrationRecords.insert {
+            it[name] = migration
+            it[batch] = nextBatch
         }
     }
 
-    fun latestMigrationBatch(): Pair<List<Migration>, Int?> {
+    fun latestMigrationBatch(): Pair<List<MigrationRecord>, Int?> {
         // get the max batch number
-        val batch = Migrations.asSequenceWithoutReferences().aggregateColumns { max(
-            Migrations.batch
-        ) }
+        val query = MigrationRecords
+            .slice(MigrationRecords.batch)
+            .selectAll()
+            .maxBy { it[MigrationRecords.batch] } ?: return Pair(emptyList(), null)
+
+        val batch = query[MigrationRecords.batch]
+
         // find all the migrations from the above batch number
-        val migrations = batch?.let { latestVersion ->
-            Migrations.findList { Migrations.batch eq latestVersion }
-        } ?: listOf()
+        val migrations = MigrationRecord.find { MigrationRecords.batch eq batch }.toList()
+
         return Pair(migrations, batch)
     }
 
     fun removeBatch(batch: Int) {
-        Migrations.delete { Migrations.batch eq batch }
-    }
-
-    internal interface Migration : Entity<Migration> {
-        val id: Int
-        var name: String
-        var batch: Int
-
-        companion object : Entity.Factory<Migration>()
-    }
-
-    internal object Migrations : MigratingTable<Migration>(MIGRATION_TABLE) {
-        val id by increments(ID_COLUMN).bindTo { it.id }
-        val migration by varchar(NAME_COLUMN).bindTo { it.name }
-        val batch by int(BATCH_COLUMN).bindTo { it.batch }
+        MigrationRecords.deleteWhere { MigrationRecords.batch eq batch }
     }
 }
 
 internal class CreateMigrationMigrations : Migration() {
     override fun up() {
-        createTable(MigrationRepo.Migrations, true)
+        createTable(MigrationRecords)
     }
+}
+
+class MigrationRecord(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<MigrationRecord>(MigrationRecords)
+
+    var name by MigrationRecords.name
+    var batch by MigrationRecords.batch
+}
+
+internal object MigrationRecords : IntIdTable("migrations") {
+    val name = varchar("name", 255)
+    val batch = integer("batch")
 }

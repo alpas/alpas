@@ -11,9 +11,7 @@ internal class MigrationRunner(
     private val packageClassLoader: PackageClassLoader,
     quiet: Boolean
 ) {
-
-    private val adapter by lazy { DbAdapter.make(isDryRun, quiet) }
-    private val migrationRepo by lazy { MigrationRepo(adapter) }
+    private val migrationRepo by lazy { MigrationRepo() }
     private val migrationFiles by lazy {
         (migrationDirectory.listFiles() ?: emptyArray()).map { it.nameWithoutExtension }
     }
@@ -69,7 +67,6 @@ internal class MigrationRunner(
             if (!migrationRepo.isMigrated(filename)) {
                 (it.loadClass().kotlin.createInstance() as Migration).also { migration ->
                     migration.filename = filename
-                    migration.adapter = adapter
                     migrations.add(migration)
                 }
             }
@@ -95,7 +92,6 @@ internal class MigrationRunner(
             if (filename != null) {
                 (classinfo.loadClass().kotlin.createInstance() as Migration).also { migration ->
                     migration.filename = filename
-                    migration.adapter = adapter
                     migrations.add(migration)
                     latestBatchMigrationNames.remove(filename)
                 }
