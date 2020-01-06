@@ -180,6 +180,6 @@ class HttpCall internal constructor(
     internal fun sessionIsValid() = env.supportsSession && !servletResponse.isCommitted && session.isValid()
 
     operator fun <T> invoke(block: HttpCall.() -> T): T {
-        this.block()
+        return this.block()
     }
 }
