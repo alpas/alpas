@@ -6,8 +6,8 @@ import dev.alpas.make
 import dev.alpas.routing.Controller
 import dev.alpas.routing.Router
 
-fun main() {
-    Alpas(entryClass = PageController::class.java) {
+fun main(args: Array<String>) {
+    Alpas(args) {
         make<Router>() {
             get("/", PageController::class)
         }
