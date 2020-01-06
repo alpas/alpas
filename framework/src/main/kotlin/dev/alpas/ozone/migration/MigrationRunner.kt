@@ -2,6 +2,7 @@ package dev.alpas.ozone.migration
 
 import dev.alpas.*
 import dev.alpas.extensions.toPascalCase
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import kotlin.reflect.full.createInstance
 
@@ -19,42 +20,46 @@ internal class MigrationRunner(
     private val shouldTalk = !(quiet || isDryRun)
 
     fun migrate() {
-        val migrations = migrationsToRun()
-        if (shouldTalk && migrations.isEmpty()) {
-            "Everything is already migrated!".printAsInfo()
-            return
-        }
-        migrations.forEach {
-            if (shouldTalk) {
-                "Migrating: ${it.filename}".printAsWarning()
+        transaction {
+            val migrations = migrationsToRun()
+            if (shouldTalk && migrations.isEmpty()) {
+                "Everything is already migrated!".printAsInfo()
+                return@transaction
             }
-            it.up()
-            if (!isDryRun) {
-                migrationRepo.saveMigration(it.filename)
+            migrations.forEach {
                 if (shouldTalk) {
-                    "Migrated: ${it.filename}".printAsSuccess()
+                    "Migrating: ${it.filename}".printAsWarning()
+                }
+                it.up()
+                if (!isDryRun) {
+                    migrationRepo.saveMigration(it.filename)
+                    if (shouldTalk) {
+                        "Migrated: ${it.filename}".printAsSuccess()
+                    }
                 }
             }
         }
     }
 
     fun rollback() {
-        val (migrations, batch) = migrationsToRollback()
-        if (shouldTalk && migrations.isEmpty()) {
-            "Nothing to rollback!".printAsInfo()
-            return
-        }
-        migrations.forEach {
-            if (shouldTalk) {
-                "Rolling back: ${it.filename}".printAsWarning()
+        transaction {
+            val (migrations, batch) = migrationsToRollback()
+            if (shouldTalk && migrations.isEmpty()) {
+                "Nothing to rollback!".printAsInfo()
+                return@transaction
             }
-            it.down()
-            if (shouldTalk) {
-                "Rolled back: ${it.filename}".printAsSuccess()
+            migrations.forEach {
+                if (shouldTalk) {
+                    "Rolling back: ${it.filename}".printAsWarning()
+                }
+                it.down()
+                if (shouldTalk) {
+                    "Rolled back: ${it.filename}".printAsSuccess()
+                }
             }
-        }
-        if (!isDryRun && batch >= 1) {
-            migrationRepo.removeBatch(batch)
+            if (!isDryRun && batch >= 1) {
+                migrationRepo.removeBatch(batch)
+            }
         }
     }
 
