@@ -3,12 +3,11 @@ package dev.alpas
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import me.liuwj.ktorm.jackson.KtormModule
 
 class JsonSerializer {
     companion object {
         val mapper by lazy {
-            ObjectMapper().registerKotlinModule().registerKtormModule()
+            ObjectMapper().registerKotlinModule()
         }
 
         fun serialize(input: Any?, dti: ObjectMapper.DefaultTyping? = null): String {
@@ -28,5 +27,3 @@ class JsonSerializer {
         }
     }
 }
-
-fun ObjectMapper.registerKtormModule(): ObjectMapper = this.registerModule(KtormModule())
