@@ -13,7 +13,6 @@ import dev.alpas.routing.UrlGenerator
 import dev.alpas.validation.ErrorBag
 import dev.alpas.validation.Rule
 import dev.alpas.validation.ValidationGuard
-import me.liuwj.ktorm.database.Database
 import mu.KotlinLogging
 import org.eclipse.jetty.http.HttpStatus
 import uy.klutter.core.uri.buildUri
@@ -180,7 +179,7 @@ class HttpCall internal constructor(
 
     internal fun sessionIsValid() = env.supportsSession && !servletResponse.isCommitted && session.isValid()
 
-    operator fun invoke(block: HttpCall.() -> Unit) {
+    operator fun <T> invoke(block: HttpCall.() -> T): T {
         this.block()
     }
 }
