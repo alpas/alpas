@@ -14,6 +14,10 @@ abstract class Migration {
         SchemaUtils.drop(table, *tables, inBatch = inBatch)
     }
 
+    fun modify(table: Table, vararg tables: Table, inBatch: Boolean = false) {
+        SchemaUtils.createMissingTablesAndColumns(table, *tables, inBatch = inBatch)
+    }
+
     open fun up() {}
     open fun down() {}
 }

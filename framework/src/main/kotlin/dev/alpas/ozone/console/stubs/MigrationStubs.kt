@@ -28,10 +28,9 @@ internal class MigrationStubs {
 
                 class StubClazzName : Migration() {
                     override fun up() {
-                        addVarcharColumn("StubTableName", "column_name")
+                        modify(StubTableName)
                     }
                     override fun down() {
-                        removeColumn("StubTableName", "column_name")
                     }
                 }
             """.trimIndent()
