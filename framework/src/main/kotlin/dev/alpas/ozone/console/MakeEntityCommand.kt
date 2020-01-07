@@ -35,7 +35,7 @@ class MakeEntityCommand(srcPackage: String) :
     }
 
     private fun entityStub(): String {
-        return EntityStubs.stub(tableName != null)
+        return EntityStubs.stub(true)
     }
 
     override fun onCompleted(outputFile: OutputFile) {

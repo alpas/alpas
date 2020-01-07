@@ -28,7 +28,7 @@ internal class EntityStubs {
                     val createdAt by StubTableClazzName.createdAt
                     val updatedAt by StubTableClazzName.updatedAt
                 }
-            """
+            """.trimIndent()
         }
 
         private fun tableStub(): String {
@@ -37,7 +37,7 @@ internal class EntityStubs {
                     val createdAt = timestamp("created_at")
                     val updatedAt = timestamp("updated_at")
                 }
-            """
+            """.trimIndent()
         }
     }
 }
