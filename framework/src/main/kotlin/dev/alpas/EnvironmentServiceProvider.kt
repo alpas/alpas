@@ -15,7 +15,7 @@ internal class EnvironmentServiceProvider : ServiceProvider {
         val rootDir = envPath.parentDir.toURI().path
 
         System.setProperty(ROOT_DIR_KEY, rootDir)
-        System.setProperty(SRC_DIR_KEY, Paths.get(rootDir, "src", "main", "kotlin").toString())
+        System.setProperty(SRC_DIR_KEY, Paths.get(rootDir, "src", "main", "kotlin").toUri().path)
 
         app.bufferDebugLog("${envPath.envFile} found at: ${envPath.parentDir.path}")
         app.bufferDebugLog("Root is at: $rootDir")
