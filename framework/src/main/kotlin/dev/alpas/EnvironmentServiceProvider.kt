@@ -12,12 +12,13 @@ internal class EnvironmentServiceProvider : ServiceProvider {
 
     override fun register(app: Application) {
         val envPath = envPath(app)
-        val rootDir = envPath.parentDir.absolutePath
+        val rootDir = envPath.parentDir.toURI().path
 
         System.setProperty(ROOT_DIR_KEY, rootDir)
         System.setProperty(SRC_DIR_KEY, Paths.get(rootDir, "src", "main", "kotlin").toString())
 
-        app.bufferDebugLog("Root environment is set to: $rootDir")
+        app.bufferDebugLog("${envPath.envFile} found at: ${envPath.parentDir.path}")
+        app.bufferDebugLog("Root is at: $rootDir")
         val dotenv = dotenv {
             filename = envPath.envFile
             directory = rootDir
