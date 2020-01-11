@@ -1,67 +1,18 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.ozone.ColumnInfo
-import dev.alpas.ozone.ColumnMetadata
-import me.liuwj.ktorm.database.TransactionIsolation
-import me.liuwj.ktorm.database.useTransaction
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.transaction
+import java.sql.Connection
 
-internal class SqliteAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDryRun, quiet) {
-    override fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean) {
-        val notExists = if (ifNotExists) " IF NOT EXISTS " else " "
-        val sb = StringBuilder("CREATE TABLE$notExists${tableBuilder.tableName}")
-        sb.appendln(" (")
-        val colDef = tableBuilder.columns.joinToString(",\n") {
-            columnDefinition(it)
-        }
-        sb.appendln(colDef)
-        sb.append(");")
-        execute(sb.toString())
-    }
+internal class SqliteAdapter(isDryRun: Boolean, quiet: Boolean, db: Database) : DbAdapter(isDryRun, quiet, db) {
 
     override fun execute(sql: String): Boolean {
         return if (isDryRun) {
             super.execute(sql)
         } else {
-            useTransaction(TransactionIsolation.SERIALIZABLE) {
-                it.connection.prepareStatement(sql).use { statement ->
-                    statement.execute()
-                }
+            transaction(Connection.TRANSACTION_SERIALIZABLE, 2) {
+                execute(sql)
             }
         }
-    }
-
-    private fun columnDefinition(colInfo: ColumnInfo): String {
-        return "`${colInfo.col.name}` ${toColTypeName(colInfo)}${colInfo.meta.def()}"
-    }
-
-    private fun toColTypeName(colInfo: ColumnInfo): String {
-        // sqlite only allows integer for autoincrement field
-        if (colInfo.col.sqlType.typeCode == java.sql.Types.INTEGER || colInfo.meta?.autoIncrement == true) {
-            return "integer"
-        }
-        return colInfo.col.sqlType.typeName.toLowerCase()
-    }
-
-    private fun ColumnMetadata?.def(): String {
-        if (this == null) {
-            return ""
-        }
-        val sb = StringBuilder()
-        size?.let {
-            sb.append("($it)")
-        }
-        if (autoIncrement) {
-            sb.append(" PRIMARY KEY AUTOINCREMENT")
-        }
-        if (nullable) {
-            sb.append(" NULL DEFAULT NULL")
-        } else {
-            sb.append(" NOT NULL")
-            defaultValue?.let { dval ->
-                sb.append(" DEFAULT $dval")
-            }
-        }
-
-        return sb.toString()
     }
 }

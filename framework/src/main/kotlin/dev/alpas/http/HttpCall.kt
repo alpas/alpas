@@ -66,7 +66,7 @@ class HttpCall internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     fun <T : Authenticatable> callerId(): Long {
-        return caller<T>().id
+        return caller<T>().id()
     }
 
     fun close() {

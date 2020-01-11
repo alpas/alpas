@@ -1,40 +1,22 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.ozone.MigratingTable
-import me.liuwj.ktorm.entity.Entity
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.Table
 
-// todo: support adding composite keys
-// todo: support collation
-// todo: support adapters other than MySQL
-// todo: support altering table
-
+@Suppress("unused")
 abstract class Migration {
-    // internal var isDryRun = false
     internal lateinit var filename: String
-    internal lateinit var adapter: DbAdapter
 
-    fun <E : Entity<E>> createTable(
-        table: MigratingTable<E>,
-        ifNotExists: Boolean = false,
-        block: (TableBuilder.() -> Unit)? = null
-    ) {
-        val cols = table.columns
-        adapter.createTable(table.tableName, ifNotExists) {
-            cols.forEach {
-                addColumn(it, table)
-            }
-
-            table.primaryKey?.name?.let {
-                primaryKey(it)
-            }
-            if (block != null) {
-                block()
-            }
-        }
+    fun <T : Table> createTable(table: T, vararg tables: T, inBatch: Boolean = false) {
+        SchemaUtils.create(table, *tables, inBatch = inBatch)
     }
 
-    fun <E : Entity<E>> dropTable(table: MigratingTable<E>) {
-        adapter.dropTable(table.tableName)
+    fun dropTable(table: Table, vararg tables: Table, inBatch: Boolean = false) {
+        SchemaUtils.drop(table, *tables, inBatch = inBatch)
+    }
+
+    fun modifyTable(table: Table, vararg tables: Table, inBatch: Boolean = false) {
+        SchemaUtils.createMissingTablesAndColumns(table, *tables, inBatch = inBatch)
     }
 
     open fun up() {}

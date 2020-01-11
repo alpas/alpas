@@ -49,3 +49,4 @@ out/
 build/
 .gradle/
 QuickTest.kt
+runner/storage/sessions

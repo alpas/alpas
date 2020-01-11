@@ -501,7 +501,7 @@ internal class Stubs {
                                                                     <h1 class="text-center m-0 mt-md"
                                                                         style="font-size: 28px; color: #555; font-weight: 500; line-height: 130%; margin: 26px 0 0;"
                                                                         align="center">
-                                                                        Thank you for registering, {{ username }}! </h1>
+                                                                        Thank you for registering, {{ user.name }}! </h1>
                                                                 </td>
                                                             </tr>
                                                             <tr>

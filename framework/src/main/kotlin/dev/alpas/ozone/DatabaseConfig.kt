@@ -2,7 +2,7 @@ package dev.alpas.ozone
 
 import dev.alpas.Config
 import dev.alpas.Environment
-import me.liuwj.ktorm.database.Database
+import org.jetbrains.exposed.sql.Database
 
 open class DatabaseConfig(env: Environment) : Config {
     private val connections = mutableMapOf<String, Lazy<DatabaseConnection>>()

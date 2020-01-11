@@ -1,5 +1,6 @@
 include "framework"
 include "pulsar"
+include "runner"
 
 enableFeaturePreview("STABLE_PUBLISHING")
 

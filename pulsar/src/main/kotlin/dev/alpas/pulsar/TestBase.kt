@@ -160,7 +160,7 @@ abstract class TestBase(entryClass: Class<*>) {
     protected fun assertAuthenticated(user: Authenticatable? = null) {
         assertTrue(call().isAuthenticated)
         if (user != null) {
-            assertEquals(user.id, call().user.id)
+            assertEquals(user.id(), call().user.id())
         }
     }
 

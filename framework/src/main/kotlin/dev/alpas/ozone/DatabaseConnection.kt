@@ -1,6 +1,6 @@
 package dev.alpas.ozone
 
-import me.liuwj.ktorm.database.Database
+import org.jetbrains.exposed.sql.Database
 
 interface DatabaseConnection {
     fun connect(): Database
