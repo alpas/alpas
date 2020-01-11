@@ -3,6 +3,7 @@ package dev.alpas.ozone.migration
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 
+@Suppress("unused")
 abstract class Migration {
     internal lateinit var filename: String
 
@@ -14,7 +15,7 @@ abstract class Migration {
         SchemaUtils.drop(table, *tables, inBatch = inBatch)
     }
 
-    fun modify(table: Table, vararg tables: Table, inBatch: Boolean = false) {
+    fun modifyTable(table: Table, vararg tables: Table, inBatch: Boolean = false) {
         SchemaUtils.createMissingTablesAndColumns(table, *tables, inBatch = inBatch)
     }
 
