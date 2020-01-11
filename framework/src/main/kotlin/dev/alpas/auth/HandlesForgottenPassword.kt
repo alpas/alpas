@@ -5,17 +5,17 @@ import dev.alpas.exceptions.ValidationException
 import dev.alpas.hashing.Hasher
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
-import dev.alpas.ozone.orAbort
 import dev.alpas.make
 import dev.alpas.notifications.NotificationDispatcher
+import dev.alpas.orAbort
 import dev.alpas.secureRandomString
 import dev.alpas.validation.Email
 import dev.alpas.validation.ErrorBag
 import dev.alpas.validation.Required
 import dev.alpas.validation.Rule
-import me.liuwj.ktorm.dsl.delete
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.dsl.insert
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.transactions.transaction
 
 interface HandlesForgottenPassword {
     fun afterResetLinkSentRedirectTo(call: HttpCall): String? = null
@@ -27,16 +27,18 @@ interface HandlesForgottenPassword {
 
     @Suppress("unused")
     fun sendResetLinkEmail(call: HttpCall) {
-        validate(call)
-        val email = call.param("email").orAbort()
-        val user = call.make<UserProvider>().findByUsername(email)
-        if (user == null) {
-            throwValidationError(RequestError("email", email, message = "User with that email doesn't exist"))
-            call.redirect().back()
-        } else {
-            val token = createToken(call, user)
-            sendPasswordResetNotification(token, call, user)
-            onResetLinkSentSuccess(call)
+        transaction {
+            validate(call)
+            val email = call.param("email").orAbort()
+            val user = call.make<UserProvider>().findByUsername(email)
+            if (user == null) {
+                throwValidationError(RequestError("email", email, message = "User with that email doesn't exist"))
+                call.redirect().back()
+            } else {
+                val token = createToken(call, user)
+                sendPasswordResetNotification(token, call, user)
+                onResetLinkSentSuccess(call)
+            }
         }
     }
 
@@ -53,16 +55,18 @@ interface HandlesForgottenPassword {
 
     private fun createToken(call: HttpCall, user: Authenticatable): String {
         val email = user.email.orAbort()
-        // delete existing password forgot tokens for this user, if any
-        PasswordResetTokens.delete { it.email eq email }
-        val hasher = call.make<Hasher>()
+        // Delete existing forgot-password tokens for this user, if any
+        PasswordResetTokens.deleteWhere { PasswordResetTokens.email eq email }
+
         val rawToken = secureRandomString(40)
-        val token = hasher.hash(rawToken)
+        val token = call.make<Hasher>().hash(rawToken)
+
         PasswordResetTokens.insert {
-            it.email to email
-            it.token to token
-            it.createdAt to call.nowInCurrentTimezone().toInstant()
+            it[PasswordResetTokens.email] = email
+            it[PasswordResetTokens.token] = token
+            it[createdAt] = call.nowInCurrentTimezone().toInstant()
         }
+
         return rawToken
     }
 

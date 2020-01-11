@@ -1,14 +1,17 @@
 package dev.alpas.auth
 
-import dev.alpas.config
 import dev.alpas.exceptions.ValidationException
 import dev.alpas.hashing.Hasher
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
 import dev.alpas.make
-import dev.alpas.ozone.orAbort
+import dev.alpas.orAbort
 import dev.alpas.validation.*
-import me.liuwj.ktorm.dsl.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 
 interface HandlesPasswordReset {
     fun afterResetRedirectTo(call: HttpCall) = "/"
@@ -20,17 +23,19 @@ interface HandlesPasswordReset {
 
     @Suppress("unused")
     fun reset(call: HttpCall) {
-        validate(call)
-        val user = call.make<UserProvider>().findByUsername(call.param("email").orAbort())
-            ?: onResetFail(call, RequestError("email", message = "User doesn't exist"))
-        val tokenIsValid = verifyToken(call, user)
-        if (!tokenIsValid) {
-            onResetFail(call, RequestError("token", message = "Invalid token"))
-        }
+        transaction {
+            validate(call)
+            val user = call.make<UserProvider>().findByUsername(call.param("email").orAbort())
+                ?: onResetFail(call, RequestError("email", message = "User doesn't exist"))
+            val tokenIsValid = verifyToken(call, user)
+            if (!tokenIsValid) {
+                onResetFail(call, RequestError("token", message = "Invalid token"))
+            }
 
-        PasswordResetTokens.delete { it.email eq user.email.orAbort() }
-        resetPassword(call, user)
-        onResetSuccess(call)
+            PasswordResetTokens.deleteWhere { PasswordResetTokens.email eq user.email.orAbort() }
+            resetPassword(call, user)
+            onResetSuccess(call)
+        }
     }
 
     fun resetPassword(call: HttpCall, user: Authenticatable) {
@@ -48,21 +53,20 @@ interface HandlesPasswordReset {
 
     private fun verifyToken(call: HttpCall, user: Authenticatable): Boolean {
         val email = user.email.orAbort()
-        val resetTokenQuery = PasswordResetTokens.select(
-            PasswordResetTokens.email,
-            PasswordResetTokens.token,
-            PasswordResetTokens.createdAt
-        ).where { PasswordResetTokens.email eq email }.firstOrNull() ?: return false
 
-        val createdAt = resetTokenQuery[PasswordResetTokens.createdAt]
-        val resetToken = resetTokenQuery[PasswordResetTokens.token]
+        val resetToken = PasswordResetTokens.select {
+            PasswordResetTokens.email eq email
+        }.map {
+            // since we don't have a primary key id for this table, we'll spin our own "entity" class
+            PasswordResetToken(it[PasswordResetTokens.token], it[PasswordResetTokens.createdAt])
+        }.firstOrNull() ?: return false
 
-        val tokenExpirationMinutes = call.config<AuthConfig>().passwordResetTokenExpiration.toMinutes()
-        val hasExpired = createdAt
+        val tokenExpirationMinutes = call.make<AuthConfig>().passwordResetTokenExpiration.toMinutes()
+        val hasExpired = resetToken.createdAt
             ?.plusSeconds(tokenExpirationMinutes * 60)
             ?.isBefore(call.nowInCurrentTimezone().toInstant())
             ?: true
-        return !hasExpired && call.make<Hasher>().verify(call.paramAsString("token"), resetToken)
+        return !hasExpired && call.make<Hasher>().verify(call.paramAsString("token"), resetToken.token)
     }
 
     fun throwValidationError(requestError: RequestError): Nothing {
@@ -83,9 +87,8 @@ interface HandlesPasswordReset {
 }
 
 private fun Authenticatable.updatePassword(newPassword: String) {
-    val id = this.id
-    UsersTable.update {
-        it.password to newPassword
-        where { it.id eq id }
+    val where = Users.id.eq(id())
+    Users.update({ where }) {
+        it[password] = newPassword
     }
 }

@@ -8,7 +8,7 @@ import dev.alpas.make
 import dev.alpas.notifications.MailableNotification
 import dev.alpas.notifications.channels.MailChannel
 import dev.alpas.notifications.channels.NotificationChannel
-import dev.alpas.ozone.orAbort
+import dev.alpas.orAbort
 import dev.alpas.routing.UrlGenerator
 import kotlin.reflect.KClass
 
@@ -20,7 +20,8 @@ class VerifyEmail(private val container: Container) : MailableNotification<Authe
     override fun toMail(notifiable: Authenticatable): MailMessage {
         val expiration = container.make<AuthConfig>().emailVerificationExpiration
         val verificationUrl =
-            container.make<UrlGenerator>().signedRoute("verification.verify", mapOf("id" to notifiable.id), expiration)
+            container.make<UrlGenerator>()
+                .signedRoute("verification.verify", mapOf("id" to notifiable.id()), expiration)
 
         return MailMessage().apply {
             to = notifiable.email.orAbort()
@@ -29,7 +30,7 @@ class VerifyEmail(private val container: Container) : MailableNotification<Authe
                 "auth.emails.verify",
                 mapOf(
                     "verificationUrl" to verificationUrl?.toExternalForm(),
-                    "username" to notifiable.properties["name"]
+                    "user" to notifiable
                 )
             )
         }

@@ -34,7 +34,7 @@ abstract class Command(
         System.getenv(SRC_DIR_KEY) ?: System.getProperty(SRC_DIR_KEY)
         ?: throw Exception("Source directory must be defined when running from console.")
     }
-    protected val resourcesDir by lazy { File(Paths.get(File(srcDir).parentFile.absolutePath, "resources").toUri()) }
+    protected val resourcesDir by lazy { File(Paths.get(File(srcDir).parentFile.toURI().path, "resources").toUri()) }
     protected val templatesDir by lazy { File(resourcesDir, "templates") }
     protected val quiet by option("--quiet", "-q", help = "Don't print any non-error messages.").flag()
 

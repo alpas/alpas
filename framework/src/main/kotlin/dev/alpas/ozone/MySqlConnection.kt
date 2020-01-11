@@ -1,7 +1,8 @@
 package dev.alpas.ozone
 
+import com.zaxxer.hikari.HikariDataSource
 import dev.alpas.Environment
-import me.liuwj.ktorm.database.Database
+import org.jetbrains.exposed.sql.Database
 
 @Suppress("unused")
 open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) : DatabaseConnection {
@@ -11,12 +12,15 @@ open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) :
     open val username = config?.username ?: env("DB_USERNAME", "")
     open val password = config?.password ?: env("DB_PASSWORD", "")
     open val useSSL = config?.useSSL ?: env("DB_USE_SSL", false)
-    open val dialect = config?.sqlDialect
+    open val useNestedTransactions = config?.useNestedTransactions ?: false
 
     private val db: Database by lazy {
-        val url = "jdbc:mysql://$host:$port/$database?useSSL=${useSSL}"
-        val driver = "com.mysql.jdbc.Driver"
-        Database.connect(url, driver, username, password, dialect = dialect)
+        val ds = HikariDataSource().also {
+            it.jdbcUrl = "jdbc:mysql://$host:$port/$database?useSSL=${useSSL}"
+            it.username = username
+            it.password = password
+        }
+        Database.connect(ds).also { it.useNestedTransactions = useNestedTransactions }
     }
 
     override fun connect(): Database = db

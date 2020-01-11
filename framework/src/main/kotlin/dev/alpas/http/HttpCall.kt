@@ -8,7 +8,6 @@ import dev.alpas.auth.UserProvider
 import dev.alpas.exceptions.ExceptionHandler
 import dev.alpas.exceptions.HttpException
 import dev.alpas.exceptions.ValidationException
-import dev.alpas.ozone.orAbort
 import dev.alpas.routing.RouteResult
 import dev.alpas.routing.UrlGenerator
 import dev.alpas.validation.ErrorBag
@@ -67,7 +66,7 @@ class HttpCall internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     fun <T : Authenticatable> callerId(): Long {
-        return caller<T>().id
+        return caller<T>().id()
     }
 
     fun close() {
@@ -179,4 +178,8 @@ class HttpCall internal constructor(
     }
 
     internal fun sessionIsValid() = env.supportsSession && !servletResponse.isCommitted && session.isValid()
+
+    operator fun <T> invoke(block: HttpCall.() -> T): T {
+        return this.block()
+    }
 }

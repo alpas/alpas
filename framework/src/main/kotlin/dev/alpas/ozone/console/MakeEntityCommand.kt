@@ -18,7 +18,6 @@ class MakeEntityCommand(srcPackage: String) :
     ) {
 
     private val tableName by option("--table", help = "Name of the table. e.g. --table=users")
-    private val simple by option("--simple", help = "Create a simple data based entity.").flag()
     private val migration by option("--migration", "-m", help = "Create a migration for the entity.").flag()
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
@@ -36,7 +35,7 @@ class MakeEntityCommand(srcPackage: String) :
     }
 
     private fun entityStub(): String {
-        return if (simple) EntityStubs.simpleStub(tableName != null) else EntityStubs.stub(tableName != null)
+        return EntityStubs.stub(true)
     }
 
     override fun onCompleted(outputFile: OutputFile) {

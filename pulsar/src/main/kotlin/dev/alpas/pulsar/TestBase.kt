@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import uy.klutter.core.uri.buildUri
 import kotlin.reflect.KClass
 
-open class AlpasTestApp(entryClass: Class<*>) : AlpasApp(emptyArray(), entryClass) {
+open class AlpasTest(entryClass: Class<*>) : Alpas(emptyArray(), entryClass) {
     lateinit var lastCall: HttpCall
     private val routeMiddlewareToSkip = mutableListOf<String>()
 
@@ -47,9 +47,9 @@ open class AlpasTestApp(entryClass: Class<*>) : AlpasApp(emptyArray(), entryClas
 
 abstract class TestBase(entryClass: Class<*>) {
     open val configureSession = true
-    protected val app: AlpasTestApp by lazy {
+    protected val app: AlpasTest by lazy {
         System.setProperty(RUN_MODE, "test")
-        AlpasTestApp(entryClass)
+        AlpasTest(entryClass)
     }
 
     protected fun runApp() {
@@ -160,7 +160,7 @@ abstract class TestBase(entryClass: Class<*>) {
     protected fun assertAuthenticated(user: Authenticatable? = null) {
         assertTrue(call().isAuthenticated)
         if (user != null) {
-            assertEquals(user.id, call().user.id)
+            assertEquals(user.id(), call().user.id())
         }
     }
 

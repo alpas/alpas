@@ -51,7 +51,7 @@ class SessionAuthChannel(private val call: HttpCall, override val userProvider: 
         // todo: set remember token
         // todo: invalidate current session
         // todo: invalidate cookie session
-        call.session[sessionKey] = user.id
+        call.session[sessionKey] = user.id()
         this.user = user
         return user
     }

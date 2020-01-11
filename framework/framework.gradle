@@ -1,11 +1,11 @@
 buildscript {
-    ext.jettyVersion = '9.4.22.v20191022'
-    ext.ktormVersion = '2.5'
+    ext.jetty_version = '9.4.22.v20191022'
+    ext.exposed_version = '0.20.2'
 }
 
 dependencies {
-    implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
-    implementation "org.eclipse.jetty:jetty-webapp:${jettyVersion}"
+    implementation "org.eclipse.jetty:jetty-server:${jetty_version}"
+    implementation "org.eclipse.jetty:jetty-webapp:${jetty_version}"
     implementation "com.github.danielnorberg:rut:v1.0"
     implementation "org.picocontainer:picocontainer:2.15"
     implementation "io.github.cdimascio:java-dotenv:5.1.3"
@@ -19,14 +19,17 @@ dependencies {
     implementation "com.github.alpas:url-signer:0.1.7"
     implementation "com.github.cesarferreira:kotlin-pluralizer:0.2.9"
     implementation "com.github.freva:ascii-table:1.1.0"
+    implementation "com.zaxxer:HikariCP:3.4.1"
 
     compile "io.pebbletemplates:pebble:3.1.2"
     compile "com.github.ajalt:clikt:2.3.0"
     compile "com.github.ajalt:mordant:1.2.1"
     compile "io.github.microutils:kotlin-logging:1.7.8"
-    compile "me.liuwj.ktorm:ktorm-core:${ktormVersion}"
-    compile "me.liuwj.ktorm:ktorm-jackson:${ktormVersion}"
-    compile "me.liuwj.ktorm:ktorm-support-mysql:${ktormVersion}"
     compile "com.github.marlonlom:timeago:4.0.1"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
+
+    compile "org.jetbrains.exposed:exposed-core:${exposed_version}"
+    compile "org.jetbrains.exposed:exposed-dao:${exposed_version}"
+    compile "org.jetbrains.exposed:exposed-jdbc:${exposed_version}"
+    compile "org.jetbrains.exposed:exposed-java-time:${exposed_version}"
 }
