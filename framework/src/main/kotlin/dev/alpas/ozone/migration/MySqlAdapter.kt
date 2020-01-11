@@ -19,7 +19,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean, db: Database) : D
                 "Dropping all tables of ${db.name}".printAsWarning()
             }
             val tableNames = mutableListOf<String>()
-            val selectSql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '$db'"
+            val selectSql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '${db.name}'"
             transaction {
                 val query = connection.prepareStatement(selectSql, true).executeQuery()
                 while (query.next()) {
