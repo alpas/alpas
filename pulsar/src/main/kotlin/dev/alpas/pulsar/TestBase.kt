@@ -5,6 +5,7 @@ import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.http.HttpCall
 import dev.alpas.http.middleware.VerifyCsrfToken
+import dev.alpas.routing.Router
 import io.restassured.RestAssured
 import io.restassured.config.SessionConfig
 import io.restassured.http.ContentType
@@ -60,6 +61,11 @@ abstract class TestBase(entryClass: Class<*>) {
                 setupSessionConfig()
             }
         }
+    }
+
+    protected fun runApp(block: Router.() -> Unit) {
+        app.make<Router>().block()
+        runApp()
     }
 
     protected fun setupSessionConfig() {
