@@ -55,17 +55,13 @@ abstract class TestBase(entryClass: Class<*>) {
 
     protected fun runApp() {
         app.apply {
+            app.make<Router>().loadRoutes()
             ignite()
             RestAssured.port = env("APP_PORT", 8090)
             if (configureSession) {
                 setupSessionConfig()
             }
         }
-    }
-
-    protected fun runApp(block: Router.() -> Unit) {
-        app.make<Router>().block()
-        runApp()
     }
 
     protected fun setupSessionConfig() {
@@ -228,6 +224,8 @@ abstract class TestBase(entryClass: Class<*>) {
     fun routeNamed(name: String, params: Map<String, Any>? = null, absolute: Boolean = true): String {
         return call().routeNamed(name, params, absolute)
     }
+
+    abstract fun Router.loadRoutes()
 }
 
 fun RequestSpecification.wantsJson() = apply {
