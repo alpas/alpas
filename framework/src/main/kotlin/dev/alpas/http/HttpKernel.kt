@@ -11,6 +11,7 @@ import dev.alpas.http.middleware.SessionStart
 import dev.alpas.http.middleware.VerifyCsrfToken
 import dev.alpas.logging.LoggerServiceProvider
 import dev.alpas.ozone.OzoneProvider
+import dev.alpas.queue.QueueServiceProvider
 import dev.alpas.routing.RouteServiceProvider
 import dev.alpas.session.SessionServiceProvider
 import dev.alpas.view.ViewServiceProvider
@@ -61,7 +62,8 @@ open class HttpKernel : AlpasServer(), Kernel {
             SessionServiceProvider::class,
             RouteServiceProvider::class,
             ViewServiceProvider::class,
-            OzoneProvider::class
+            OzoneProvider::class,
+            QueueServiceProvider::class
         )
     }
 }
