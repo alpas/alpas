@@ -84,7 +84,7 @@ class Session(private val request: HttpServletRequest) {
     }
 
     internal fun nextFlashBag(): MutableMap<String, Any?> {
-        return getOrCreate<MutableMap<String, Any?>>("_next_flash_bag", null) ?: mutableMapOf()
+        return getOrCreate("_next_flash_bag", mutableMapOf()) ?: mutableMapOf()
     }
 
     private fun previousFlashBag(default: Map<String, Any?> = emptyMap()): Map<String, Any?> {
