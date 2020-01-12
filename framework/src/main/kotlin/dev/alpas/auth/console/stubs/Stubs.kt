@@ -782,16 +782,14 @@ internal class Stubs {
             return """
                 {% extends "layout/app.peb" %}
                 {% block content %}
-                    <div>
-                        <div class="bg-white h-screen max-w-4xl mt-10 mx-auto p-10 pt-10 w-full">
+                    <div class="h-screen">
+                        <div class="bg-white max-w-4xl mt-10 mx-auto p-10 pt-10 w-full">
                             <h3 class="font-medium mb-3 text-2xl">Welcome, {{ auth.user.name }}! </h3>
                             This is your
                             <pre class="bg-gray-200 inline-flex px-1">resources/templates/home</pre>
                             page.
                             <p class="text-gray-800 mt-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus assumenda
-                                dicta
-                                incidunt molestiae,
-                                nesciunt officiis quas quos. Autem consequuntur corporis, dolore eos inventore magnam mollitia numquam
+                                dicta incidunt molestiae, nesciunt officiis quas quos. Autem consequuntur corporis, dolore eos inventore magnam mollitia numquam
                                 pariatur, porro, similique temporibus! Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci
                                 aliquam asperiores aut, dolorem eum, illo in natus nesciunt nihil optio porro praesentium provident quaerat,
                                 quidem sint totam veniam vero vitae. Lorem ipsum dolor sit amet, consectetur adipisicing elit. A atque
@@ -800,9 +798,10 @@ internal class Stubs {
 
                             <div class="flex font-medium justify-around links mt-10 mt-lg mx-16 uppercase">
                                 <a href="https://alpas.dev/"><span class="text-gray-600">/</span> Alpas</a>
-                                <a href="https://alpas.dev/docs"><span class="text-gray-600">/</span> Docs</a>
-                                <a href="https://getcleaver.com/"><span class="text-gray-600">/</span> Cleaver</a>
-                                <a href="https://github.com/alpas/alpas"><span class="text-gray-600">/</span> GitHub</a>
+                                <a href="https://alpas.dev/docs"><span class="text-gray-600">/</span> Documentation</a>
+                                <a href="https://twitter.com/alpasdev"><span class="text-gray-600">/</span>@AlpasDev</a>
+                                <a href="https://www.youtube.com/channel/UCGCGb-vvmff3csy8dePBJJQ"><span class="text-gray-600">/</span> AlpasCasts</a>
+                                <a href="https://github.com/alpas"><span class="text-gray-600">/</span> GitHub</a>
                             </div>
                         </div>
                     </div>
