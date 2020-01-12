@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: #fffefc;
+  color: rgb(17, 17, 17);
+  font-family: 'Open Sans', sans-serif;
+}
+
+.error-500, .error-404 {
+  font-family: 'Halant', sans-serif;
+  font-weight: 300;
+
+  .title {
+    font-size: 9em;
+  }
+
+  .subtitle {
+    font-size: 4em;
+  }
+
+  .text {
+    font-size: 2.2em;
+  }
+}
+
+@tailwind utilities;
