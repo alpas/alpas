@@ -15,7 +15,9 @@ internal class EntityStubs {
         }
 
         private fun entityStub(): String {
-            return """package StubPackageName
+            return """
+                package StubPackageName
+                
                 import org.jetbrains.exposed.dao.LongEntity
                 import org.jetbrains.exposed.dao.LongEntityClass
                 import org.jetbrains.exposed.dao.id.EntityID
@@ -28,7 +30,7 @@ internal class EntityStubs {
                     val createdAt by StubTableClazzName.createdAt
                     val updatedAt by StubTableClazzName.updatedAt
                 }
-            """.trimIndent()
+            """
         }
 
         private fun tableStub(): String {
@@ -37,7 +39,7 @@ internal class EntityStubs {
                     val createdAt = timestamp("created_at")
                     val updatedAt = timestamp("updated_at")
                 }
-            """.trimIndent()
+            """
         }
     }
 }
