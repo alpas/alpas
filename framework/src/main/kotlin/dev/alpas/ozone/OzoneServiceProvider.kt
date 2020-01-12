@@ -7,7 +7,7 @@ import dev.alpas.make
 import dev.alpas.makeElse
 import dev.alpas.ozone.console.*
 
-class OzoneProvider : ServiceProvider {
+class OzoneServiceProvider : ServiceProvider {
     override fun register(app: Application) {
         val dbConfig = app.makeElse { DatabaseConfig(it.make()) }
         if (dbConfig.canConnect()) {

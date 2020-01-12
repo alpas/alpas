@@ -6,6 +6,7 @@ import dev.alpas.ServiceProvider
 import dev.alpas.encryption.EncryptionServiceProvider
 import dev.alpas.hashing.HashServiceProvider
 import dev.alpas.logging.LoggerServiceProvider
+import dev.alpas.ozone.OzoneServiceProvider
 import dev.alpas.routing.RouteServiceProvider
 import kotlin.reflect.KClass
 
@@ -18,9 +19,10 @@ open class ConsoleKernel : Kernel {
     override fun serviceProviders(app: Application): Iterable<KClass<out ServiceProvider>> {
         return listOf(
             LoggerServiceProvider::class,
-            RouteServiceProvider::class,
             EncryptionServiceProvider::class,
-            HashServiceProvider::class
+            HashServiceProvider::class,
+            RouteServiceProvider::class,
+            OzoneServiceProvider::class
         )
     }
 }
