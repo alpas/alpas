@@ -19,6 +19,9 @@ delightful than it already is.
 
 We have sweated picking the good parts, so you don’t have to!
 
+> **Alpas is under heavy development and iteration right now and such we have tagged it as alpha version.
+However, we have already used Alpas in a couple of production apps that are running just fine for last few months.**
+
 ### Who is Alpas for?
 
 Alpas is for you if you are looking to learn some dynamic web development.
