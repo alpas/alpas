@@ -896,7 +896,7 @@ internal class Stubs {
                                 {% auth %}
                                     <div class="lg:ml-4 flex items-center justify-start lg:mb-0 mb-4 pointer-cursor border-b lg:border-0 pb-4 lg:pb-0">
                                         <img class="rounded-full w-10 h-10 border-2 border-gray-300"
-                                             src="//www.gravatar.com/avatar/?d=robohash" alt="Alpas">
+                                             src="{{ auth.user.gravatarUrl() }}" alt="{{ auth.user.email }}">
                                         <span class="ml-3 text-gray-700">{{ auth.user.email }}</span>
                                     </div>
                                 {% endauth %}
