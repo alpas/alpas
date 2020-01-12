@@ -27,19 +27,7 @@ internal class Stubs {
         private fun headerViewStub(): String {
             return """
                 <a href="/" class="text-5xl font-thin text-center my-10 flex justify-center items-center">
-                    <svg enable-background="new 0 0 64 64" height="84" viewBox="0 0 64 64"
-                         xmlns="http://www.w3.org/2000/svg">
-                        <path d="m41.037 52.594c-2.644 1.901-5.769 2.906-9.037 2.906-5.649 0-10.867-3.117-13.577-8.02 2.679.552 5.622.879 8.559.984h.018c.269 0 .49-.212.5-.482.01-.275-.206-.508-.482-.518-9.203-.328-18.518-2.997-18.518-7.464 0-2.171 2.307-4.133 6.494-5.525.262-.087.403-.37.316-.633-.088-.261-.367-.406-.633-.316-4.695 1.561-7.177 3.8-7.177 6.474 0 3.48 4.118 5.859 9.657 7.197 2.748 5.658 8.541 9.303 14.843 9.303 3.479 0 6.806-1.07 9.621-3.094.224-.161.275-.474.114-.698-.162-.225-.474-.275-.698-.114z"/>
-                        <path d="m16.02 44.125c.059.226.262.375.484.375.041 0 .083-.005.125-.016.267-.069.428-.342.359-.609-.324-1.258-.488-2.562-.488-3.875 0-1.622.253-3.186.717-4.657 4.499 1.408 9.595 2.157 14.783 2.157s10.284-.749 14.783-2.157c.464 1.471.717 3.035.717 4.657 0 .326-.011.649-.029.971-.017.275.194.512.47.528.265.014.513-.194.528-.47.02-.341.031-.683.031-1.029 0-1.898-.338-3.715-.931-5.413-.001-.005 0-.01-.002-.015-.002-.007-.008-.012-.01-.019-.643-1.83-1.585-3.519-2.791-4.991-.016-.021-.03-.044-.049-.063-3.029-3.662-7.605-6-12.718-6-5.112 0-9.688 2.338-12.717 6-.019.019-.033.042-.049.064-1.206 1.472-2.148 3.161-2.79 4.991-.003.007-.008.011-.01.018-.002.005 0 .01-.002.015-.593 1.698-.931 3.515-.931 5.413 0 1.397.175 2.785.52 4.125zm15.98-7.625c-5.071 0-10.046-.729-14.438-2.098.558-1.433 1.319-2.762 2.255-3.953 3.726 1.338 7.926 2.051 12.183 2.051s8.457-.713 12.183-2.051c.935 1.191 1.697 2.52 2.255 3.953-4.392 1.369-9.367 2.098-14.438 2.098zm0-12c4.557 0 8.649 1.989 11.487 5.131-7.066 2.43-15.909 2.43-22.975 0 2.839-3.142 6.931-5.131 11.488-5.131z"/>
-                        <path d="m52.391 43.688c-.095-.119-.239-.188-.391-.188h-14.5v-1.5c0-.204-.124-.389-.314-.464l-5-2c-.153-.063-.328-.043-.466.05s-.22.248-.22.414v5.5h-2.5c-.276 0-.5.224-.5.5v2c0 .276.224.5.5.5h2.5v.5c0 .276.224.5.5.5h7.592c.207.581.757 1 1.408 1h8c.651 0 1.201-.419 1.408-1h5.592c.192 0 .367-.11.45-.283.084-.174.061-.379-.06-.529zm-22.891 3.812v-1h2v1zm19.5 2h-8c-.275 0-.5-.225-.5-.5s.225-.5.5-.5h8c.275 0 .5.225.5.5s-.225.5-.5.5zm1.408-1c-.207-.581-.757-1-1.408-1h-8c-.651 0-1.201.419-1.408 1h-7.092v-.5-2-5.262l4 1.601v1.661c0 .276.224.5.5.5h14.76l3.2 4z"/>
-                        <path d="m50 45.5h-13c-.276 0-.5.224-.5.5s.224.5.5.5h13c.276 0 .5-.224.5-.5s-.224-.5-.5-.5z"/>
-                        <path d="m48 24.5c4.687 0 8.5-3.813 8.5-8.5s-3.813-8.5-8.5-8.5-8.5 3.813-8.5 8.5 3.813 8.5 8.5 8.5zm0-16c4.136 0 7.5 3.364 7.5 7.5s-3.364 7.5-7.5 7.5-7.5-3.364-7.5-7.5 3.364-7.5 7.5-7.5z"/>
-                        <path d="m45 16.5c1.379 0 2.5-1.121 2.5-2.5s-1.121-2.5-2.5-2.5-2.5 1.121-2.5 2.5 1.121 2.5 2.5 2.5zm0-4c.827 0 1.5.673 1.5 1.5s-.673 1.5-1.5 1.5-1.5-.673-1.5-1.5.673-1.5 1.5-1.5z"/>
-                        <circle cx="51" cy="19" r="1"/>
-                        <circle cx="54" cy="35" r="1"/>
-                        <circle cx="23" cy="16" r="1"/>
-                    </svg>
-                    <div class="ml-2"> Alpas</div>
+                    <div class="ml-2">{{ env('APP_NAME', 'Alpas') }}</div>
                 </a>
 
                 {% if hasFlash('success') %}
@@ -53,7 +41,7 @@ internal class Stubs {
                 {% extends "../layout/app.peb" %}
                 {% block content %}
 
-                    <div class="h-full mt-10 pt-10">
+                    <div class="h-screen py-10">
                         <div class="w-full max-w-md mx-auto">
                             {% include "./_header.peb" %}
                             <form class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4 {{ errors.isEmpty() ? '' : 'border-red-500 border' }}"
@@ -83,7 +71,7 @@ internal class Stubs {
                                     {% endif %}
                                 </div>
                                 <div class="flex items-center justify-between mt-10">
-                                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline"
+                                    <button class="bg-indigo-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline"
                                             type="submit">
                                         Log In
                                     </button>
@@ -92,14 +80,14 @@ internal class Stubs {
                                         <div class="inline-block align-baseline text-sm">
                                             Forgot Password?
                                             <a href="{{ route('password.request') }}"
-                                               class="text-blue-500 hover:text-blue-800 font-bold"> Reset </a>
+                                               class="text-indigo-600 hover:text-indigo-800 font-bold"> Reset </a>
                                         </div>
                                     {% endif %}
                                 </div>
                                 {% if hasRoute('register') %}
                                     <div class="text-sm mt-6">
                                         Need an account?
-                                        <a class="text-blue-500 hover:text-blue-800 font-bold"
+                                        <a class="text-indigo-600 hover:text-indigo-800 font-bold"
                                            href="{{ route('register') }}">Register</a>
                                     </div>
                                 {% endif %}
@@ -116,7 +104,7 @@ internal class Stubs {
                 {% extends "../layout/app.peb" %}
                 {% block content %}
 
-                    <div class="h-full mt-10 pt-10">
+                    <div class="h-screen py-10">
                         <div class="w-full max-w-md mx-auto">
                             {% include "./_header.peb" %}
                             <form class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4 {{ errors.isEmpty() ? '' : 'border-red-500 border' }}"
@@ -162,7 +150,7 @@ internal class Stubs {
                                     {% endif %}
                                 </div>
                                 <div class="mt-10">
-                                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline"
+                                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline"
                                             type="submit">
                                         Register
                                     </button>
@@ -170,7 +158,7 @@ internal class Stubs {
                                 </div>
                                 <div class="text-sm mt-6">
                                     Already have an account?
-                                    <a class="text-blue-500 hover:text-blue-800 font-bold" href="{{ route('login') }}">Log in</a>
+                                    <a class="text-indigo-600 hover:text-indigo-800 font-bold" href="{{ route('login') }}">Log in</a>
                                 </div>
                             </form>
                         </div>
@@ -186,12 +174,12 @@ internal class Stubs {
                 {% extends "../layout/app.peb" %}
                 {% block content %}
 
-                    <div class="h-full mt-10 pt-10">
+                    <div class="h-screen py-10">
                         <div class="w-full max-w-md mx-auto">
                             {% include "./_header.peb" %}
                             <div class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4">
                                 <div class="pb-8">
-                                    <div class="text-blue-500 my-12">
+                                    <div class="text-indigo-600 my-12">
                                         <svg aria-hidden="true" focusable="false" class="mx-auto" role="img" height="46"
                                              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                                             <path fill="currentColor"
@@ -210,7 +198,7 @@ internal class Stubs {
 
                                     <form action="{{ route('verification.resend') }}" method="post" class="text-center">
                                         {% csrf %}
-                                        <button class="hover:text-blue-700 mt-12 text-blue-500 text-lg" type="submit">
+                                        <button class="hover:text-indigo-700 mt-12 text-indigo-600 text-lg" type="submit">
                                             Resend verification email
                                         </button>
                                     </form>
@@ -398,7 +386,7 @@ internal class Stubs {
                                                         <tr>
                                                             <td class="px-lg"
                                                                 style="font-family: Open Sans, -apple-system, BlinkMacSystemFont, Roboto, Helvetica Neue, Helvetica, Arial, sans-serif; padding-right: 24px; padding-left: 24px;">
-                                                                Copyright © 2019 {{ env("APP_NAME") }}, All rights reserved.
+                                                                Copyright © 2020 {{ env("APP_NAME") }}, All rights reserved.
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -590,7 +578,7 @@ internal class Stubs {
                                                         <tr>
                                                             <td class="px-lg"
                                                                 style="font-family: Open Sans, -apple-system, BlinkMacSystemFont, Roboto, Helvetica Neue, Helvetica, Arial, sans-serif; padding-right: 24px; padding-left: 24px;">
-                                                                Copyright © 2019 {{ env("APP_NAME") }}, All rights reserved.
+                                                                Copyright © 2020 {{ env("APP_NAME") }}, All rights reserved.
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -613,7 +601,7 @@ internal class Stubs {
                 {% extends "../../layout/app.peb" %}
                 {% block content %}
 
-                    <div class="h-full mt-10 pt-10">
+                    <div class="h-screen py-10">
                         <div class="w-full max-w-md mx-auto">
                             {% include "../_header.peb" %}
                             <form class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4 {{ errors.isEmpty() ? '' : 'border-red-500 border' }}"
@@ -635,13 +623,13 @@ internal class Stubs {
                                     {% endif %}
                                 </div>
                                 <div class="mt-10">
-                                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline"
+                                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline"
                                             type="submit">
                                         Send Password Reset Link
                                     </button>
                                 </div>
                                 <div class="text-sm mt-6">
-                                    <a class="text-blue-500 hover:text-blue-800 font-bold" href="{{ route('login') }}">
+                                    <a class="text-indigo-600 hover:text-indigo-800 font-bold" href="{{ route('login') }}">
                                         &leftarrow; Back to Log in
                                     </a>
                                 </div>
@@ -658,7 +646,7 @@ internal class Stubs {
                 {% extends "../../layout/app.peb" %}
                 {% block content %}
 
-                    <div class="h-full mt-10 pt-10">
+                    <div class="h-screen py-10">
                         <div class="w-full max-w-md mx-auto">
                             {% include "../_header.peb" %}
                             <form class="bg-white p-8 mx-auto bg-white shadow-md rounded mb-4 {{ errors.isEmpty() ? '' : 'border-red-500 border' }}"
@@ -697,14 +685,14 @@ internal class Stubs {
                                     {% endif %}
                                 </div>
                                 <div class="mt-10">
-                                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline"
+                                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline"
                                             type="submit">
                                         Continue
                                     </button>
 
                                 </div>
                                 <div class="text-sm mt-6">
-                                    <a class="text-blue-500 hover:text-blue-800 font-bold" href="{{ route('login') }}">
+                                    <a class="text-indigo-500 hover:text-indigo-800 font-bold" href="{{ route('login') }}">
                                         &leftarrow; Back to Log in
                                     </a>
                                 </div>
@@ -794,30 +782,29 @@ internal class Stubs {
             return """
                 {% extends "layout/app.peb" %}
                 {% block content %}
+                    <div class="h-screen">
+                        <div class="bg-white max-w-4xl mt-10 mx-auto p-10 pt-10 w-full">
+                            <h3 class="font-medium mb-3 text-2xl">Welcome, {{ auth.user.name }}! </h3>
+                            This is your
+                            <pre class="bg-gray-200 inline-flex px-1">resources/templates/home</pre>
+                            page.
+                            <p class="text-gray-800 mt-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus assumenda
+                                dicta incidunt molestiae, nesciunt officiis quas quos. Autem consequuntur corporis, dolore eos inventore magnam mollitia numquam
+                                pariatur, porro, similique temporibus! Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci
+                                aliquam asperiores aut, dolorem eum, illo in natus nesciunt nihil optio porro praesentium provident quaerat,
+                                quidem sint totam veniam vero vitae. Lorem ipsum dolor sit amet, consectetur adipisicing elit. A atque
+                                deleniti facilis fugiat harum impedit magni minus molestiae perspiciatis, provident quisquam, quos rem sint
+                                suscipit tenetur totam vel veniam vitae.</p>
 
-                    <div class="bg-white h-full max-w-4xl mt-10 mx-auto p-10 pt-10 w-full">
-                        <h3 class="font-medium mb-3 text-2xl">Welcome, {{ auth.user.name }}! </h3>
-                        This is your
-                        <pre class="bg-gray-200 inline-flex px-1">resources/templates/home</pre>
-                        page.
-                        <p class="text-gray-800 mt-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus assumenda
-                            dicta
-                            incidunt molestiae,
-                            nesciunt officiis quas quos. Autem consequuntur corporis, dolore eos inventore magnam mollitia numquam
-                            pariatur, porro, similique temporibus! Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci
-                            aliquam asperiores aut, dolorem eum, illo in natus nesciunt nihil optio porro praesentium provident quaerat,
-                            quidem sint totam veniam vero vitae. Lorem ipsum dolor sit amet, consectetur adipisicing elit. A atque
-                            deleniti facilis fugiat harum impedit magni minus molestiae perspiciatis, provident quisquam, quos rem sint
-                            suscipit tenetur totam vel veniam vitae.</p>
-
-                        <div class="flex font-medium justify-around links mt-10 mt-lg mx-16 uppercase">
-                            <a href="https://alpas.dev/"><span class="text-gray-600">/</span> Alpas</a>
-                            <a href="https://alpas.dev/docs"><span class="text-gray-600">/</span> Docs</a>
-                            <a href="https://getcleaver.com/"><span class="text-gray-600">/</span> Cleaver</a>
-                            <a href="https://github.com/alpas/alpas"><span class="text-gray-600">/</span> GitHub</a>
+                            <div class="flex font-medium justify-around links mt-10 mt-lg mx-16 uppercase">
+                                <a href="https://alpas.dev/"><span class="text-gray-600">/</span> Alpas</a>
+                                <a href="https://alpas.dev/docs"><span class="text-gray-600">/</span> Documentation</a>
+                                <a href="https://twitter.com/alpasdev"><span class="text-gray-600">/</span>@AlpasDev</a>
+                                <a href="https://www.youtube.com/channel/UCGCGb-vvmff3csy8dePBJJQ"><span class="text-gray-600">/</span> AlpasCasts</a>
+                                <a href="https://github.com/alpas"><span class="text-gray-600">/</span> GitHub</a>
+                            </div>
                         </div>
                     </div>
-                    
                 {% endblock %}
             """.trimIndent()
         }
@@ -892,7 +879,7 @@ internal class Stubs {
                                     {% else %}
                                     <form action="{{ route('logout') }}" method="post">
                                         {% csrf %}
-                                        <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded mr-4"
+                                        <button class="bg-transparent hover:bg-indigo-600 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded mr-4"
                                                 type="submit">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                                  fill="none"
@@ -909,7 +896,7 @@ internal class Stubs {
                                 {% auth %}
                                     <div class="lg:ml-4 flex items-center justify-start lg:mb-0 mb-4 pointer-cursor border-b lg:border-0 pb-4 lg:pb-0">
                                         <img class="rounded-full w-10 h-10 border-2 border-gray-300"
-                                             src="//www.gravatar.com/avatar/?d=robohash" alt="Alpas">
+                                             src="{{ auth.user.gravatarUrl() }}" alt="{{ auth.user.email }}">
                                         <span class="ml-3 text-gray-700">{{ auth.user.email }}</span>
                                     </div>
                                 {% endauth %}

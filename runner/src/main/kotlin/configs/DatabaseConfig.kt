@@ -1,4 +1,4 @@
-package dev.alpas.runner
+package dev.alpas.runner.configs
 
 import dev.alpas.Environment
 import dev.alpas.ozone.ConnectionConfig
