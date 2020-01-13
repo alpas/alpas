@@ -50,6 +50,8 @@ open class Controller {
     }
 
     protected fun <T : Authenticatable> caller(): T = call.caller()
+
+    protected fun auth() = call.authChannel
 }
 
 class ControllerMiddleware(
