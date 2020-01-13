@@ -4,14 +4,11 @@ internal class EntityStubs {
     companion object {
         fun stub(withTable: Boolean = true): String {
             val entityStub = entityStub()
-            return if (withTable) {
-                """
-                $entityStub 
-                   ${tableStub()}
-                """.trimIndent()
-            } else {
-                entityStub
-            }
+            val tableStub = if (withTable) tableStub() else ""
+            return """
+               $tableStub
+               $entityStub 
+            """.trimIndent()
         }
 
         private fun entityStub(): String {
@@ -27,8 +24,8 @@ internal class EntityStubs {
                 class StubClazzName(id: EntityID<Long>) : LongEntity(id) {
                     companion object : LongEntityClass<StubClazzName>(StubTableClazzName)
 
-                    val createdAt by StubTableClazzName.createdAt
-                    val updatedAt by StubTableClazzName.updatedAt
+                    var createdAt by StubTableClazzName.createdAt
+                    var updatedAt by StubTableClazzName.updatedAt
                 }
             """
         }
