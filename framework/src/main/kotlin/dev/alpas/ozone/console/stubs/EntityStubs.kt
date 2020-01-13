@@ -6,13 +6,6 @@ internal class EntityStubs {
             val entityStub = entityStub()
             val tableStub = if (withTable) tableStub() else ""
             return """
-               $tableStub
-               $entityStub 
-            """.trimIndent()
-        }
-
-        private fun entityStub(): String {
-            return """
                 package StubPackageName
                 
                 import org.jetbrains.exposed.dao.LongEntity
@@ -21,6 +14,13 @@ internal class EntityStubs {
                 import org.jetbrains.exposed.dao.id.LongIdTable
                 import org.jetbrains.exposed.sql.`java-time`.timestamp
 
+               $tableStub
+               $entityStub 
+            """.trimIndent()
+        }
+
+        private fun entityStub(): String {
+            return """
                 class StubClazzName(id: EntityID<Long>) : LongEntity(id) {
                     companion object : LongEntityClass<StubClazzName>(StubTableClazzName)
 
