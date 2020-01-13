@@ -49,4 +49,6 @@ open class ValidationGuard(val shouldFailFast: Boolean = false) {
     open fun handleError(errorBag: ErrorBag): Boolean {
         return false
     }
+
+    open fun afterSuccessfulValidation() {}
 }
