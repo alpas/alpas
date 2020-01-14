@@ -6,7 +6,7 @@ internal class EntityStubs {
             val entityStub = simpleEntityStub()
             return if (withTable) {
                 """
-                $entityStub 
+                   $entityStub 
                    ${simpleTableStub()}
                 """.trimIndent()
             } else {
@@ -15,7 +15,8 @@ internal class EntityStubs {
         }
 
         private fun simpleEntityStub(): String {
-            return """package StubPackageName
+            return """
+                package StubPackageName
                 
                 import me.liuwj.ktorm.dsl.QueryRowSet
                 import me.liuwj.ktorm.schema.BaseTable
@@ -46,7 +47,7 @@ internal class EntityStubs {
             val entityStub = entityStub()
             return if (withTable) {
                 """
-                $entityStub 
+                   $entityStub 
                    ${tableStub()}
                 """.trimIndent()
             } else {
@@ -55,7 +56,8 @@ internal class EntityStubs {
         }
 
         private fun entityStub(): String {
-            return """package StubPackageName
+            return """
+                package StubPackageName
                 
                 import me.liuwj.ktorm.entity.Entity
                 import dev.alpas.ozone.MigratingTable
