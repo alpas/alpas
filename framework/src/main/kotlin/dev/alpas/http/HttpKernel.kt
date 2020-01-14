@@ -10,6 +10,8 @@ import dev.alpas.hashing.HashServiceProvider
 import dev.alpas.http.middleware.SessionStart
 import dev.alpas.http.middleware.VerifyCsrfToken
 import dev.alpas.logging.LoggerServiceProvider
+import dev.alpas.ozone.OzoneServiceProvider
+import dev.alpas.queue.QueueServiceProvider
 import dev.alpas.routing.RouteServiceProvider
 import dev.alpas.session.SessionServiceProvider
 import dev.alpas.view.ViewServiceProvider
@@ -55,10 +57,13 @@ open class HttpKernel : AlpasServer(), Kernel {
     override fun serviceProviders(app: Application): Iterable<KClass<out ServiceProvider>> {
         return listOf(
             LoggerServiceProvider::class,
-            RouteServiceProvider::class,
             EncryptionServiceProvider::class,
             HashServiceProvider::class,
-            SessionServiceProvider::class
+            SessionServiceProvider::class,
+            RouteServiceProvider::class,
+            ViewServiceProvider::class,
+            OzoneServiceProvider::class,
+            QueueServiceProvider::class
         )
     }
 }

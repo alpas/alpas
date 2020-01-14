@@ -112,12 +112,16 @@ class HttpCall internal constructor(
         checkValidationErrors()
     }
 
-    fun <T : ValidationGuard> validateUsing(validator: KClass<out T>): T {
+    fun <T : ValidationGuard> validateUsing(validator: KClass<out T>, afterSuccessBlock: T.() -> Unit = {}): T {
         return validator.createInstance().also {
             it.call = this
             it.validate(errorBag)
             checkValidationErrors { errorBag ->
                 it.handleError(errorBag)
+            }
+            if (errorBag.isEmpty()) {
+                it.afterSuccessfulValidation()
+                it.afterSuccessBlock()
             }
         }
     }

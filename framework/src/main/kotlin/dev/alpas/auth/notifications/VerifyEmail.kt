@@ -29,7 +29,7 @@ class VerifyEmail(private val container: Container) : MailableNotification<Authe
                 "auth.emails.verify",
                 mapOf(
                     "verificationUrl" to verificationUrl?.toExternalForm(),
-                    "username" to notifiable.properties["name"]
+                    "user" to notifiable
                 )
             )
         }

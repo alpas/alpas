@@ -7,10 +7,13 @@ fun Router.authRoutes(
     allowRegistration: Boolean = true,
     allowPasswordReset: Boolean = true,
     requireEmailVerification: Boolean = true,
-    packageName: String = "auth"
+    packageName: String = "auth",
+    addHomeRoute: Boolean = true
 ) {
     group {
-
+        if (addHomeRoute) {
+            get("/home", "controllers.HomeController").name("home")
+        }
         val loginController = "controllers.$packageName.LoginController"
         get("login", loginController, "showLoginForm").name("login").mustBeGuest()
         post("login", loginController, "login").mustBeGuest()

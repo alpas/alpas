@@ -6,10 +6,11 @@ import dev.alpas.notifications.MailableNotification
 import dev.alpas.notifications.Notifiable
 import dev.alpas.notifications.Notification
 import dev.alpas.queue.Queue
+import dev.alpas.queue.QueueDispatcher
 import dev.alpas.view.ViewRenderer
 
 class MailChannel(
-    private val queue: Queue, private val mailConfig: MailConfig, private val viewRenderer: ViewRenderer
+    private val queueDispatcher: QueueDispatcher, private val mailConfig: MailConfig, private val viewRenderer: ViewRenderer
 ) : NotificationChannel {
 
     override fun <T : Notifiable> send(notification: Notification<T>, notifiable: T) {
@@ -17,7 +18,7 @@ class MailChannel(
         val message = not.toMail(notifiable).apply { render(viewRenderer) }
         val job = SendMailJob(message)
         if (notification.shouldQueue(notifiable)) {
-            queue.enqueue(job)
+            queueDispatcher.dispatch(job)
         } else {
             job(mailer)
         }

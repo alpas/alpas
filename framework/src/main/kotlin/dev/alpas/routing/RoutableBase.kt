@@ -36,7 +36,7 @@ abstract class RoutableBase(
 
     // dynamic controllers
 
-    internal fun get(controller: String, method: String = "index") = get("", middleware, controller, method)
+//    internal fun get(controller: String, method: String = "index") = get("", middleware, controller, method)
     internal fun get(path: String, controller: String, method: String = "index") =
         get(path, middleware, controller, method)
 
@@ -47,7 +47,7 @@ abstract class RoutableBase(
         method: String = "index"
     ) = add(Method.GET, path, DynamicControllerHandler(controller, method), middleware)
 
-    internal fun post(controller: String, method: String = "store") = post("", middleware, controller, method)
+//    internal fun post(controller: String, method: String = "store") = post("", middleware, controller, method)
     internal fun post(path: String, controller: String, method: String = "store") =
         post(path, middleware, controller, method)
 
@@ -58,7 +58,7 @@ abstract class RoutableBase(
         method: String = "store"
     ) = add(Method.POST, path, DynamicControllerHandler(controller, method), middleware)
 
-    internal fun delete(controller: String, method: String = "delete") = delete("", middleware, controller, method)
+//    internal fun delete(controller: String, method: String = "delete") = delete("", middleware, controller, method)
     internal fun delete(path: String, controller: String, method: String = "delete") =
         delete(path, middleware, controller, method)
 
@@ -69,7 +69,7 @@ abstract class RoutableBase(
         method: String = "delete"
     ) = add(Method.DELETE, path, DynamicControllerHandler(controller, method), middleware)
 
-    internal fun patch(controller: String, method: String = "update") = patch("", middleware, controller, method)
+//    internal fun patch(controller: String, method: String = "update") = patch("", middleware, controller, method)
     internal fun patch(path: String, controller: String, method: String = "update") =
         patch(path, middleware, controller, method)
 

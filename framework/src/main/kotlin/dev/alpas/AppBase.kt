@@ -2,6 +2,7 @@ package dev.alpas
 
 import dev.alpas.console.ConsoleKernel
 import dev.alpas.http.HttpKernel
+import dev.alpas.routing.Router
 import mu.KLogger
 import mu.KotlinLogging
 import java.io.File
@@ -45,6 +46,11 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
 
     // Buffer the debug log while the app is getting ready and while waiting for the real logger to be available
     override fun bufferDebugLog(log: String) {}
+
+    fun routes(block: Router.() -> Unit): Application {
+        make<Router>().block()
+        return this
+    }
 }
 
 // Retrieves and returns a config object of type T from the container

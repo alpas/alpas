@@ -5,6 +5,7 @@ import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.http.HttpCall
 import dev.alpas.http.middleware.VerifyCsrfToken
+import dev.alpas.routing.Router
 import io.restassured.RestAssured
 import io.restassured.config.SessionConfig
 import io.restassured.http.ContentType
@@ -54,6 +55,7 @@ abstract class TestBase(entryClass: Class<*>) {
 
     protected fun runApp() {
         app.apply {
+            app.make<Router>().loadRoutes()
             ignite()
             RestAssured.port = env("APP_PORT", 8090)
             if (configureSession) {
@@ -222,6 +224,8 @@ abstract class TestBase(entryClass: Class<*>) {
     fun routeNamed(name: String, params: Map<String, Any>? = null, absolute: Boolean = true): String {
         return call().routeNamed(name, params, absolute)
     }
+
+    abstract fun Router.loadRoutes()
 }
 
 fun RequestSpecification.wantsJson() = apply {

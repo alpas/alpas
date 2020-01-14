@@ -10,12 +10,22 @@ import dev.alpas.notifications.NotificationServiceProvider
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
-open class Alpas(args: Array<String> = emptyArray(), entryClass: Class<*>, block: Alpas.() -> Unit = {}) : Container by DefaultContainer(),
-    AppBase(args, entryClass) {
-    constructor(args: Array<String> = emptyArray(), block: Alpas.() -> Unit = {}) : this(
+open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> Unit = {}) :
+    Container by DefaultContainer(), AppBase(args, entryClass) {
+    constructor(args: Array<String>, block: Alpas.() -> Unit = {}) : this(
         args,
         StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).callerClass,
         block
+    )
+
+    constructor(args: Array<String>) : this(
+        args,
+        StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).callerClass
+    )
+
+    constructor() : this(
+        emptyArray(),
+        StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).callerClass
     )
 
     private val consoleCommands = mutableListOf<Command>()
@@ -167,4 +177,3 @@ open class Alpas(args: Array<String> = emptyArray(), entryClass: Class<*>, block
         INFLIGHT
     }
 }
-

@@ -28,13 +28,13 @@ abstract class Command(
 ) {
     internal val rootDir: String by lazy {
         System.getenv(ROOT_DIR_KEY) ?: System.getProperty(ROOT_DIR_KEY)
-        ?: throw Exception("Root directory must be defined when running from console.")
+        ?: throw Exception("Root directory must be defined when running from a console.")
     }
     protected val srcDir: String by lazy {
         System.getenv(SRC_DIR_KEY) ?: System.getProperty(SRC_DIR_KEY)
-        ?: throw Exception("Source directory must be defined when running from console.")
+        ?: throw Exception("Source directory must be defined when running from a console.")
     }
-    protected val resourcesDir by lazy { File(Paths.get(File(srcDir).parentFile.toURI().path, "resources").toUri()) }
+    protected val resourcesDir by lazy { File(Paths.get(File(srcDir).parentFile.absolutePath, "resources").toUri()) }
     protected val templatesDir by lazy { File(resourcesDir, "templates") }
     protected val quiet by option("--quiet", "-q", help = "Don't print any non-error messages.").flag()
 
