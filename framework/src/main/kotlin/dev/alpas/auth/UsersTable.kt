@@ -1,12 +1,7 @@
 package dev.alpas.auth
 
 import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.Column
-import me.liuwj.ktorm.schema.SqlType
-import me.liuwj.ktorm.schema.Table
-import me.liuwj.ktorm.schema.datetime
-import me.liuwj.ktorm.schema.long
-import me.liuwj.ktorm.schema.varchar
+import me.liuwj.ktorm.schema.*
 import java.util.NoSuchElementException
 
 open class BaseUsersTable<E : BaseUser<E>> : Table<E>("users") {
@@ -14,8 +9,8 @@ open class BaseUsersTable<E : BaseUser<E>> : Table<E>("users") {
     open val password by varchar("password").bindTo { it.password }
     open val email by varchar("email").bindTo { it.email }
     open val name by varchar("name").bindTo { it.name }
-    open val createdAt by datetime("created_at").bindTo { it.createdAt }
-    open val updatedAt by datetime("updated_at").bindTo { it.updatedAt }
+    open val createdAt by timestamp("created_at").bindTo { it.createdAt }
+    open val updatedAt by timestamp("updated_at").bindTo { it.updatedAt }
 
     fun <T : Any> bind(name: String, ofType: SqlType<T>): Column<*> {
         return try {
