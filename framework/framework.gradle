@@ -19,6 +19,7 @@ dependencies {
     implementation "com.github.alpas:url-signer:0.1.7"
     implementation "com.github.cesarferreira:kotlin-pluralizer:0.2.9"
     implementation "com.github.freva:ascii-table:1.1.0"
+    implementation "com.zaxxer:HikariCP:3.4.1"
 
     compile "io.pebbletemplates:pebble:3.1.2"
     compile "com.github.ajalt:clikt:2.3.0"

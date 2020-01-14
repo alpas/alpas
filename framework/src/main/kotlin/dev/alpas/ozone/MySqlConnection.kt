@@ -1,5 +1,6 @@
 package dev.alpas.ozone
 
+import com.zaxxer.hikari.HikariDataSource
 import dev.alpas.Environment
 import me.liuwj.ktorm.database.Database
 
@@ -14,9 +15,12 @@ open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) :
     open val dialect = config?.sqlDialect
 
     private val db: Database by lazy {
-        val url = "jdbc:mysql://$host:$port/$database?useSSL=${useSSL}"
-        val driver = "com.mysql.jdbc.Driver"
-        Database.connect(url, driver, username, password, dialect = dialect)
+        val ds = HikariDataSource().also {
+            it.jdbcUrl = "jdbc:mysql://$host:$port/$database?useSSL=${useSSL}"
+            it.username = username
+            it.password = password
+        }
+        Database.connect(ds)
     }
 
     override fun connect(): Database = db
