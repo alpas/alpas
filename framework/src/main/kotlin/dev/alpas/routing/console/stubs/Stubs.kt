@@ -51,6 +51,8 @@ internal class Stubs {
 
         fun validationRuleStub(): String {
             return """
+                package StubPackageName
+                
                 import dev.alpas.validation.ErrorMessage
                 import dev.alpas.validation.Rule
                 import dev.alpas.validation.ValidationGuard
