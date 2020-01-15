@@ -27,7 +27,7 @@ internal class EntityStubs {
         private fun simpleTableStub(): String {
             return """
                 object StubTableClazzName : MigratingTable<StubClazzName>("StubTableName") {
-                    val id by long("id").primaryKey()
+                    val id by bigIncrements("id")
                     val createdAt by timestamp("created_at")
                     val updatedAt by timestamp("updated_at")
 
@@ -68,7 +68,7 @@ internal class EntityStubs {
         private fun tableStub(): String {
             return """
                 object StubTableClazzName : MigratingTable<StubClazzName>("StubTableName") {
-                    val id by long("id").primaryKey().bindTo { it.id }
+                    val id by bigIncrements("id").bindTo { it.id }
                     val createdAt by timestamp("created_at").nullable().bindTo { it.createdAt }
                     val updatedAt by timestamp("updated_at").nullable().bindTo { it.updatedAt }
                 }
