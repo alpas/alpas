@@ -13,6 +13,7 @@ internal class MigrationStubs {
                     override fun up() {
                         createTable(StubTableName)
                     }
+                    
                     override fun down() {
                         dropTable(StubTableName)
                     }
@@ -30,6 +31,7 @@ internal class MigrationStubs {
                     override fun up() {
                         addVarcharColumn("StubTableName", "column_name")
                     }
+                    
                     override fun down() {
                         removeColumn("StubTableName", "column_name")
                     }

@@ -2,16 +2,11 @@ package dev.alpas.ozone.console.stubs
 
 internal class EntityStubs {
     companion object {
-        fun simpleStub(withTable: Boolean = true): String {
-            val entityStub = simpleEntityStub()
-            return if (withTable) {
-                """
-                   $entityStub 
-                   ${simpleTableStub()}
-                """.trimIndent()
-            } else {
-                entityStub
-            }
+        fun simpleStub(): String {
+            return """
+                ${simpleEntityStub()}
+                ${simpleTableStub()}
+            """.trimIndent()
         }
 
         private fun simpleEntityStub(): String {
@@ -43,16 +38,11 @@ internal class EntityStubs {
             """
         }
 
-        fun stub(withTable: Boolean = true): String {
-            val entityStub = entityStub()
-            return if (withTable) {
-                """
-                   $entityStub 
-                   ${tableStub()}
-                """.trimIndent()
-            } else {
-                entityStub
-            }
+        fun stub(): String {
+            return """
+                ${entityStub()}
+                ${tableStub()}
+            """.trimIndent()
         }
 
         private fun entityStub(): String {
@@ -72,17 +62,17 @@ internal class EntityStubs {
 
                     companion object : Entity.Factory<StubClazzName>()
                 }
-            """
+            """.trimIndent()
         }
 
         private fun tableStub(): String {
             return """
                 object StubTableClazzName : MigratingTable<StubClazzName>("StubTableName") {
                     val id by long("id").primaryKey().bindTo { it.id }
-                    val createdAt by timestamp("created_at").bindTo { it.createdAt }
-                    val updatedAt by timestamp("updated_at").bindTo { it.updatedAt }
+                    val createdAt by timestamp("created_at").nullable().bindTo { it.createdAt }
+                    val updatedAt by timestamp("updated_at").nullable().bindTo { it.updatedAt }
                 }
-            """
+            """.trimIndent()
         }
     }
 }
