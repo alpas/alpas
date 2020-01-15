@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import uy.klutter.core.uri.buildUri
 import kotlin.reflect.KClass
 
+lateinit var app: Alpas
+    private set
+
 open class AlpasTest(entryClass: Class<*>) : Alpas(emptyArray(), entryClass) {
     lateinit var lastCall: HttpCall
     private val routeMiddlewareToSkip = mutableListOf<String>()
@@ -50,7 +53,9 @@ abstract class TestBase(entryClass: Class<*>) {
     open val configureSession = true
     protected val app: AlpasTest by lazy {
         System.setProperty(RUN_MODE, "test")
-        AlpasTest(entryClass)
+        AlpasTest(entryClass).also {
+            dev.alpas.pulsar.app = it
+        }
     }
 
     protected fun runApp() {
