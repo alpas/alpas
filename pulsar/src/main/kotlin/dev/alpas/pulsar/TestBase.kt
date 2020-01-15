@@ -1,5 +1,6 @@
 package dev.alpas.pulsar
 
+import com.github.javafaker.Faker
 import dev.alpas.*
 import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
@@ -115,6 +116,15 @@ abstract class TestBase(entryClass: Class<*>) {
         }
     }
 
+    protected fun assertRedirectToRoute(
+        name: String,
+        params: Map<String, Any>? = null,
+        absolute: Boolean = true,
+        status: Int? = null
+    ) {
+        assertRedirect(routeNamed(name, params, absolute), status)
+    }
+
     protected fun assertRedirectExternal(location: String, status: Int? = null) {
         val redirect = call().redirector.redirect
         val uri = buildUri(redirect.location).clearQuery().build().asString()
@@ -152,9 +162,11 @@ abstract class TestBase(entryClass: Class<*>) {
         assertEquals(viewName, call().view.name)
     }
 
-    protected fun assertViewHas(expectedArgs: Map<String, Any?>) {
+    protected fun assertViewHas(expectedArgs: Map<String, Any?>, argsSizeShouldMatch: Boolean = false) {
         val actualArgs = viewArgs()
-        assertEquals(expectedArgs.size, actualArgs?.size)
+        if (argsSizeShouldMatch) {
+            assertEquals(expectedArgs.size, actualArgs?.size)
+        }
         expectedArgs.forEach {
             assertEquals(it.value, actualArgs?.get(it.key))
         }
@@ -239,4 +251,22 @@ fun RequestSpecification.wantsJson() = apply {
 
 fun RequestSpecification.bearerToken(token: String) = apply {
     header("Authorization", "Bearer $token")
+}
+
+val faker by lazy { Faker() }
+
+fun <E, EF : EntityFactory<E>> from(factory: () -> EF, attrs: Map<String, Any?> = emptyMap()): E {
+    return factory().make(attrs)
+}
+
+fun <E, EF : EntityFactory<E>> manyFrom(
+    factory: () -> EF,
+    count: Int = 1,
+    attrs: Map<String, Any?> = emptyMap()
+): List<E> {
+    return factory().makeMany(count, attrs)
+}
+
+fun <EF : EntityFactory<*>> factory(factory: () -> EF): EF {
+    return factory()
 }
