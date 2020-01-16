@@ -13,10 +13,10 @@ internal class EntityStubs {
             return """
                 package StubPackageName
                 
+                import dev.alpas.ozone.bigIncrements
                 import me.liuwj.ktorm.dsl.QueryRowSet
                 import me.liuwj.ktorm.schema.BaseTable
                 import dev.alpas.ozone.MigratingTable
-                import me.liuwj.ktorm.schema.long
                 import me.liuwj.ktorm.schema.timestamp
                 import java.time.Instant
                 
@@ -49,9 +49,9 @@ internal class EntityStubs {
             return """
                 package StubPackageName
                 
-                import me.liuwj.ktorm.entity.Entity
                 import dev.alpas.ozone.MigratingTable
-                import me.liuwj.ktorm.schema.long
+                import dev.alpas.ozone.bigIncrements
+                import me.liuwj.ktorm.entity.Entity
                 import me.liuwj.ktorm.schema.timestamp
                 import java.time.Instant
 
@@ -62,7 +62,7 @@ internal class EntityStubs {
 
                     companion object : Entity.Factory<StubClazzName>()
                 }
-            """.trimIndent()
+            """
         }
 
         private fun tableStub(): String {
@@ -72,7 +72,7 @@ internal class EntityStubs {
                     val createdAt by timestamp("created_at").nullable().bindTo { it.createdAt }
                     val updatedAt by timestamp("updated_at").nullable().bindTo { it.updatedAt }
                 }
-            """.trimIndent()
+            """
         }
     }
 }
