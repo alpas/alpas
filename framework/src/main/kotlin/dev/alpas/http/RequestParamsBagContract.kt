@@ -50,16 +50,22 @@ interface RequestParamsBagContract {
         return queryParams?.get(key)
     }
 
-    fun onlyParams(key: String, vararg keys: String): Map<String, Any> {
-        return params?.filterKeys {
-            it.isOneOf(key, *keys)
-        }?.filterNotNullValues() ?: emptyMap()
+    fun onlyParams(key: String, vararg keys: String): Map<String, Any?> {
+        return params
+            ?.filterKeys { it.isOneOf(key, *keys) }
+            ?.filterNotNullValues() // remove nulls
+            ?.map { it.key to it.value.firstOrNull() } // only return the first value from the list
+            ?.toMap()
+            ?: emptyMap()
     }
 
-    fun paramsExcept(key: String, vararg keys: String): Map<String, Any> {
-        return params?.filterKeys {
-            !it.isOneOf(key, *keys)
-        }?.filterNotNullValues() ?: emptyMap()
+    fun paramsExcept(key: String, vararg keys: String): Map<String, Any?> {
+        return params
+            ?.filterKeys { it.isOneOf(key, *keys) }
+            ?.filterNotNullValues() // remove nulls
+            ?.map { it.key to it.value.firstOrNull() } // only return the first value from the list
+            ?.toMap()
+            ?: emptyMap()
     }
 }
 
