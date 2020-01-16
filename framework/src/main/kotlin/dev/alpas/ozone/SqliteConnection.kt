@@ -2,11 +2,12 @@ package dev.alpas.ozone
 
 import dev.alpas.Environment
 import me.liuwj.ktorm.database.Database
+import me.liuwj.ktorm.support.sqlite.SQLiteDialect
 import java.io.File
 import java.nio.file.Paths
 
 open class SqliteConnection(private val env: Environment, config: ConnectionConfig? = null) : DatabaseConnection {
-    open val dialect = config?.sqlDialect
+    open val dialect = config?.sqlDialect ?: SQLiteDialect()
 
     private val db by lazy {
         val driver = "org.sqlite.JDBC"

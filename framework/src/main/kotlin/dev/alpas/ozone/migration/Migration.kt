@@ -16,7 +16,7 @@ abstract class Migration {
     fun <E : Entity<E>> createTable(
         table: MigratingTable<E>,
         ifNotExists: Boolean = false,
-        block: (TableBuilder.() -> Unit)? = null
+        block: (TableBuilder.() -> Unit) = {}
     ) {
         val cols = table.columns
         adapter.createTable(table.tableName, ifNotExists) {
@@ -27,14 +27,22 @@ abstract class Migration {
             table.primaryKey?.name?.let {
                 primaryKey(it)
             }
-            if (block != null) {
-                block()
-            }
+            block()
         }
     }
 
-    fun <E : Entity<E>> dropTable(table: MigratingTable<E>) {
+    fun <E : Entity<E>> createTable(
+        table: MigratingTable<E>,
+        vararg tables: MigratingTable<E>,
+        ifNotExists: Boolean = false
+    ) {
+        createTable(table, ifNotExists)
+        tables.forEach { createTable(it, ifNotExists) }
+    }
+
+    fun <E : Entity<E>> dropTable(table: MigratingTable<E>, vararg tables: MigratingTable<E>) {
         adapter.dropTable(table.tableName)
+        tables.forEach { adapter.dropTable(it.tableName) }
     }
 
     open fun up() {}

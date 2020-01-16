@@ -12,7 +12,7 @@ open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) :
     open val username = config?.username ?: env("DB_USERNAME", "")
     open val password = config?.password ?: env("DB_PASSWORD", "")
     open val useSSL = config?.useSSL ?: env("DB_USE_SSL", false)
-    open val dialect = config?.sqlDialect
+    open val dialect = config?.sqlDialect ?: MySqlDialect()
 
     private val db: Database by lazy {
         val ds = HikariDataSource().also {
