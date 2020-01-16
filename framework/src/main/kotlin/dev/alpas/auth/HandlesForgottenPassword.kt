@@ -29,7 +29,7 @@ interface HandlesForgottenPassword {
     fun sendResetLinkEmail(call: HttpCall) {
         validate(call)
         val email = call.param("email").orAbort()
-        val user = call.make<UserProvider>().findByUsername(email)
+        val user = call.userProvider?.findByUsername(email)
         if (user == null) {
             throwValidationError(RequestError("email", email, message = "User with that email doesn't exist"))
             call.redirect().back()

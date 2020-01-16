@@ -21,7 +21,7 @@ interface HandlesPasswordReset {
     @Suppress("unused")
     fun reset(call: HttpCall) {
         validate(call)
-        val user = call.make<UserProvider>().findByUsername(call.param("email").orAbort())
+        val user = call.userProvider?.findByUsername(call.param("email").orAbort())
             ?: onResetFail(call, RequestError("email", message = "User doesn't exist"))
         val tokenIsValid = verifyToken(call, user)
         if (!tokenIsValid) {
