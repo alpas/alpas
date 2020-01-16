@@ -238,6 +238,11 @@ abstract class TestBase(entryClass: Class<*>) {
         becomeUser(user, true)
     }
 
+    fun <T> asUser(user: Authenticatable, block: () -> T): T {
+        becomeUser(user, true)
+        return block()
+    }
+
     fun routeNamed(name: String, params: Map<String, Any>? = null, absolute: Boolean = true): String {
         return call().routeNamed(name, params, absolute)
     }
@@ -252,6 +257,11 @@ fun RequestSpecification.wantsJson() = apply {
 fun RequestSpecification.bearerToken(token: String) = apply {
     header("Authorization", "Bearer $token")
 }
+
+fun RequestSpecification.trapRedirects() = apply {
+    redirects().follow(false)
+}
+
 
 val faker by lazy { Faker() }
 
