@@ -20,7 +20,7 @@ open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) :
             it.username = username
             it.password = password
         }
-        Database.connect(ds)
+        Database.connect(ds, dialect)
     }
 
     override fun connect(): Database = db
