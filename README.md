@@ -1,11 +1,11 @@
 ### Alpas - The Rapid and Delightful Kotlin Web Framework. Easy, elegant, and productive! 🚀
 
-Alpas is batteries included web framework for Kotlin with a strong focus on developers' productivity.
+Alpas is a batteries-included web framework for Kotlin with a strong focus on developers' productivity.
 The main goal of Alpas is to get you started quick and enable you to move faster while
 letting you enjoy doing what you are the best at — crafting a delightful web app.
 
 Alpas strives to be simple and elegant and wants to serve you whether you have written any JVM based web
-apps before or not—there is no xml or properties files to be configured, no scattered annotations
+apps before or not—there is no xml or properties files to configure, no scattered annotations
 to memorize—and yet, there is no huge learning curve to get started.
 
 Alpas comes bundled with most of what you need to write modern web apps—**authentication**,
@@ -29,9 +29,9 @@ framework that has everything you need but still gets out of your way, then Alpa
 
 ### Learning Alpas
 
-Alpas is extensively, thoroughly, and meticulously documented; and, no, we are not just talking about code
-comments and hand-waving! We have put as much effort writing and updating the documentation as we have
-spent time crafting the framework, and we are proud of it!
+Alpas is extensively and meticulously documented; and, no, we are not just talking about code
+comments and hand-waving! We have put as much effort writing and updating the documentation as
+we have spent time crafting the framework, and we are proud of it!
 
 The [Alpas documentation site][alpas-docs] has everything you need to get started and get going—including
 two full featured tutorials showing you how to write web apps from start to finish.
