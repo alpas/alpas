@@ -14,7 +14,7 @@ buildscript {
 
 allprojects {
     group = "dev.alpas"
-    version = '0.10.14'
+    version = '0.10.15'
 }
 
 subprojects { project ->
@@ -41,7 +41,7 @@ subprojects { project ->
     if (project.name != 'runner') {
         apply plugin: "maven-publish"
         apply plugin: "com.jfrog.bintray"
-        
+
         task generateSourcesJar(type: Jar) {
             classifier = "sources"
             from sourceSets.main.allSource
