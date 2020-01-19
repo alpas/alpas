@@ -22,7 +22,7 @@ open class SqliteConnection(private val env: Environment, config: ConnectionConf
 
     private fun defaultDatabase(): String {
         val db = "${env("DB_DATABASE", "dev")}.sqlite"
-        return Paths.get(env.rootDir, "database", db).toString()
+        return Paths.get(env.rootDir, "database", db).toAbsolutePath().toString()
     }
 
     private fun createDatabaseFile(path: String) {
