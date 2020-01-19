@@ -8,7 +8,7 @@ open class AppConfig(env: Environment) : Config {
     open val appPort = env("APP_PORT", 8080)
     open val appUrl = env("APP_URL", "")
     open val connectionTimeOut: Duration = Duration.ofMinutes(1)
-    open val staticDirs = arrayOf("web")
+    open val staticDirs = arrayOf("/web")
     open val encryptionKey = env("APP_KEY")
     open val maxThreads = env("APP_MAX_THREADS", 200)
     open val minThreads = env("APP_MIN_THREADS", 8)

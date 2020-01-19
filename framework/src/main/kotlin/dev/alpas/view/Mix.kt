@@ -11,27 +11,25 @@ internal class Mix(private val app: Application) {
 
     @Synchronized
     operator fun invoke(path: String, manifestDirectory: String = ""): String {
+        // When running on Windows, resource loader is not able to load a resource using
+        // Windows path separator. As a workaround, we'll force using UNIX style path
+        // unless SKIP_ENFORCE_UNIX_PATH environment variable is set to true.
+        val separator = if (app.env("SKIP_ENFORCE_UNIX_PATH", false)) File.separator else "/"
+
         // In dev mode the mix manifest file could change when the developer is actively making changes to the
         // static assets such as .css, .vue, .js files etc. The manifest file shouldn't change in the prod
         // mode. To accommodate this, we'll make mix a singleton for prod and non-singleton in de mode.
-        val separator = File.separator
         if (app.env.isDev || !::manifestMap.isInitialized) {
             val config = app.config<ViewConfig>()
             val mixManifestDirectory = config.mixManifestDirectory.mustStartWith(separator)
             val webDirectory = config.webDirectory
-            val manifestPath = Paths.get(webDirectory, mixManifestDirectory, manifestFilename).toString().let {
-                // When running from GitBash, resource loader is not able to load a resource using
-                // Windows path separator. As a workaround, we'll force using UNIX style path
-                // if alpas_enforce_unix_path environment variable is set to true.
-                val enforceUnixPath = System.getenv("alpas_enforce_unix_path")
-                if (enforceUnixPath != null) {
-                    app.logger.debug { "Modifying manifest path separator because enforce UNIX path is set." }
-                    it.replace(separator, "\\")
-                } else {
-                    it
-                }
-            }
+            val manifestPath = Paths.get(webDirectory, mixManifestDirectory, manifestFilename)
+                .toString()
+                .replace(File.separator, separator)
+                .mustStartWith(separator)
+
             app.logger.debug { "Mix manifest file will be loaded from $manifestPath" }
+
             val text = app.make<ResourceLoader>().load(manifestPath)?.readText()
                 ?: throw Exception("Mix manifestMap file $manifestPath doesn't exist")
             manifestMap = JsonSerializer.deserialize<Map<String, String>>(text)
