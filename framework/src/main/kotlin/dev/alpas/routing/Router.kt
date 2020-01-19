@@ -13,6 +13,7 @@ class Router(
     middleware: Set<KClass<Middleware<HttpCall>>> = emptySet(),
     middlewareGroups: Set<String> = emptySet()
 ) : RoutableBase(middleware, middlewareGroups) {
+
     private lateinit var router: BaseRouter<Route>
     private val namedRoutes: Map<String, Route> by lazy {
         routes.filter { it.name.isNotBlank() }.map { Pair(it.name, it) }.toMap()
@@ -28,21 +29,9 @@ class Router(
 
     constructor(vararg middleware: KClass<Middleware<HttpCall>>) : this(middleware.toSet())
 
-    fun mount(prefix: String, other: Router): Router {
-        other.routes.forEach { route ->
-            route.path = combinePaths(prefix, route.path)
-            routes.add(route)
-        }
-        return this
-    }
-
-    fun mount(other: Router): Router {
-        return mount("/", other)
-    }
-
     internal fun routeFor(methodName: String, uri: String): RouteResult {
         return router.result().also {
-            router.route(methodName, uri, it)
+            router.route(methodName.toUpperCase(), uri, it)
         }
     }
 
@@ -53,10 +42,7 @@ class Router(
         buildRouter(routes, packageClassLoader)
     }
 
-    private fun buildRouter(
-        routes: List<Route>,
-        packageClassLoader: PackageClassLoader
-    ) {
+    private fun buildRouter(routes: List<Route>, packageClassLoader: PackageClassLoader) {
         router = BaseRouter.builder<Route>().apply {
             optionalTrailingSlash(true)
             routes.forEach {
@@ -86,4 +72,16 @@ class Router(
         println(this)
         return this
     }
+}
+
+fun Router.mount(prefix: String, other: Router): Router {
+    other.routes.forEach { route ->
+        route.path = combinePaths(prefix, route.path)
+        routes.add(route)
+    }
+    return this
+}
+
+fun Router.mount(other: Router): Router {
+    return mount("/", other)
 }
