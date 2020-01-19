@@ -28,6 +28,7 @@ subprojects { project ->
     dependencies {
         compile "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
         compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     }
 
     compileKotlin {
@@ -41,7 +42,7 @@ subprojects { project ->
     if (project.name != 'runner') {
         apply plugin: "maven-publish"
         apply plugin: "com.jfrog.bintray"
-        
+
         task generateSourcesJar(type: Jar) {
             classifier = "sources"
             from sourceSets.main.allSource
@@ -111,4 +112,3 @@ subprojects { project ->
         useJUnitPlatform()
     }
 }
-

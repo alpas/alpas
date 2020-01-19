@@ -2,7 +2,7 @@ dependencies {
     compile project(":framework")
     compile 'io.rest-assured:rest-assured:4.1.1'
     compile 'io.rest-assured:kotlin-extensions:4.1.1'
-    compile 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+    compile 'org.junit.jupiter:junit-jupiter:5.5.2'
     compile 'com.github.javafaker:javafaker:1.0.1'
     compile "uy.kohesive.klutter:klutter-core:2.6.0"
 }
