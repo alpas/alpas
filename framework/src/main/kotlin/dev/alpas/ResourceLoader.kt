@@ -2,9 +2,8 @@ package dev.alpas
 
 import java.net.URL
 
-class ResourceLoader(entryClass: Class<*>) {
-    private val entryClassLoader by lazy { entryClass.classLoader }
+class ResourceLoader(private val entryClass: Class<*>) {
     fun load(resource: String): URL? {
-        return entryClassLoader.getResource(resource)
+        return entryClass.getResource(resource)
     }
 }
