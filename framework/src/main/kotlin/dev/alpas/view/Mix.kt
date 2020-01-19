@@ -16,7 +16,7 @@ internal class Mix(private val app: Application) {
             val config = app.config<ViewConfig>()
             val mixManifestDirectory = config.mixManifestDirectory.mustStartWith("/")
             val webDirectory = config.webDirectory
-            val manifestPath = Paths.get(webDirectory, mixManifestDirectory, "mix-manifest.json").toString()
+            val manifestPath = Paths.get(webDirectory, mixManifestDirectory, "mix-manifest.json").toAbsolutePath().toString()
             val text = app.make<ResourceLoader>().load(manifestPath)?.readText()
                 ?: throw Exception("Mix manifestMap file $manifestPath doesn't exist")
             manifestMap = JsonSerializer.deserialize<Map<String, String>>(text)
