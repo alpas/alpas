@@ -19,16 +19,19 @@ internal class Mix(private val app: Application) {
             val config = app.config<ViewConfig>()
             val mixManifestDirectory = config.mixManifestDirectory.mustStartWith(separator)
             val webDirectory = config.webDirectory
-            // When running from GitBash, resource loader is not able to load a resource using
-            // Windows path separator. As a workaround, we'll force using UNIX style path
-            // if alpas_enforce_unix_path environment variable is set to true.
-            val enforceUnixPath = app.env("alpas_enforce_unix_path", false)
-            val manifestPath = if (enforceUnixPath) {
-                "$webDirectory/$mixManifestDirectory/$manifestFilename"
-            } else {
-                Paths.get(webDirectory, mixManifestDirectory, manifestFilename).toString()
+            val manifestPath = Paths.get(webDirectory, mixManifestDirectory, manifestFilename).toString().let {
+                // When running from GitBash, resource loader is not able to load a resource using
+                // Windows path separator. As a workaround, we'll force using UNIX style path
+                // if alpas_enforce_unix_path environment variable is set to true.
+                val enforceUnixPath = System.getenv("alpas_enforce_unix_path")
+                if (enforceUnixPath != null) {
+                    app.logger.debug { "Modifying manifest path separator because enforce UNIX path is set." }
+                    it.replace(separator, "\\")
+                } else {
+                    it
+                }
             }
-            app.logger.debug { "Found mix manifest file at $manifestPath" }
+            app.logger.debug { "Mix manifest file will be loaded from $manifestPath" }
             val text = app.make<ResourceLoader>().load(manifestPath)?.readText()
                 ?: throw Exception("Mix manifestMap file $manifestPath doesn't exist")
             manifestMap = JsonSerializer.deserialize<Map<String, String>>(text)
