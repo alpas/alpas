@@ -18,6 +18,7 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
         // file in which case we'll use its parent directory as the working directory path
         if (file.isFile) file.parentFile else file
     }
+    override val cwd by lazy { File("").absoluteFile }
     override val srcPackage: String by lazy { entryClass.`package`.name }
     override val logger: KLogger by lazy { KotlinLogging.logger("alpas") }
     override val env by lazy { make<Environment>() }

@@ -2,6 +2,7 @@ package dev.alpas
 
 import dev.alpas.http.HttpCall
 import mu.KLogger
+import java.io.File
 import kotlin.reflect.KClass
 
 interface Application : Container {
@@ -11,6 +12,7 @@ interface Application : Container {
     val env: Environment
     val configs: List<Config>
     val kernel: Kernel
+    val cwd: File
     fun ignite()
     fun takeOff()
     fun stop()
