@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class LocalMailDriver(env: Environment) : MailDriver {
-    private val outputPath by lazy { Paths.get(env.storagePath, "mails").toUri().path }
+    private val outputPath by lazy { Paths.get(env.storagePath, "mails").toAbsolutePath().toString() }
     private val logger by lazy { KotlinLogging.logger {} }
     private val fromName = env("MAIL_FROM_NAME", "Postmaster")
     private val fromAddress = env("MAIL_FROM_ADDRESS", "hello@example.com")

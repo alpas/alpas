@@ -10,7 +10,7 @@ open class LoggerServiceProvider : ServiceProvider {
         val config = app.appConfig()
         val logConfig = if (app.env.runMode.isConsole()) config.consoleLogConfig else config.appLogConfig
         System.setProperty(
-            "logback.configurationFile", Paths.get(app.env.rootDir, logConfig).toUri().path
+            "logback.configurationFile", Paths.get(app.env.rootDir, logConfig).toAbsolutePath().toString()
         )
     }
 }

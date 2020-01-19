@@ -57,7 +57,7 @@ class Environment(
     val isProduction by lazy { invoke("APP_LEVEL").isOneOf("prod", "production", "live") }
     val isLocal by lazy { invoke("APP_LEVEL").isOneOf("dev", "debug", "local") }
     val isDev = isLocal
-    val storagePath: String = Paths.get(rootDir, "storage").toUri().path
+    val storagePath: String = Paths.get(rootDir, "storage").toAbsolutePath().toString()
     var supportsSession = false
         internal set
 }
