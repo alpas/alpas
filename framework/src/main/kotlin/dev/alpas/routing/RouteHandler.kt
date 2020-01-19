@@ -7,6 +7,8 @@ import dev.alpas.orAbort
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
+internal var dynamicControllerFactory: (() -> Controller)? = null
+
 sealed class RouteHandler {
     abstract fun handle(call: HttpCall)
     protected fun invokeControllerMethod(methodName: String, controller: Controller, call: HttpCall) {
@@ -31,7 +33,7 @@ sealed class RouteHandler {
     }
 }
 
-class ControllerHandler(val controller: KClass<*>, val method: String) : RouteHandler() {
+class ControllerHandler(val controller: KClass<out Controller>, val method: String) : RouteHandler() {
     override fun handle(call: HttpCall) {
         controllerInstance?.let { controller ->
             invokeControllerMethod(method, controller, call)
@@ -43,21 +45,23 @@ class ControllerHandler(val controller: KClass<*>, val method: String) : RouteHa
 }
 
 class DynamicControllerHandler(private val controllerName: String, val method: String) : RouteHandler() {
-
-    var controller: Class<*>? = null
+    var controller: Class<Controller>? = null
         private set
 
-    private val controllerInstance by lazy { controller?.kotlin?.createInstance() as? Controller }
+    private val controllerInstance by lazy {
+        dynamicControllerFactory?.invoke()
+            ?: controller?.kotlin?.createInstance()
+            ?: throw IllegalArgumentException("Cannot create an instance of '$controllerName'.")
+    }
 
     internal fun prepare(loader: PackageClassLoader) {
         val fullControllerName = "${loader.packageName}.$controllerName"
-        controller = loader.classOfName(fullControllerName)?.loadClass()
+        @Suppress("UNCHECKED_CAST")
+        controller = loader.classOfName(fullControllerName)?.loadClass() as? Class<Controller>
     }
 
     override fun handle(call: HttpCall) {
-        controllerInstance?.let { controller ->
-            invokeControllerMethod(method, controller, call)
-        }.orAbort()
+        invokeControllerMethod(method, controllerInstance, call).orAbort()
     }
 
     override fun toString() = "$controllerName#$method"
