@@ -36,7 +36,7 @@ open class SessionConfig(env: Environment) : Config {
     )
         protected set
 
-    open var storePath: String = Paths.get(env.storagePath, "", "sessions").toUri().path
+    open var storePath: String = Paths.get(env.storagePath, "", "sessions").toAbsolutePath().toString()
         protected set
 
     open var encryptExcept = listOf<String>()

@@ -69,11 +69,11 @@ abstract class GeneratorCommand(
     }
 
     protected fun sourceOutputPath(vararg dirs: String): String? {
-        return Paths.get(srcDir, *dirs).toUri().path
+        return Paths.get(srcDir, *dirs).toAbsolutePath().toString()
     }
 
     protected fun templatesOutputPath(vararg dirs: String): String? {
-        return Paths.get(templatesDir.path, *dirs).toUri().path
+        return Paths.get(templatesDir.path, *dirs).toAbsolutePath().toString()
     }
 
     protected fun makePackageName(vararg dirs: String): String {
