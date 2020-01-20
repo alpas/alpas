@@ -29,6 +29,7 @@ subprojects { project ->
         compile "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
         compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
         testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
+        testImplementation "io.mockk:mockk:1.9.3"
     }
 
     compileKotlin {
