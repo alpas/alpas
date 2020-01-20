@@ -1,6 +1,5 @@
 package dev.alpas.tests
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import dev.alpas.JsonSerializer
 import dev.alpas.base64Decoded
 import dev.alpas.encryption.EncryptedData

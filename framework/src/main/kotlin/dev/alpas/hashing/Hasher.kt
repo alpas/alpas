@@ -6,7 +6,7 @@ import dev.alpas.base64Encoded
 
 class Hasher(private val config: HashConfig) {
     private val argon by lazy { Argon2Factory.create() }
-    // hash of the given value
+    // hash the given value
     fun hash(value: CharArray, encode: Boolean = true): String {
         try {
             return argon.hash(config.iterations, config.memory, config.threads, value).let {
