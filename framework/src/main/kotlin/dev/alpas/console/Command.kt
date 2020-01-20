@@ -36,7 +36,7 @@ abstract class Command(
     }
     protected val resourcesDir by lazy { File(Paths.get(File(srcDir).parentFile.absolutePath, "resources").toUri()) }
     protected val templatesDir by lazy { File(resourcesDir, "templates") }
-    protected val quiet by option("--quiet", "-q", help = "Don't print any non-error messages.").flag()
+    protected val quiet by option("--quiet", "-q", help = "Don't print any non-error messages").flag()
 
     override fun run() = Unit
 

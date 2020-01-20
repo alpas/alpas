@@ -2,7 +2,7 @@ package dev.alpas.console
 
 class AlpasCommand(private val commandAliases: Map<String, List<String>> = emptyMap()) :
     Command(
-        help = "🚀 Rapid web development with Kotlin. Easy, elegant, and productive.", name = "",
+        help = "The Rapid and Delightful Kotlin Web Framework.", name = "",
         autoCompleteEnvvar = "ALPAS_AUTOCOMPLETE_SHELL"
     ) {
 
