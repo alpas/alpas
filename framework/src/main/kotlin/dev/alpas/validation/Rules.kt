@@ -8,7 +8,7 @@ typealias ErrorMessage = ((String, Any?) -> String)?
 
 open class Max(private val length: Int, private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
-        return ((value ?: "").toString().length < length).also {
+        return ((value ?: "").toString().length <= length).also {
             if (!it) {
                 error =
                     message?.let { it(attribute, value) } ?: "The $attribute must be at most $length characters long."
