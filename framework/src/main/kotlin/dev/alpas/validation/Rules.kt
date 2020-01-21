@@ -11,7 +11,7 @@ open class Max(private val length: Int, private val message: ErrorMessage = null
         return ((value ?: "").toString().length <= length).also {
             if (!it) {
                 error =
-                    message?.let { it(attribute, value) } ?: "The $attribute must be at most $length characters long."
+                    message?.let { it(attribute, value) } ?: "The '$attribute' must be at most $length characters long."
             }
         }
     }
@@ -22,7 +22,7 @@ open class Min(private val length: Int, private val message: ErrorMessage = null
         return ((value ?: "").toString().length >= length).also {
             if (!it) {
                 error =
-                    message?.let { it(attribute, value) } ?: "The $attribute must be at least $length characters long."
+                    message?.let { it(attribute, value) } ?: "The '$attribute' must be at least $length characters long."
             }
         }
     }
@@ -81,7 +81,7 @@ open class Email(private val message: ErrorMessage = null) : Rule() {
             EmailAddressCriteria.RFC_COMPLIANT
         )).also {
             if (!it) {
-                error = message?.let { it(attribute, value) } ?: "$attribute is not a valid email address."
+                error = message?.let { it(attribute, value) } ?: "'$attribute' is not a valid email address."
             }
         }
     }
@@ -106,7 +106,7 @@ open class Confirm(private val message: ErrorMessage = null) : Rule() {
         val valueConfirm = call.param(confirmAttribute1) ?: call.param(confirmAttribute2)
         return (!valueConfirm?.toString().isNullOrBlank() && value == valueConfirm).also {
             if (!it) {
-                error = message?.let { it(attribute, valueConfirm) } ?: "The $attribute confirmation does not match."
+                error = message?.let { it(attribute, valueConfirm) } ?: "The '$attribute' confirmation does not match."
             }
         }
     }
