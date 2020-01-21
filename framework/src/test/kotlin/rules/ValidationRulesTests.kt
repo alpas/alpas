@@ -2,6 +2,7 @@ package dev.alpas.tests.rules
 
 import dev.alpas.validation.Max
 import dev.alpas.validation.Min
+import dev.alpas.validation.NotNull
 import dev.alpas.validation.Required
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -86,6 +87,33 @@ class ValidationRulesTests {
         Required() { attr, value -> "$attr value should not be $value" }.apply {
             check("firstname", null)
             assertEquals("firstname value should not be null", error)
+        }
+    }
+
+    @Test
+    fun `not-null rule test`() {
+        NotNull().apply {
+            assertFalse(check("lastname", null))
+            assertEquals("The non null field 'lastname' is null.", error)
+        }
+
+        NotNull().apply {
+            assertTrue(check("lastname", ""))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        NotNull().apply {
+            assertTrue(check("lastname", "doe"))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        NotNull() { attr, value -> "$attr value should not be $value" }.apply {
+            check("lastname", null)
+            assertEquals("lastname value should not be null", error)
         }
     }
 }
