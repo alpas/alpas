@@ -8,9 +8,9 @@ import javax.servlet.http.Cookie
 
 class EncryptCookies : Middleware<HttpCall>() {
     override fun invoke(call: HttpCall, forward: Handler<HttpCall>) {
-        val incomingCookies = cookiesToEncrypt(call)
+        val incomingCookies = cookiesToEncrypt(call, call.cookie.incomingCookies)
+        val encrypter = call.make<Encrypter>()
         if (incomingCookies.count() > 0) {
-            val encrypter = call.make<Encrypter>()
             // decrypt incoming cookies
             incomingCookies.forEach {
                 try {
@@ -23,9 +23,8 @@ class EncryptCookies : Middleware<HttpCall>() {
 
         forward(call)
 
-        val outgoingCookies = cookiesToEncrypt(call)
+        val outgoingCookies = cookiesToEncrypt(call, call.cookie.outgoingCookies.toTypedArray())
         if (outgoingCookies.count() > 0) {
-            val encrypter = call.make<Encrypter>()
             // encrypt outgoing cookies
             outgoingCookies.forEach {
                 it.value = encrypter.encrypt(it.value)
@@ -33,9 +32,9 @@ class EncryptCookies : Middleware<HttpCall>() {
         }
     }
 
-    private fun cookiesToEncrypt(call: HttpCall): List<Cookie> {
-        val config = call.config<SessionConfig>()
-        return call.cookie.filterNot {
+    private fun cookiesToEncrypt(call: HttpCall, cookies: Array<Cookie>): Iterable<Cookie> {
+        val config = call.makeElse { SessionConfig(call.env) }
+        return cookies.filterNot {
             it.name.isOneOf(
                 config.cookieName,
                 "JSESSIONID",

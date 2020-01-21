@@ -6,40 +6,35 @@ import java.nio.file.Paths
 import java.time.Duration
 
 open class SessionConfig(env: Environment) : Config {
-    open var storeDriver: SessionStoreDriver =
+    open val storeDriver: SessionStoreDriver by lazy {
         SessionStoreDriver.fromString(
             env("SESSION_DRIVER"),
             SessionStoreDriver.FILE
         )
-        protected set
+    }
 
-    open var httpOnly = true
-        protected set
+    open val httpOnly = true
 
-    open var lifetime: Duration = Duration.ofHours(2)
-        protected set
+    open val lifetime: Duration = Duration.ofHours(2)
 
-    open var path = "/"
-        protected set
+    open val path = "/"
 
-    open var domain = env("SESSION_DOMAIN")
+    open val domain = env("SESSION_DOMAIN")
 
-    open var cookieName = "alpas_session"
-        protected set
+    open val cookieName = "alpas_session"
 
-    open var secure = env("SESSION_SECURE_COOKIE")?.toBoolean() ?: false
-        protected set
+    open val secure = env("SESSION_SECURE_COOKIE")?.toBoolean() ?: false
 
-    open var cacheDriver = SessionCacheDriver.fromString(
-        env("SESSION_CACHE_DRIVER"),
-        SessionCacheDriver.MEMORY
-    )
-        protected set
+    open val cacheDriver by lazy {
+        SessionCacheDriver.fromString(
+            env("SESSION_CACHE_DRIVER"),
+            SessionCacheDriver.MEMORY
+        )
+    }
 
-    open var storePath: String = Paths.get(env.storagePath, "", "sessions").toAbsolutePath().toString()
-        protected set
+    open val storePath: String = Paths.get(env.storagePath, "", "sessions").toAbsolutePath().toString()
 
-    open var encryptExcept = listOf<String>()
+    open val encryptExcept = listOf<String>()
 }
 
 enum class SessionStoreDriver {

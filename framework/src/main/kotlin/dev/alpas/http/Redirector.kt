@@ -99,7 +99,7 @@ class Redirector(
     }
 
     private fun saveCookies(cookie: CookieJar?) {
-        cookie?.forEach {
+        cookie?.outgoingCookies?.forEach {
             response.servletResponse.addCookie(it)
         }
     }

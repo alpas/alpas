@@ -24,7 +24,7 @@ open class VerifyCsrfToken : Middleware<HttpCall>() {
     private fun addXSRFToken(call: HttpCall) {
         val config = call.config<SessionConfig>()
 
-        call.addCookie(
+        call.cookie.add(
             "XSRF-TOKEN",
             call.make<Encrypter>().encrypt(call.session.csrfToken() ?: ""),
             lifetime = config.lifetime,
