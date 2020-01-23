@@ -17,4 +17,5 @@ open class AppConfig(env: Environment) : Config {
     open val consoleLogConfig: String = env("CONSOLE_LOG_CONFIG", "console_log_config.xml")
     open val commandAliases: Map<String, List<String>> = emptyMap()
     open val allowMethodSpoofing = true
+    open val throwOnMissingStaticDirectories = false
 }
