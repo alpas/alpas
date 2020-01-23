@@ -10,7 +10,7 @@ class DatabaseConfig(env: Environment) : DatabaseConfig(env) {
     init {
         addConnection(
             "mysql",
-            lazy { MySqlConnection(env, ConnectionConfig()) }
+            lazy { MySqlConnection(env, ConnectionConfig(extraParams = mapOf("allowPublicKeyRetrieval" to true))) }
         )
     }
 }
