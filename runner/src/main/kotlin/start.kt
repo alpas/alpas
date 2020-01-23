@@ -16,7 +16,7 @@ class PageController : Controller() {
 }
 
 fun Router.appRoutes() {
-    get("/", PageController::class)
+    get("/", PageController::class).middlewareGroup("web")
 //    get("/makeauth") {
 //        make<AlpasCommand>().execute(arrayOf("make:auth"))
 //    }

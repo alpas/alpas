@@ -66,7 +66,7 @@ class SessionAuthChannel(private val call: HttpCall, override val userProvider: 
         // todo: clear remember me cookie
         user = null
         val config = call.config<SessionConfig>()
-        call.forgetCookie(config.cookieName, path = config.path, domain = config.domain)
+        call.cookie.forget(config.cookieName, path = config.path, domain = config.domain)
         call.session.invalidate()
     }
 }

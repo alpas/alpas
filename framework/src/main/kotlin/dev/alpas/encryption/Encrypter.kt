@@ -8,7 +8,7 @@ import dev.alpas.secureByteArray
 import dev.alpas.secureRandomString
 import se.simbio.encryption.Encryption
 
-private data class EncryptedData(val iv: String, val salt: String, val value: String?)
+internal data class EncryptedData(val iv: String, val salt: String, val value: String?)
 
 class Encrypter(private val key: String) {
     fun encrypt(value: String): String? {

@@ -14,7 +14,7 @@ buildscript {
 
 allprojects {
     group = "dev.alpas"
-    version = '0.10.20'
+    version = '0.11.0'
 }
 
 subprojects { project ->
@@ -28,6 +28,8 @@ subprojects { project ->
     dependencies {
         compile "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
         compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
+        testImplementation "io.mockk:mockk:1.9.3"
     }
 
     compileKotlin {
@@ -111,4 +113,3 @@ subprojects { project ->
         useJUnitPlatform()
     }
 }
-

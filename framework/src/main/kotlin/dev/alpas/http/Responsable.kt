@@ -105,24 +105,10 @@ interface Responsable {
         servletResponse.status = code
         return this
     }
-
-    fun addCookie(
-        name: String,
-        value: String?,
-        lifetime: Duration = Duration.ofSeconds(-1),
-        path: String? = null,
-        domain: String? = null,
-        secure: Boolean = false,
-        httpOnly: Boolean = true
-    ): Responsable
-
-    fun addCookie(cookie: Cookie): Responsable
-    fun forgetCookie(name: String, path: String? = null, domain: String? = null): Responsable
 }
 
 class Response internal constructor(override val servletResponse: HttpServletResponse) : Responsable {
     private var headers = mutableMapOf<String, String>()
-    private var cookies = mutableListOf<Cookie>()
     override val errorBag: ErrorBag by lazy { ErrorBag() }
     override lateinit var view: View
     override lateinit var responseStream: InputStream
@@ -138,29 +124,8 @@ class Response internal constructor(override val servletResponse: HttpServletRes
         return this
     }
 
-    override fun addCookie(
-        name: String,
-        value: String?,
-        lifetime: Duration,
-        path: String?,
-        domain: String?,
-        secure: Boolean,
-        httpOnly: Boolean
-    ): Responsable {
-        return addCookie(makeCookie(name, value, lifetime, path, domain, secure, httpOnly))
-    }
-
-    override fun addCookie(cookie: Cookie): Responsable {
-        cookies.add(cookie)
-        return this
-    }
-
-    override fun forgetCookie(name: String, path: String?, domain: String?): Responsable {
-        return addCookie(name, "", lifetime = Duration.ZERO, path = path, domain = domain)
-    }
-
     override fun finalize(call: HttpCall) {
-        saveCookies()
+        saveCookies(call)
         copyHeaders()
         copyContent(call)
     }
@@ -171,8 +136,8 @@ class Response internal constructor(override val servletResponse: HttpServletRes
         }
     }
 
-    private fun saveCookies() {
-        cookies.forEach {
+    private fun saveCookies(call: HttpCall) {
+        call.cookie.outgoingCookies.forEach {
             servletResponse.addCookie(it)
         }
     }

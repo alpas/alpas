@@ -13,10 +13,15 @@ open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) :
     open val password = config?.password ?: env("DB_PASSWORD", "")
     open val useSSL = config?.useSSL ?: env("DB_USE_SSL", false)
     open val dialect = config?.sqlDialect ?: MySqlDialect()
+    open val extraParams = config?.extraParams ?: emptyMap()
+    internal val jdbcUrl by lazy {
+        val params = combineParams(extraParams + mapOf("useSSL" to useSSL))
+        "jdbc:mysql://$host:$port/$database?$params"
+    }
 
     private val db: Database by lazy {
         val ds = HikariDataSource().also {
-            it.jdbcUrl = "jdbc:mysql://$host:$port/$database?useSSL=${useSSL}"
+            it.jdbcUrl = jdbcUrl
             it.username = username
             it.password = password
         }
