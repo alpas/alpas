@@ -28,7 +28,7 @@ class MakeValidationGuardCommand(srcPackage: String) :
 }
 
 class MakeValidationRuleCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:validation-rule", help = "Make a new validation rule.") {
+    GeneratorCommand(srcPackage, name = "make:validation-rule", help = "Make a new validation rule") {
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val outputDir = "rules"
@@ -43,6 +43,7 @@ class MakeValidationRuleCommand(srcPackage: String) :
         withColors {
             echo(green("VALIDATION RULE CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/validation"))
         }
     }
 }
