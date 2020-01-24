@@ -1,9 +1,6 @@
 package dev.alpas.console
 
-import dev.alpas.Application
-import dev.alpas.ServiceProvider
-import dev.alpas.appConfig
-import dev.alpas.make
+import dev.alpas.*
 
 class ConsoleCommandsServiceProvider(private val args: Array<String>) : ServiceProvider {
     override fun register(app: Application) {
@@ -23,7 +20,8 @@ class ConsoleCommandsServiceProvider(private val args: Array<String>) : ServiceP
             ServeCommand(),
             MakeCommandCommand(app.srcPackage),
             MakeServiceProviderCommand(app.srcPackage),
-            KeyGenerateCommand()
+            KeyGenerateCommand(),
+            LinkWebCommand(app.env, app.makeElse { AppConfig(app.env) })
         ) + app.kernel.commands(app)
     }
 }

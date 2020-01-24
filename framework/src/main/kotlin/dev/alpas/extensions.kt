@@ -13,6 +13,8 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.net.URLDecoder
 import java.nio.charset.Charset
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.time.LocalDateTime
@@ -29,6 +31,9 @@ inline fun String?.ifNotBlank(defaultValue: (String) -> String): String =
 fun LocalDateTime.format(pattern: String): String? {
     return format(DateTimeFormatter.ofPattern(pattern))
 }
+
+fun String.relativize(other: String) = this.relativize(other.asPath())
+fun String.relativize(other: Path) = this.asPath().relativize(other).toString()
 
 fun String.now(): String? {
     return LocalDateTime.now().format(this)
@@ -96,6 +101,9 @@ fun Any?.printAsWarning() {
 fun Any?.printAsInfo() {
     echo(TermColors().blue(this.toString()))
 }
+
+fun Any.asGray() = TermColors().gray.invoke(this.toString())
+fun Any.asPath() = Paths.get(this.toString())
 
 val Throwable.stackTraceString: String
     get() {
