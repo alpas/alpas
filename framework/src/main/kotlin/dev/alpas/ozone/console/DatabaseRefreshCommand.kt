@@ -7,7 +7,7 @@ import java.io.File
 class DatabaseRefreshCommand(srcPackage: String) : MigrationCommand(
     srcPackage,
     name = "db:refresh",
-    help = "Refresh a database by first dropping all the tables and then running all your migrations."
+    help = "Refresh a database by first dropping all the tables and then running all your migrations"
 ) {
     internal val adapter: DbAdapter by lazy {
         DbAdapter.make(dryRun, quiet)
@@ -17,5 +17,8 @@ class DatabaseRefreshCommand(srcPackage: String) : MigrationCommand(
         adapter.dropAllTables()
         MigrationRunner(File(migrationsDirectory.toUri()), dryRun, packageClassLoader, quiet)
             .migrate()
+        withColors {
+            echo(yellow("https://alpas.dev/docs/migrations"))
+        }
     }
 }

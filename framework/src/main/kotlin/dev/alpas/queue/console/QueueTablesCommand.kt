@@ -12,7 +12,7 @@ class QueueTablesCommand(srcPackage: String) :
     GeneratorCommand(
         srcPackage,
         name = "queue:tables",
-        help = "Create all the required migrations for a database queue."
+        help = "Create all the required migrations for a database queue"
     ) {
 
     override val names = listOf("create_queue_jobs_tables")
@@ -34,6 +34,7 @@ class QueueTablesCommand(srcPackage: String) :
         withColors {
             echo(green("MIGRATIONS CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/queues"))
         }
     }
 }

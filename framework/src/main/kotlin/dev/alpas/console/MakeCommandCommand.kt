@@ -7,7 +7,7 @@ import dev.alpas.extensions.toPascalCase
 import java.io.File
 
 class MakeCommandCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:command", help = "Create a new command.") {
+    GeneratorCommand(srcPackage, name = "make:command", help = "Create a new command") {
     private val isGenerator by option("--generator", "-g", help = "Create a generator command.").flag()
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
@@ -22,6 +22,7 @@ class MakeCommandCommand(srcPackage: String) :
             echo(green("COMMAND CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
             echo(yellow("Don't forget to register your command."))
+            echo(yellow("https://alpas.dev/docs/alpas-console"))
         }
     }
 }

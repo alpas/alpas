@@ -7,7 +7,7 @@ import dev.alpas.routing.console.stubs.Stubs
 import java.io.File
 
 class MakeMiddlewareCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:middleware", help = "Create a new middleware class.") {
+    GeneratorCommand(srcPackage, name = "make:middleware", help = "Create a new middleware class") {
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         return OutputFile()

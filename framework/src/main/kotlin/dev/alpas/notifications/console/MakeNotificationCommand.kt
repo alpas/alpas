@@ -7,7 +7,7 @@ import dev.alpas.notifications.console.stubs.Stubs
 import java.io.File
 
 class MakeNotificationCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:notification", help = "Create a new mailable notification.") {
+    GeneratorCommand(srcPackage, name = "make:notification", help = "Create a new mailable notification") {
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         return OutputFile()
@@ -18,8 +18,9 @@ class MakeNotificationCommand(srcPackage: String) :
 
     override fun onCompleted(outputFile: OutputFile) {
         withColors {
-            echo(green("MakeNotificationCommand CREATED 🙌"))
+            echo(green("MAILABLE NOTIFICATION CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/notifications"))
         }
     }
 }

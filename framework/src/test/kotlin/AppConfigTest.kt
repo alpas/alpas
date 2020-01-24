@@ -54,6 +54,29 @@ class AppConfigTest {
         }
     }
 
+    @Test
+    fun `static web directory is included in dev mode`(@RelaxedMockK env: Environment) {
+        env.answerWithDefaultValues()
+        every { env getProperty "isDev" } returns true
+        AppConfig(env).apply {
+            assertEquals(3, staticDirs.size)
+            assertEquals("/test/storage/src/main/resources/web", staticDirs[0])
+            assertEquals("/web", staticDirs[1])
+            assertEquals("/test/storage/app/public", staticDirs[2])
+        }
+    }
+
+    @Test
+    fun `static web directory is excluded in dev mode`(@RelaxedMockK env: Environment) {
+        env.answerWithDefaultValues()
+        every { env getProperty "isDev" } returns false
+        AppConfig(env).apply {
+            assertEquals(2, staticDirs.size)
+            assertEquals("/web", staticDirs[0])
+            assertEquals("/test/storage/app/public", staticDirs[1])
+        }
+    }
+
     private fun Environment.fillWithTestValues() {
         val env = this
         every { env("ENABLE_NETWORK_SHARE", any<Boolean>()) } returns true

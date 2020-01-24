@@ -6,7 +6,7 @@ import dev.alpas.console.Command
 import dev.alpas.routing.Router
 
 class RouteListCommand(private val router: Router, private val authConfig: AuthConfig) :
-    Command(name = "route:list", help = "List all the registered routes.") {
+    Command(name = "route:list", help = "List all the registered routes") {
     override fun run() {
         val routes = router.routes.map {
             val authOnly = it.authOnly()

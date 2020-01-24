@@ -10,8 +10,13 @@ open class AppConfig(env: Environment) : Config {
     open val appUrl = env("APP_URL", "")
     open val connectionTimeOut: Duration = Duration.ofMinutes(1)
     open val staticDirs by lazy {
-        arrayOf("/web", Paths.get(env.storagePath, "app", "public").toAbsolutePath().toString()) +
+        val dirs = arrayOf("/web", Paths.get(env.storagePath, "app", "public").toAbsolutePath().toString()) +
                 extraStaticDirs()
+        if (enableStorageWebDirectory) {
+            arrayOf(storageWebDirectory) + dirs
+        } else {
+            dirs
+        }
     }
     open val encryptionKey = env("APP_KEY")
     open val maxThreads = env("APP_MAX_THREADS", 200)
@@ -22,6 +27,12 @@ open class AppConfig(env: Environment) : Config {
     open val commandAliases: Map<String, List<String>> = emptyMap()
     open val allowMethodSpoofing = true
     open val throwOnMissingStaticDirectories = false
+    open val enableStorageWebDirectory = env.isDev
+    open val storageWebDirectory by lazy {
+        // For this you need to create a symlink from storage/src/main/resources/web to src/main/resources/web
+        // mkdir -p $PWD/storage/src/main/resources && ln -s $PWD/src/main/resources/web $PWD/storage/src/main/resources/web
+        Paths.get(env.storagePath, "src", "main", "resources", "web").toAbsolutePath().toString()
+    }
 
     protected open fun extraStaticDirs() = emptyArray<String>()
 }

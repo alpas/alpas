@@ -5,7 +5,7 @@ import dev.alpas.extensions.toPascalCase
 import java.io.File
 
 class MakeServiceProviderCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:provider", help = "Create a new service provider class.") {
+    GeneratorCommand(srcPackage, name = "make:provider", help = "Create a new service provider class") {
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         return OutputFile()
@@ -18,6 +18,7 @@ class MakeServiceProviderCommand(srcPackage: String) :
         withColors {
             echo(green("SERVICE PROVIDER CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/serivce-providers"))
         }
     }
 }

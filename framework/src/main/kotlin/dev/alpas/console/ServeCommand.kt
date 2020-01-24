@@ -1,3 +1,6 @@
 package dev.alpas.console
 
-class ServeCommand : Command(help = "Serve your app", name = "serve")
+import dev.alpas.AppConfig
+
+class ServeCommand(config: AppConfig) :
+    Command(help = "Serve your app at https://localhost:${config.appPort}", name = "serve")

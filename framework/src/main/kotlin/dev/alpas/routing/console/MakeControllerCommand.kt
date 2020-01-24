@@ -7,7 +7,7 @@ import dev.alpas.routing.console.stubs.Stubs
 import java.io.File
 
 class MakeControllerCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:controller", help = "Create a new controller class.") {
+    GeneratorCommand(srcPackage, name = "make:controller", help = "Create a new controller class") {
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         return OutputFile()
@@ -20,6 +20,7 @@ class MakeControllerCommand(srcPackage: String) :
         withColors {
             echo(green("CONTROLLER CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/controllers"))
         }
     }
 }

@@ -14,7 +14,7 @@ class MakeEntityCommand(srcPackage: String) :
     GeneratorCommand(
         srcPackage,
         name = "make:entity",
-        help = "Create an entity class with a corresponding entity table."
+        help = "Create an entity class with a corresponding entity table"
     ) {
 
     private val tableName by option("--table", help = "Name of the table. e.g. --table=users")
@@ -43,6 +43,7 @@ class MakeEntityCommand(srcPackage: String) :
         withColors {
             echo(green("ENTITY CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/ozone"))
         }
         if (migration) {
             val table = tableName ?: outputFile.target.nameWithoutExtension.pluralize()
