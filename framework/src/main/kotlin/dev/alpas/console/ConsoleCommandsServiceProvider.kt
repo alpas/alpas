@@ -17,7 +17,7 @@ class ConsoleCommandsServiceProvider(private val args: Array<String>) : ServiceP
 
     override fun commands(app: Application): List<Command> {
         return listOf(
-            ServeCommand(),
+            ServeCommand(app.makeElse { AppConfig(app.env) }),
             MakeCommandCommand(app.srcPackage),
             MakeServiceProviderCommand(app.srcPackage),
             KeyGenerateCommand(),

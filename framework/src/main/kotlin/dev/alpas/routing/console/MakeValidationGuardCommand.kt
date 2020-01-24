@@ -8,7 +8,7 @@ import dev.alpas.routing.console.stubs.Stubs
 import java.io.File
 
 class MakeValidationGuardCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:validation-guard", help = "Make a new validation guard.") {
+    GeneratorCommand(srcPackage, name = "make:validation-guard", help = "Make a new validation guard") {
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val outputDir = "guards"
@@ -22,6 +22,7 @@ class MakeValidationGuardCommand(srcPackage: String) :
         withColors {
             echo(green("VALIDATION GUARD CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/validation"))
         }
     }
 }

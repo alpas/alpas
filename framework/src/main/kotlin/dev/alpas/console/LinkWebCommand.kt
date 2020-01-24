@@ -23,6 +23,7 @@ class LinkWebCommand(private val env: Environment, private val config: AppConfig
             withColors {
                 echo(green("LINK CREATED 🙌"))
                 echo("${dim(env.rootDir.relativize(link.toAbsolutePath()))} ↝ ${dim(env.rootDir.relativize(target.toAbsolutePath()))}")
+                echo(yellow("https://alpas.dev/docs/mixing-assets"))
             }
         }
     }

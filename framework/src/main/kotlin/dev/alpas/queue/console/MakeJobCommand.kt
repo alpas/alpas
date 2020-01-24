@@ -6,7 +6,7 @@ import dev.alpas.extensions.toPascalCase
 import dev.alpas.queue.console.stubs.Stubs
 import java.io.File
 
-class MakeJobCommand(srcPackage: String) : GeneratorCommand(srcPackage, name = "make:job", help = "Create a new job.") {
+class MakeJobCommand(srcPackage: String) : GeneratorCommand(srcPackage, name = "make:job", help = "Create a new job") {
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         return OutputFile()
             .target(File(sourceOutputPath("jobs", *parentDirs), "${filename.toPascalCase()}.kt"))
@@ -18,6 +18,7 @@ class MakeJobCommand(srcPackage: String) : GeneratorCommand(srcPackage, name = "
         withColors {
             echo(green("JOB CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/queues"))
         }
     }
 }

@@ -38,7 +38,7 @@ private object ColorHelpFormatter : CliktHelpFormatter() {
     override fun renderTag(tag: String, value: String) = tc.green(super.renderTag(tag, value))
     override fun renderOptionName(name: String) = tc.green(super.renderOptionName(name))
     override fun renderArgumentName(name: String) = tc.green(super.renderArgumentName(name))
-    override fun renderSubcommandName(name: String) = tc.yellow(super.renderSubcommandName(name))
+    override fun renderSubcommandName(name: String) = tc.green(super.renderSubcommandName(name))
     override fun renderSectionTitle(title: String) = (tc.bold + tc.yellow)(super.renderSectionTitle(title))
     override fun optionMetavar(option: HelpFormatter.ParameterHelp.Option) = tc.green(super.optionMetavar(option))
 }

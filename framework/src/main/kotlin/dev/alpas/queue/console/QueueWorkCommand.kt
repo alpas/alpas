@@ -13,7 +13,7 @@ import dev.alpas.queue.QueueConfig
 import java.time.Duration
 
 class QueueWorkCommand(private val container: Container) :
-    Command(name = "queue:work", help = "Start a queue worker.") {
+    Command(name = "queue:work", help = "Start a queue worker") {
     private val queueConfig by lazy { container.make<QueueConfig>() }
     private val connection by argument(help = "The name of the connection to use.")
         .choice(*queueConfig.registeredConnectionNames().toTypedArray()).default(queueConfig.defaultConnection)
@@ -41,6 +41,7 @@ class QueueWorkCommand(private val container: Container) :
             } else {
                 echo(green("Running '$queueName' queue(s) from $connection' connection..."))
             }
+            echo(yellow("https://alpas.dev/docs/queues"))
         }
     }
 

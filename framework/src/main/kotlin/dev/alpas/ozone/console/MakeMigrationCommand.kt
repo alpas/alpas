@@ -20,7 +20,7 @@ private class CreateTable(name: String) : MigrationTable(name)
 const val MIGRATION_FILE_DATE_FORMAT = "y_MM_dd_Hmmss"
 
 class MakeMigrationCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:migration", help = "Create a new migration class.") {
+    GeneratorCommand(srcPackage, name = "make:migration", help = "Create a new migration class") {
     private val action by mutuallyExclusiveOptions<MigrationTable>(
         option("--create", help = "The name of the entity table to create. e.g. --create=Users")
             .convert { CreateTable(it) },
@@ -52,6 +52,7 @@ class MakeMigrationCommand(srcPackage: String) :
         withColors {
             echo(green("MIGRATION CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/migrations"))
         }
     }
 

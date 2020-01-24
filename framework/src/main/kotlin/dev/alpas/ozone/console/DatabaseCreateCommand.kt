@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import dev.alpas.console.Command
 import dev.alpas.ozone.migration.DbAdapter
 
-class DatabaseCreateCommand : Command(name = "db:create", help = "Create a database.") {
+class DatabaseCreateCommand : Command(name = "db:create", help = "Create a database") {
     private val names by argument().multiple()
     protected val dryRun by option("--dry-run", help = "Don't execute the query but only print it.").flag()
 
@@ -17,7 +17,10 @@ class DatabaseCreateCommand : Command(name = "db:create", help = "Create a datab
         names.forEach {
             warning("Creating database")
             if (adapter.createDatabase(it)) {
-                success("Created database: $it")
+                withColors {
+                    echo(green("Created database: $it"))
+                    echo(yellow("https://alpas.dev/docs/database-getting-started"))
+                }
             }
         }
     }

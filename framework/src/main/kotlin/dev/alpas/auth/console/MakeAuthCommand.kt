@@ -6,7 +6,7 @@ import dev.alpas.console.OutputFile
 import java.io.File
 
 class MakeAuthCommand(srcPackage: String) :
-    GeneratorCommand(srcPackage, name = "make:auth", help = "Scaffold an authentication system.") {
+    GeneratorCommand(srcPackage, name = "make:auth", help = "Scaffold an authentication system") {
 
     private val filesStubMap = mapOf(
         "auth/_header" to "view.header",
@@ -45,6 +45,7 @@ class MakeAuthCommand(srcPackage: String) :
         withColors {
             echo(green("AUTHENTICATION SCAFFOLDING GENERATED 🙌"))
             echo("${yellow("Don't forget to call")} ${blue("authRoutes()")} ${yellow("from your routes file.")}")
+            echo(yellow("https://alpas.dev/docs/authentication-scaffolding"))
         }
     }
 }
