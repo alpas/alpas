@@ -122,27 +122,27 @@ class ValidationRulesTests {
         }
 
         MustBeInteger().apply {
-            assertTrue(check("id", "28"))
+            assertTrue(check("id", 28))
             assertThrows(UninitializedPropertyAccessException::class.java) {
                 error
             }
         }
 
         MustBeInteger().apply {
-            assertTrue(check("id", "9223372036854775807"))
+            assertTrue(check("id", 9223372036854775807L))
             assertThrows(UninitializedPropertyAccessException::class.java) {
                 error
             }
         }
 
         MustBeInteger().apply {
-            assertFalse(check("id", "9223372036854775,807"))
+            assertFalse(check("id", "string"))
             assertEquals("The field 'id' must be an integer.", error)
         }
 
         MustBeInteger() { attr, value -> "$attr value should not be $value" }.apply {
-            check("id", "9223372036854775,807")
-            assertEquals("id value should not be 9223372036854775,807", error)
+            check("id", "string")
+            assertEquals("id value should not be string", error)
         }
     }
 }
