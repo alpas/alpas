@@ -12,7 +12,7 @@ fun Router.authRoutes(
 ) {
     group {
         if (addHomeRoute) {
-            get("/home", "controllers.HomeController").name("home")
+            get("/home", "controllers.HomeController", "index").name("home")
         }
         val loginController = "controllers.$packageName.LoginController"
         get("login", loginController, "showLoginForm").name("login").mustBeGuest()
