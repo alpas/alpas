@@ -1,9 +1,6 @@
 package dev.alpas.tests.rules
 
-import dev.alpas.validation.Max
-import dev.alpas.validation.Min
-import dev.alpas.validation.NotNull
-import dev.alpas.validation.Required
+import dev.alpas.validation.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -114,6 +111,38 @@ class ValidationRulesTests {
         NotNull() { attr, value -> "$attr value should not be $value" }.apply {
             check("lastname", null)
             assertEquals("lastname value should not be null", error)
+        }
+    }
+
+    @Test
+    fun `must-be-integer test`() {
+        MustBeInteger().apply {
+            assertFalse(check("id", null))
+            assertEquals("The field 'id' must be an integer.", error)
+        }
+
+        MustBeInteger().apply {
+            assertTrue(check("id", "28"))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MustBeInteger().apply {
+            assertTrue(check("id", "9223372036854775807"))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MustBeInteger().apply {
+            assertFalse(check("id", "9223372036854775,807"))
+            assertEquals("The field 'id' must be an integer.", error)
+        }
+
+        MustBeInteger() { attr, value -> "$attr value should not be $value" }.apply {
+            check("id", "9223372036854775,807")
+            assertEquals("id value should not be 9223372036854775,807", error)
         }
     }
 }
