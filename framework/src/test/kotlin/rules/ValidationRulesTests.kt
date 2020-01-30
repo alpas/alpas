@@ -145,4 +145,36 @@ class ValidationRulesTests {
             assertEquals("id value should not be string", error)
         }
     }
+
+    @Test
+    fun `must-be-string test`() {
+        MustBeString().apply {
+            assertFalse(check("address", null))
+            assertEquals("The field 'address' must be a string.", error)
+        }
+
+        MustBeString().apply {
+            assertTrue(check("address", "     "))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MustBeString().apply {
+            assertTrue(check("address", "test street"))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MustBeString().apply {
+            assertFalse(check("address", 29))
+            assertEquals("The field 'address' must be a string.", error)
+        }
+
+        MustBeString() { attr, value -> "$attr value should not be $value" }.apply {
+            check("address", 29)
+            assertEquals("address value should not be 29", error)
+        }
+    }
 }
