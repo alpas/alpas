@@ -6,6 +6,8 @@ import dev.alpas.auth.middleware.GuestOnlyMiddleware
 import dev.alpas.auth.middleware.VerifiedEmailOnlyMiddleware
 import dev.alpas.http.HttpCall
 import dev.alpas.http.Method
+import dev.alpas.routing.Controller
+import dev.alpas.routing.ControllerHandler
 import dev.alpas.routing.dynamicControllerFactory
 import dev.alpas.routing.middleware.SignedRequestMiddleware
 import org.junit.jupiter.api.Assertions.*
@@ -131,14 +133,14 @@ class RoutesTest {
     }
 
     @Test
-    fun `method name is conventionally derived for a dynamic controller route`() {
+    fun `method name is not conventionally derived for a dynamic controller route`() {
         val router = withRouter {
             dynamicControllerFactory = { TestController() }
             val controller = "TestController"
-            get("/", controller)
-            post("/", controller)
-            patch("/", controller)
-            delete("/", controller)
+            get("/", controller, "index")
+            post("/", controller, "store")
+            patch("/", controller, "update")
+            delete("/", controller, "delete")
         }
         mapOf(
             Method.GET to "index",
@@ -279,7 +281,8 @@ class RoutesTest {
         class TestMiddleware3 : Middleware<HttpCall>()
 
         val router = withRouter {
-            get("/", setOf(TestMiddleware3::class), TestController::class).middleware(
+            get("/", TestController::class).middleware(
+                TestMiddleware3::class,
                 TestMiddleware1::class,
                 TestMiddleware2::class
             )
@@ -301,4 +304,106 @@ class RoutesTest {
             )
         }
     }
+
+    @Test
+    fun `can use strongly typed methods without specifying the controller's name`() {
+        val router = withRouter {
+            get(TypedController::index)
+            post(TypedController::store)
+            patch(TypedController::update)
+            delete(TypedController::delete)
+        }
+        mapOf(
+            Method.GET to "index",
+            Method.POST to "store",
+            Method.PATCH to "update",
+            Method.DELETE to "delete"
+        ).forEach { (method, name) ->
+            val route = router.routes.find { it.method == method }
+            assertNotNull(route)
+            assertEquals(name, route?.controllerMethod())
+            assertEquals("/", route?.path)
+            assertEquals(
+                "dev.alpas.tests.TypedController",
+                (route?.handler as ControllerHandler)?.controller.qualifiedName
+            )
+        }
+    }
+
+    @Test
+    fun `can use generic controller with conventional names`() {
+        val router = withRouter {
+            get<TypedController>()
+            post<TypedController>()
+            patch<TypedController>()
+            delete<TypedController>()
+        }
+        mapOf(
+            Method.GET to "index",
+            Method.POST to "store",
+            Method.PATCH to "update",
+            Method.DELETE to "delete"
+        ).forEach { (method, name) ->
+            val route = router.routes.find { it.method == method }
+            assertNotNull(route)
+            assertEquals(name, route?.controllerMethod())
+            assertEquals("/", route?.path)
+            assertEquals(
+                "dev.alpas.tests.TypedController",
+                (route?.handler as ControllerHandler)?.controller.qualifiedName
+            )
+        }
+    }
+
+    @Test
+    fun `can override paths for strongly typed controller methods`() {
+        val router = withRouter {
+            get("/get", TypedController::index)
+            post("/post", TypedController::store)
+            patch("/patch", TypedController::update)
+            delete("/delete", TypedController::delete)
+        }
+        listOf(
+            Method.GET,
+            Method.POST,
+            Method.PATCH,
+            Method.DELETE
+        ).forEach { method ->
+            val route = router.routes.find { it.method == method }
+            assertNotNull(route)
+            assertEquals("${route?.path?.toLowerCase()}", route?.path)
+        }
+    }
+
+    @Test
+    fun `can use dynamic method names for strongly typed controllers`() {
+        val router = withRouter {
+            get<TypedController>("", "testget")
+            post<TypedController>("", "testpost")
+            patch<TypedController>("", "testpatch")
+            delete<TypedController>("", "testdelete")
+        }
+        listOf(
+            Method.GET,
+            Method.POST,
+            Method.PATCH,
+            Method.DELETE
+        ).forEach { method ->
+            val route = router.routes.find { it.method == method }
+            assertNotNull(route)
+            assertEquals("${route?.path?.toLowerCase()}", route?.path)
+            assertEquals("test${method.toString().toLowerCase()}", (route?.handler as ControllerHandler).method)
+            assertEquals(
+                "dev.alpas.tests.TypedController",
+                (route?.handler as ControllerHandler)?.controller.qualifiedName
+            )
+        }
+    }
+}
+
+class TypedController : Controller() {
+    fun index(call: HttpCall) {}
+    fun store(call: HttpCall) {}
+    fun update(call: HttpCall) {}
+    fun delete(call: HttpCall) {}
 }

@@ -36,7 +36,6 @@ abstract class RoutableBase(
 
     // dynamic controllers
 
-//    internal fun get(controller: String, method: String = "index") = get("", middleware, controller, method)
     internal fun get(path: String, controller: String, method: String = "index") =
         get(path, middleware, controller, method)
 
@@ -44,11 +43,10 @@ abstract class RoutableBase(
         path: String,
         middleware: Set<KClass<out Middleware<HttpCall>>>,
         controller: String,
-        method: String = "index"
+        method: String
     ) = add(Method.GET, path, DynamicControllerHandler(controller, method), middleware)
 
-//    internal fun post(controller: String, method: String = "store") = post("", middleware, controller, method)
-    internal fun post(path: String, controller: String, method: String = "store") =
+    internal fun post(path: String, controller: String, method: String) =
         post(path, middleware, controller, method)
 
     internal fun post(
@@ -58,8 +56,7 @@ abstract class RoutableBase(
         method: String = "store"
     ) = add(Method.POST, path, DynamicControllerHandler(controller, method), middleware)
 
-//    internal fun delete(controller: String, method: String = "delete") = delete("", middleware, controller, method)
-    internal fun delete(path: String, controller: String, method: String = "delete") =
+    internal fun delete(path: String, controller: String, method: String) =
         delete(path, middleware, controller, method)
 
     internal fun delete(
@@ -69,8 +66,7 @@ abstract class RoutableBase(
         method: String = "delete"
     ) = add(Method.DELETE, path, DynamicControllerHandler(controller, method), middleware)
 
-//    internal fun patch(controller: String, method: String = "update") = patch("", middleware, controller, method)
-    internal fun patch(path: String, controller: String, method: String = "update") =
+    internal fun patch(path: String, controller: String, method: String) =
         patch(path, middleware, controller, method)
 
     internal fun patch(
@@ -82,106 +78,106 @@ abstract class RoutableBase(
 
     // controller kclasses
 
-    fun get(controller: KClass<out Controller>, method: String = "index") = get("", middleware, controller, method)
+    // get<HomeController>("home") or get<HomeController>("home", "all")
+    inline fun <reified T : Controller> get(path: String, method: String = "index") =
+        get(path, T::class, method)
+
+    fun get(controller: KClass<out Controller>, method: String = "index") = get("", controller, method)
+
+    // get("home", HomeController::all)
+    inline fun <reified T : Controller> get(method: KFunction2<T, HttpCall, Unit>) =
+        get("", T::class, method.name)
+
+    inline fun <reified T : Controller> get(method: String = "index") =
+        get("", T::class, method)
 
     fun <T : Controller> get(controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        get("", middleware, controller, method.name)
+        get("", controller, method.name)
 
-    fun get(path: String, controller: KClass<out Controller>, method: String = "index") =
-        get(path, middleware, controller, method)
+    // get("home", HomeController::all)
+    inline fun <reified T : Controller> get(path: String, method: KFunction2<T, HttpCall, Unit>) =
+        get(path, T::class, method.name)
 
     fun <T : Controller> get(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        get(path, middleware, controller, method.name)
+        add(Method.GET, path, ControllerHandler(controller, method.name), middleware)
 
-    fun get(
-        path: String,
-        middleware: Set<KClass<out Middleware<HttpCall>>>,
-        controller: KClass<out Controller>,
-        method: String = "index"
-    ) = add(Method.GET, path, ControllerHandler(controller, method), middleware)
+    fun get(path: String, controller: KClass<out Controller>, method: String = "index") =
+        add(Method.GET, path, ControllerHandler(controller, method), middleware)
 
-    fun <T : Controller> get(
-        path: String,
-        middleware: Set<KClass<out Middleware<HttpCall>>>,
-        controller: KClass<T>,
-        method: KFunction2<T, HttpCall, Unit>
-    ) = add(Method.GET, path, ControllerHandler(controller, method.name), middleware)
 
-    fun post(controller: KClass<out Controller>, method: String = "store") = post("", middleware, controller, method)
+    inline fun <reified T : Controller> post(path: String, method: String = "store") =
+        post(path, T::class, method)
+
+    fun post(controller: KClass<out Controller>, method: String = "store") = post("", controller, method)
+
+    inline fun <reified T : Controller> post(method: KFunction2<T, HttpCall, Unit>) =
+        post("", T::class, method.name)
+
+    inline fun <reified T : Controller> post(method: String = "store") =
+        post("", T::class, method)
+
     fun <T : Controller> post(controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        post("", middleware, controller, method.name)
+        post("", controller, method.name)
 
-    fun post(path: String, controller: KClass<out Controller>, method: String = "store") =
-        post(path, middleware, controller, method)
+    inline fun <reified T : Controller> post(path: String, method: KFunction2<T, HttpCall, Unit>) =
+        post(path, T::class, method.name)
 
     fun <T : Controller> post(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        post(path, middleware, controller, method.name)
+        add(Method.POST, path, ControllerHandler(controller, method.name), middleware)
 
-    fun post(
-        path: String,
-        middleware: Set<KClass<out Middleware<HttpCall>>>,
-        controller: KClass<out Controller>,
-        method: String = "store"
-    ) = add(Method.POST, path, ControllerHandler(controller, method), middleware)
+    fun post(path: String, controller: KClass<out Controller>, method: String = "store") =
+        add(Method.POST, path, ControllerHandler(controller, method), middleware)
 
-    fun <T : Controller> post(
-        path: String,
-        middleware: Set<KClass<out Middleware<HttpCall>>>,
-        controller: KClass<T>,
-        method: KFunction2<T, HttpCall, Unit>
-    ) = add(Method.POST, path, ControllerHandler(controller, method.name), middleware)
+
+    inline fun <reified T : Controller> delete(path: String, method: String = "delete") =
+        delete(path, T::class, method)
 
     fun delete(controller: KClass<out Controller>, method: String = "delete") =
-        delete("", middleware, controller, method)
+        delete("", controller, method)
+
+    inline fun <reified T : Controller> delete(method: KFunction2<T, HttpCall, Unit>) =
+        delete("", T::class, method.name)
+
+    inline fun <reified T : Controller> delete(method: String = "delete") =
+        delete("", T::class, method)
 
     fun <T : Controller> delete(controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        delete("", middleware, controller, method.name)
+        delete("", controller, method.name)
+
+    inline fun <reified T : Controller> delete(path: String, method: KFunction2<T, HttpCall, Unit>) =
+        delete(path, T::class, method.name)
 
     fun delete(path: String, controller: KClass<out Controller>, method: String = "delete") =
-        delete(path, middleware, controller, method)
+        add(Method.DELETE, path, ControllerHandler(controller, method), middleware)
 
     fun <T : Controller> delete(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        delete(path, middleware, controller, method.name)
+        add(Method.DELETE, path, ControllerHandler(controller, method.name), middleware)
 
-    fun delete(
-        path: String,
-        middleware: Set<KClass<out Middleware<HttpCall>>>,
-        controller: KClass<out Controller>,
-        method: String = "delete"
-    ) = add(Method.DELETE, path, ControllerHandler(controller, method), middleware)
 
-    fun <T : Controller> delete(
-        path: String,
-        middleware: Set<KClass<out Middleware<HttpCall>>>,
-        controller: KClass<T>,
-        method: KFunction2<T, HttpCall, Unit>
-    ) = add(Method.DELETE, path, ControllerHandler(controller, method.name), middleware)
+    inline fun <reified T : Controller> patch(path: String, method: String = "update") =
+        patch(path, T::class, method)
 
     fun patch(controller: KClass<out Controller>, method: String = "update") =
-        patch("", middleware, controller, method)
+        patch("", controller, method)
+
+    inline fun <reified T : Controller> patch(method: KFunction2<T, HttpCall, Unit>) =
+        patch("", T::class, method.name)
+
+    inline fun <reified T : Controller> patch(method: String = "update"): Route {
+        return patch("", T::class, method)
+    }
 
     fun <T : Controller> patch(controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        patch("", middleware, controller, method.name)
+        patch("", controller, method.name)
+
+    inline fun <reified T : Controller> patch(path: String, method: KFunction2<T, HttpCall, Unit>) =
+        patch(path, T::class, method.name)
 
     fun patch(path: String, controller: KClass<out Controller>, method: String = "update") =
-        patch(path, middleware, controller, method)
+        add(Method.PATCH, path, ControllerHandler(controller, method), middleware)
 
     fun <T : Controller> patch(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        patch(path, middleware, controller, method.name)
-
-    fun patch(
-        path: String,
-        middleware: Set<KClass<out Middleware<HttpCall>>>,
-        controller: KClass<out Controller>,
-        method: String = "update"
-    ) = add(Method.PATCH, path, ControllerHandler(controller, method), middleware)
-
-    fun <T : Controller> patch(
-        path: String,
-        middleware: Set<KClass<out Middleware<HttpCall>>>,
-        controller: KClass<T>,
-        method: KFunction2<T, HttpCall, Unit>
-    ) = add(Method.PATCH, path, ControllerHandler(controller, method.name), middleware)
+        add(Method.PATCH, path, ControllerHandler(controller, method.name), middleware)
 
     fun group(
         prefix: String,
@@ -210,7 +206,7 @@ abstract class RoutableBase(
         vararg others: KClass<out Middleware<HttpCall>>,
         block: RouteGroup.() -> Unit
     ) =
-        group("", listOf(middleware, *others).toSet(), block)
+        group("", setOf(middleware, *others), block)
 
     fun group(block: RouteGroup.() -> Unit) = group("", mutableSetOf(), block)
     fun group(prefix: String, block: RouteGroup.() -> Unit) = group(prefix, mutableSetOf(), block)
