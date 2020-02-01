@@ -262,21 +262,3 @@ fun RequestSpecification.trapRedirects() = apply {
     redirects().follow(false)
 }
 
-
-val faker by lazy { Faker() }
-
-fun <E, EF : EntityFactory<E>> from(factory: () -> EF, attrs: Map<String, Any?> = emptyMap()): E {
-    return factory().make(attrs)
-}
-
-fun <E, EF : EntityFactory<E>> manyFrom(
-    factory: () -> EF,
-    count: Int = 1,
-    attrs: Map<String, Any?> = emptyMap()
-): List<E> {
-    return factory().makeMany(count, attrs)
-}
-
-fun <EF : EntityFactory<*>> factory(factory: () -> EF): EF {
-    return factory()
-}
