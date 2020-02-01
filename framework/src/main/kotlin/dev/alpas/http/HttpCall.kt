@@ -26,16 +26,22 @@ import kotlin.reflect.full.createInstance
 @Suppress("unused")
 class HttpCall internal constructor(
     private val container: Container,
-    private val request: Requestable,
-    private val response: Responsable,
-    internal val route: RouteResult
+    private val requestableCall: RequestableCall,
+    private val responsableCall: ResponsableCall,
+    internal val route: RouteResult,
+    private val callHooks: List<HttpCallHook>
 ) : Container by container,
-    Requestable by request,
-    Responsable by response,
-    RequestParamsBagContract by RequestParamsBag(request, route) {
+    RequestableCall by requestableCall,
+    ResponsableCall by responsableCall,
+    RequestParamsBagContract by RequestParamsBag(requestableCall, route) {
 
-    internal constructor(container: Container, req: HttpServletRequest, res: HttpServletResponse, route: RouteResult)
-            : this(container, Request(req), Response(res), route)
+    internal constructor(
+        container: Container,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        route: RouteResult,
+        callHooks: List<HttpCallHook>
+    ) : this(container, Requestable(request), Responsable(response), route, callHooks)
 
     val logger by lazy { KotlinLogging.logger {} }
     var isDropped = false
@@ -48,12 +54,14 @@ class HttpCall internal constructor(
     val isFromGuest by lazy { !isAuthenticated }
     val user: Authenticatable by lazy { authChannel.user.orAbort() }
     val env by lazy { make<Environment>() }
-    val redirector by lazy { Redirector(request, response, urlGenerator) }
+    val redirector by lazy { Redirector(requestableCall, responsableCall, urlGenerator) }
     val urlGenerator: UrlGenerator by lazy { container.make<UrlGenerator>() }
 
     init {
-        singleton(UrlGenerator(buildUri(request.rootUrl).toURI(), make(), make()))
+        singleton(UrlGenerator(buildUri(requestableCall.rootUrl).toURI(), make(), make()))
     }
+
+    fun charset() = servletResponse.charset()
 
     fun isSigned(): Boolean {
         return urlGenerator.checkSignature(fullUrl)
@@ -71,7 +79,7 @@ class HttpCall internal constructor(
 
     fun close() {
         if (!jettyRequest.isHandled) {
-            response.finalize(this)
+            responsableCall.finalize(this)
         }
 
         // By this time we have sent a response back to the client and now we need to clear the
@@ -189,5 +197,10 @@ class HttpCall internal constructor(
 
     operator fun <T> invoke(block: HttpCall.() -> T): T {
         return this.block()
+    }
+
+    fun onBeforeRender(context: RenderContext) {
+        logger.debug { "Calling beforeRender hook for ${callHooks.size} hooks" }
+        callHooks.forEach { it.beforeRender(context) }
     }
 }

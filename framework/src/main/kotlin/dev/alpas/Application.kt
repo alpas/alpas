@@ -1,6 +1,7 @@
 package dev.alpas
 
 import dev.alpas.http.HttpCall
+import dev.alpas.http.HttpCallHook
 import mu.KLogger
 import java.io.File
 import kotlin.reflect.KClass
@@ -13,6 +14,7 @@ interface Application : Container {
     val configs: List<Config>
     val kernel: Kernel
     val cwd: File
+    val callHooks: Set<KClass<out HttpCallHook>>
     fun ignite()
     fun takeOff()
     fun stop()
@@ -26,4 +28,7 @@ interface Application : Container {
     fun shouldLoadMiddleware(middleware: KClass<out Middleware<HttpCall>>): Boolean {
         return true
     }
+
+    fun <T : HttpCallHook> registerCallHook(hook: KClass<out T>, vararg hooks: KClass<out T>)
+    fun <T : HttpCallHook> unregisterCallHook(hook: KClass<out T>)
 }

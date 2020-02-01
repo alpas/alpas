@@ -48,8 +48,8 @@ interface Redirectable {
 }
 
 class Redirector(
-    private val request: Requestable,
-    private val response: Responsable,
+    private val request: RequestableCall,
+    private val response: ResponsableCall,
     private val urlGenerator: UrlGenerator
 ) : Redirectable {
 
@@ -101,8 +101,8 @@ class Redirector(
         redirect = redirectObj
         Pipeline<Redirect>().send(redirectObj).through(redirectFilters).then { finalRedirect ->
             (response.servletResponse as? Response)?.sendRedirect(finalRedirect.status, finalRedirect.location)
-        request.jettyRequest.isHandled = true
-    }
+            request.jettyRequest.isHandled = true
+        }
     }
 
     private fun copyHeaders(headers: Map<String, String>) {

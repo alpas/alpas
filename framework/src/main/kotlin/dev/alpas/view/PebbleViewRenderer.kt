@@ -3,50 +3,63 @@ package dev.alpas.view
 import com.mitchellbosecke.pebble.PebbleEngine
 import com.mitchellbosecke.pebble.extension.AbstractExtension
 import com.mitchellbosecke.pebble.loader.ClasspathLoader
+import com.mitchellbosecke.pebble.loader.FileLoader
+import com.mitchellbosecke.pebble.loader.Loader
 import dev.alpas.Application
-import dev.alpas.config
+import dev.alpas.RESOURCES_DIRS
+import dev.alpas.http.RenderContext
+import dev.alpas.make
 import uy.klutter.core.common.mustStartWith
+import java.io.File
 import java.io.StringWriter
 
-internal class PebbleViewRenderer(private val app: Application) : ViewRenderer {
+open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
     private lateinit var templateExtension: String
-    private var viewConfigs = mutableMapOf<String, Any?>()
     private val engine: PebbleEngine by lazy { engineBuilder.cacheActive(app.env.isProduction).build() }
 
     private val engineBuilder by lazy {
-        val viewConfig = app.config<ViewConfig>()
+        val viewConfig = app.make<ViewConfig>()
         templateExtension = viewConfig.templateExtension.mustStartWith(".")
-        val engineBuilder = PebbleEngine.Builder()
-            .loader(ClasspathLoader().apply {
-                prefix = viewConfig.templatesDirectory
-            })
-        if (app.env.isDev) {
-            engineBuilder.templateCache(null)
-        }
-        engineBuilder
+        PebbleEngine.Builder()
+            .loader(loader(app, viewConfig))
+            .apply { if (app.env.isDev) templateCache(null) }
     }
 
-    override fun boot() {
-        // no-op
+    protected open fun loader(app: Application, config: ViewConfig): Loader<String> {
+        // Check if storage/src/main/resources/templates directory exists if so use the file Loader instead.
+        val storageTemplatesPath = app.env.storagePath(*RESOURCES_DIRS, "templates")
+        if (File(storageTemplatesPath).exists()) {
+            return FileLoader().apply { prefix = storageTemplatesPath }
+        }
+        return ClasspathLoader().apply { prefix = config.templatesDirectory }
     }
 
     override fun extend(extension: AbstractExtension, vararg extensions: AbstractExtension) {
-        engineBuilder.extension(extension)
-        engineBuilder.extension(*extensions)
+        (listOf(extension) + extensions).forEach {
+            engineBuilder.extension(it)
+        }
     }
 
-    override fun addConfigs(key: String, value: Map<String, Any?>) {
-        viewConfigs[key] = value
-    }
+    override fun render(context: RenderContext, viewArgs: Map<String, Any?>?): String {
+        val view = context.viewName ?: return ""
 
-    override fun render(view: View?, extraContext: Map<String, Any?>): String {
-        if (view == null) return ""
         return StringWriter().let { writer ->
-            val template = engine.getTemplate("${view.name}$templateExtension")
+            val template = engine.getTemplate("${view}$templateExtension")
 
             try {
-                val context = (view.args?.toMutableMap() ?: mutableMapOf()) + extraContext + viewConfigs
-                template.evaluate(writer, context)
+                val templateContext = (viewArgs ?: emptyMap()) + (context.sharedDataBag.all())
+                template.evaluate(writer, templateContext)
+                writer.toString()
+            } catch (e: Exception) {
+                throw e
+            }
+        }
+    }
+
+    override fun render(template: String, args: Map<String, Any?>?): String {
+        return StringWriter().let { writer ->
+            try {
+                engine.getLiteralTemplate(template).evaluate(writer, args ?: emptyMap())
                 writer.toString()
             } catch (e: Exception) {
                 throw e

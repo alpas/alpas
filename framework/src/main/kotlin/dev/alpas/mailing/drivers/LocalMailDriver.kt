@@ -4,12 +4,11 @@ import dev.alpas.Environment
 import dev.alpas.mailing.MailMessage
 import mu.KotlinLogging
 import java.io.File
-import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class LocalMailDriver(env: Environment) : MailDriver {
-    private val outputPath by lazy { Paths.get(env.storagePath, "mails").toAbsolutePath().toString() }
+    private val outputPath by lazy { env.storagePath("mails") }
     private val logger by lazy { KotlinLogging.logger {} }
     private val fromName = env("MAIL_FROM_NAME", "Postmaster")
     private val fromAddress = env("MAIL_FROM_ADDRESS", "hello@example.com")
