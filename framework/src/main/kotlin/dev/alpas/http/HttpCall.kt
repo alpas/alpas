@@ -18,6 +18,7 @@ import org.eclipse.jetty.http.HttpStatus
 import uy.klutter.core.uri.buildUri
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import kotlin.reflect.KClass
@@ -26,16 +27,22 @@ import kotlin.reflect.full.createInstance
 @Suppress("unused")
 class HttpCall internal constructor(
     private val container: Container,
-    private val request: Requestable,
-    private val response: Responsable,
-    internal val route: RouteResult
+    private val requestableCall: RequestableCall,
+    private val responsableCall: ResponsableCall,
+    internal val route: RouteResult,
+    private val callHooks: List<HttpCallHook>
 ) : Container by container,
-    Requestable by request,
-    Responsable by response,
-    RequestParamsBagContract by RequestParamsBag(request, route) {
+    RequestableCall by requestableCall,
+    ResponsableCall by responsableCall,
+    RequestParamsBagContract by RequestParamsBag(requestableCall, route) {
 
-    internal constructor(container: Container, req: HttpServletRequest, res: HttpServletResponse, route: RouteResult)
-            : this(container, Request(req), Response(res), route)
+    internal constructor(
+        container: Container,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        route: RouteResult,
+        callHooks: List<HttpCallHook>
+    ) : this(container, Requestable(request), Responsable(response), route, callHooks)
 
     val logger by lazy { KotlinLogging.logger {} }
     var isDropped = false
@@ -48,12 +55,16 @@ class HttpCall internal constructor(
     val isFromGuest by lazy { !isAuthenticated }
     val user: Authenticatable by lazy { authChannel.user.orAbort() }
     val env by lazy { make<Environment>() }
-    val redirector by lazy { Redirector(request, response, urlGenerator) }
+    val redirector by lazy { Redirector(requestableCall, responsableCall, urlGenerator) }
     val urlGenerator: UrlGenerator by lazy { container.make<UrlGenerator>() }
+    internal var validateUsingJsonBody: AtomicBoolean = AtomicBoolean(false)
+        private set
 
     init {
-        singleton(UrlGenerator(buildUri(request.rootUrl).toURI(), make(), make()))
+        singleton(UrlGenerator(buildUri(requestableCall.rootUrl).toURI(), make(), make()))
     }
+
+    fun charset() = servletResponse.charset()
 
     fun isSigned(): Boolean {
         return urlGenerator.checkSignature(fullUrl)
@@ -71,7 +82,7 @@ class HttpCall internal constructor(
 
     fun close() {
         if (!jettyRequest.isHandled) {
-            response.finalize(this)
+            responsableCall.finalize(this)
         }
 
         // By this time we have sent a response back to the client and now we need to clear the
@@ -83,8 +94,13 @@ class HttpCall internal constructor(
         jettyRequest.isHandled = true
     }
 
-    fun applyRules(attribute: String, failfast: Boolean = false, rules: ValidationGuard.() -> Unit): HttpCall {
-        ValidationGuard(failfast).also {
+    fun applyRules(
+        attribute: String,
+        failfast: Boolean = false,
+        inJsonBody: Boolean = false,
+        rules: ValidationGuard.() -> Unit
+    ): HttpCall {
+        ValidationGuard(failfast, inJsonBody).also {
             it.call = this
             it.rules()
             it.validate(attribute, errorBag)
@@ -97,8 +113,12 @@ class HttpCall internal constructor(
         return this
     }
 
-    fun applyRules(rules: Map<String, Iterable<Rule>>, failfast: Boolean = false): HttpCall {
-        ValidationGuard(failfast).also {
+    fun applyRules(
+        rules: Map<String, Iterable<Rule>>,
+        failfast: Boolean = false,
+        inJsonBody: Boolean = false
+    ): HttpCall {
+        ValidationGuard(failfast, inJsonBody).also {
             it.call = this
             it.validate(rules, errorBag)
             checkValidationErrors { errorBag ->
@@ -158,6 +178,10 @@ class HttpCall internal constructor(
         return redirector
     }
 
+    fun isBeingRedirected(): Boolean {
+        return redirect().isBeingRedirected()
+    }
+
     private fun handleException(e: Throwable) {
         // Check if the top layer is an HTTP exception type since most of the times the exception is thrown from
         // a controller, the controller will be wrapped in an InvocationTargetException object. Hence, we'd have to
@@ -185,5 +209,14 @@ class HttpCall internal constructor(
 
     operator fun <T> invoke(block: HttpCall.() -> T): T {
         return this.block()
+    }
+
+    fun onBeforeRender(context: RenderContext) {
+        logger.debug { "Calling beforeRender hook for ${callHooks.size} hooks" }
+        callHooks.forEach { it.beforeRender(context) }
+    }
+
+    fun validateUsingJsonBody() {
+        validateUsingJsonBody.set(true)
     }
 }

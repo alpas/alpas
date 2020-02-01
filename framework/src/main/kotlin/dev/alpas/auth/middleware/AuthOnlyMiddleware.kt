@@ -6,11 +6,11 @@ import dev.alpas.auth.AuthenticationException
 import dev.alpas.http.HttpCall
 
 class AuthOnlyMiddleware : Middleware<HttpCall>() {
-    override fun invoke(call: HttpCall, forward: Handler<HttpCall>) {
-        if (call.authChannel.check()) {
-            forward(call)
+    override fun invoke(passable: HttpCall, forward: Handler<HttpCall>) {
+        if (passable.authChannel.check()) {
+            forward(passable)
         } else {
-            call.session.saveIntendedUrl(call.fullUrl)
+            passable.session.saveIntendedUrl(passable.fullUrl)
             throw AuthenticationException()
         }
     }

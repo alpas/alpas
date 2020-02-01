@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.ZoneOffset
 
@@ -89,10 +90,11 @@ class AppConfigTest {
         every { env("CONSOLE_LOG_CONFIG", any<String>()) } returns "consoleconfig"
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun Environment.answerWithDefaultValues() {
         val env = this
 
-        every { env getProperty "storagePath" } returns "/test/storage"
+        every { env.storagePath(*anyVararg()) } answers "/test/storage".scope()
 
         val networkShareSlot = slot<Boolean>()
         every { env("ENABLE_NETWORK_SHARE", capture(networkShareSlot)) } answers { networkShareSlot.captured }

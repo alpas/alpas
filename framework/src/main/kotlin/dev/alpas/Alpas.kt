@@ -60,7 +60,6 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
         dispatchBufferedDebugLogs()
         logger.debug { "Running the app" }
         // todo: fix refactor
-        // configs.forEach { config -> config.boot(this) }
         serviceProviders.forEach { provider -> provider.boot(this, packageClassLoader) }
         packageClassLoader.close()
         appState = AppState.INFLIGHT
@@ -109,8 +108,9 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
     }
 
     private fun registerCoreServices(args: Array<String>) {
-        // We need to load env variables first as some of the service providers,
-        // commands, and configs may depend on an environment variable.
+        singleton(ResourceLoader(entryClass))
+        // Among the providers, we need to load env variables first as some service
+        // providers, commands, configs, etc. may depend on an environment variable.
         registerProvider(EnvironmentServiceProvider())
         // Since the logger is not configured yet, we'd buffer any debug logs and once
         // it is initialized, we'll dispatch these buffered logs to the actual logger.
@@ -128,7 +128,6 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
         if (shouldLoadConsoleCommands()) {
             registerProvider(ConsoleCommandsServiceProvider(args))
         }
-        singleton(ResourceLoader(entryClass))
         registerProvider(NotificationServiceProvider())
         bufferDebugLog("Finished registering core service providers")
     }

@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest
 import org.eclipse.jetty.server.Request as JettyRequest
 
 @Suppress("unused")
-interface Requestable {
+interface RequestableCall {
     val session: Session
     val acceptableContentTypes: List<String>
     val method: Method
@@ -61,7 +61,7 @@ interface Requestable {
     fun methodIs(method: Method) = this.method == method
 }
 
-class Request(private val servletRequest: HttpServletRequest) : Requestable {
+class Requestable(private val servletRequest: HttpServletRequest) : RequestableCall {
     override val jettyRequest by lazy { servletRequest.getAttribute("jetty-request") as JettyRequest }
     override val cookie: CookieJar by lazy { CookieJar(servletRequest.cookies ?: emptyArray()) }
     override fun header(name: String): String? = servletRequest.getHeader(name)

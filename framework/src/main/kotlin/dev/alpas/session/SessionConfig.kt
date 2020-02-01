@@ -2,7 +2,6 @@ package dev.alpas.session
 
 import dev.alpas.Config
 import dev.alpas.Environment
-import java.nio.file.Paths
 import java.time.Duration
 
 open class SessionConfig(env: Environment) : Config {
@@ -32,7 +31,7 @@ open class SessionConfig(env: Environment) : Config {
         )
     }
 
-    open val storePath: String = Paths.get(env.storagePath, "", "sessions").toAbsolutePath().toString()
+    open val storePath: String = env.storagePath("sessions")
 
     open val encryptExcept = listOf<String>()
 }

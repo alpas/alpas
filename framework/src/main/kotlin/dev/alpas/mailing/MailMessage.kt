@@ -1,7 +1,6 @@
 package dev.alpas.mailing
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import dev.alpas.view.View
 import dev.alpas.view.ViewRenderer
 
 open class MailMessage {
@@ -10,19 +9,19 @@ open class MailMessage {
     lateinit var message: String
 
     @JsonIgnore
-    protected var view: View? = null
+    protected var view: String? = null
     @JsonIgnore
     protected var viewBag: Map<String, Any?>? = null
 
     open fun view(templateName: String, args: Map<String, Any?>? = null): MailMessage {
-        view = View(templateName.replace(".", "/"), args)
+        view = templateName.replace(".", "/")
         viewBag = args
         return this
     }
 
     open fun render(viewRenderer: ViewRenderer) {
         if (view != null) {
-            message = viewRenderer.render(view, viewBag ?: emptyMap())
+            message = viewRenderer.render(view!!, viewBag)
         }
     }
 }

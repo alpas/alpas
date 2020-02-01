@@ -1,12 +1,17 @@
 package dev.alpas.http
 
+import dev.alpas.Middleware
+import dev.alpas.Pipeline
 import dev.alpas.cookie.CookieJar
 import dev.alpas.routing.UrlGenerator
 import org.eclipse.jetty.http.HttpStatus
 import org.eclipse.jetty.server.Response
 
+open class RedirectFilter : Middleware<Redirect>()
+
 interface Redirectable {
-    val redirect: Redirect
+    fun isBeingRedirected(): Boolean
+
     fun to(
         to: String,
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
@@ -38,20 +43,22 @@ interface Redirectable {
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
         headers: Map<String, String> = emptyMap()
     )
+
+    fun pushFilter(filter: RedirectFilter)
 }
 
 class Redirector(
-    private val request: Requestable,
-    private val response: Responsable,
+    private val request: RequestableCall,
+    private val response: ResponsableCall,
     private val urlGenerator: UrlGenerator
 ) : Redirectable {
 
-    override lateinit var redirect: Redirect
+    lateinit var redirect: Redirect
         private set
 
-    fun isDone(): Boolean {
-        return ::redirect.isInitialized
-    }
+    private val redirectFilters: MutableList<RedirectFilter> = mutableListOf()
+
+    override fun isBeingRedirected() = ::redirect.isInitialized
 
     override fun to(to: String, status: Int, headers: Map<String, String>) {
         commit(Redirect(to, status, headers, request.cookie))
@@ -80,6 +87,10 @@ class Redirector(
         sendRedirect(Redirect(url, status, headers))
     }
 
+    override fun pushFilter(filter: RedirectFilter) {
+        redirectFilters.add(filter)
+    }
+
     private fun commit(redirectObj: Redirect) {
         copyHeaders(redirectObj.headers)
         saveCookies(redirectObj.cookie)
@@ -88,8 +99,10 @@ class Redirector(
 
     private fun sendRedirect(redirectObj: Redirect) {
         redirect = redirectObj
-        (response.servletResponse as? Response)?.sendRedirect(redirectObj.status, redirectObj.location)
-        request.jettyRequest.isHandled = true
+        Pipeline<Redirect>().send(redirectObj).through(redirectFilters).then { finalRedirect ->
+            (response.servletResponse as? Response)?.sendRedirect(finalRedirect.status, finalRedirect.location)
+            request.jettyRequest.isHandled = true
+        }
     }
 
     private fun copyHeaders(headers: Map<String, String>) {

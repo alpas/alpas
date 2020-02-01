@@ -1,18 +1,19 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package dev.alpas.ozone
 
-import dev.alpas.exceptions.toHttpException
 import dev.alpas.orAbort
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.DialectFeatureNotSupportedException
-import me.liuwj.ktorm.dsl.AssignmentsBuilder
-import me.liuwj.ktorm.dsl.Query
-import me.liuwj.ktorm.dsl.insertAndGenerateKey
-import me.liuwj.ktorm.dsl.limit
+import me.liuwj.ktorm.dsl.*
+import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.entity.findById
+import me.liuwj.ktorm.entity.findList
 import me.liuwj.ktorm.entity.findOne
 import me.liuwj.ktorm.expression.SelectExpression
 import me.liuwj.ktorm.expression.UnionExpression
 import me.liuwj.ktorm.schema.BaseTable
+import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.ColumnDeclaring
 import me.liuwj.ktorm.schema.SqlType
 import org.eclipse.jetty.http.HttpStatus
@@ -89,3 +90,37 @@ internal fun Query.forUpdate(): Query {
 
     return this.copy(expression = exprForUpdate)
 }
+
+inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasMany(
+    table: T,
+    tableName: String = table.tableName,
+    predicate: (T) -> ColumnDeclaring<Boolean>
+): List<E> {
+    return this[tableName] as? List<E> ?: table.findList { predicate(table) }.also { this[tableName] = it }
+}
+
+inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasMany(
+    table: T,
+    foreignKey: String = "${this.entityClass.simpleName?.toLowerCase()!!}_id",
+    localKey: String = "id",
+    tableName: String = table.tableName,
+    predicate: (T) -> ColumnDeclaring<Boolean>
+): List<E> {
+    return this[tableName] as? List<E> ?: table.findList {
+        val foreignKeyValue = it[foreignKey] as Column<Any>
+        (foreignKeyValue eq this[localKey]!!) and predicate(table)
+    }.also { this[tableName] = it }
+}
+
+inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasMany(
+    table: T,
+    foreignKey: String = "${this.entityClass.simpleName?.toLowerCase()!!}_id",
+    localKey: String = "id",
+    tableName: String = table.tableName
+): List<E> {
+    return this[tableName] as? List<E> ?: table.findList {
+        val foreignKeyValue = it[foreignKey] as Column<Any>
+        foreignKeyValue eq this[localKey]!!
+    }.also { this[tableName] = it }
+}
+

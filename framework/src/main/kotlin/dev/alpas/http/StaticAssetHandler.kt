@@ -22,7 +22,7 @@ class StaticAssetHandler(app: Application) {
         val handlers = mutableListOf<GzipHandler>()
 
         staticDirs.mapNotNull { staticDir ->
-            if (resourceLoader.load(staticDir) == null) {
+            if (resourceLoader.loadResource(staticDir) == null) {
                 val message = "Static resource directory $staticDir doesn't exist."
                 when {
                     File(staticDir).exists() -> {

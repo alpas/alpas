@@ -3,6 +3,7 @@ package dev.alpas.http
 import dev.alpas.filterNotNullValues
 import dev.alpas.isOneOf
 import dev.alpas.routing.RouteResult
+import java.util.concurrent.atomic.AtomicBoolean
 
 interface RequestParamsBagContract {
     // all parameters including query params, form params, and route params
@@ -67,10 +68,13 @@ interface RequestParamsBagContract {
             ?.toMap()
             ?: emptyMap()
     }
+
+    fun combineJsonBodyWithParams()
 }
 
-class RequestParamsBag(private val request: Requestable, private val route: RouteResult) :
+class RequestParamsBag(private val request: RequestableCall, private val route: RouteResult) :
     RequestParamsBagContract {
+    private val combineJsonBodyWithParams: AtomicBoolean = AtomicBoolean(false)
     override val params by lazy {
         // merge both routeParams map and query routeParams
         val paramsMap = routeParams.toMutableMap()
@@ -78,6 +82,17 @@ class RequestParamsBag(private val request: Requestable, private val route: Rout
 
         requestParams.forEach { (key, param) ->
             paramsMap[key] = paramsMap[key]?.plus(param) ?: param
+        }
+
+        if (combineJsonBodyWithParams.get()) {
+            request.jsonBody?.forEach { (key, param) ->
+                val actualParam = when (param) {
+                    is List<*> -> param.map { it }
+                    else -> listOf(param)
+                }.filterNotNull()
+
+                paramsMap[key] = paramsMap[key]?.plus(actualParam) ?: actualParam
+            }
         }
         paramsMap.toMap()
     }
@@ -93,5 +108,9 @@ class RequestParamsBag(private val request: Requestable, private val route: Rout
 
     override val queryParams: Map<String, List<Any>?> by lazy {
         request.jettyRequest.queryParameters
+    }
+
+    override fun combineJsonBodyWithParams() {
+        combineJsonBodyWithParams.set(true)
     }
 }

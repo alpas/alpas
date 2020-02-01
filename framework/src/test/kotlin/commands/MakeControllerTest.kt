@@ -1,4 +1,4 @@
-package dev.alpas.tests.controllers
+package dev.alpas.tests.commands
 
 import dev.alpas.SRC_DIR_KEY
 import dev.alpas.routing.console.MakeControllerCommand
@@ -77,9 +77,8 @@ class MakeControllerTest {
 
         assertFalse(exampleController.readText().contains(comments))
     }
-}
 
-private val exampleStub = """
+    private val exampleStub = """
     package dev.alpas.tests.controllers
 
     import dev.alpas.http.HttpCall
@@ -91,3 +90,4 @@ private val exampleStub = """
         }
     }
 """.trimIndent()
+}

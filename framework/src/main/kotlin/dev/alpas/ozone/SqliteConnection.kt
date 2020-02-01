@@ -2,12 +2,11 @@ package dev.alpas.ozone
 
 import com.zaxxer.hikari.HikariDataSource
 import dev.alpas.Environment
-import dev.alpas.mustStartWith
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.support.sqlite.SQLiteDialect
 import java.io.File
-import java.nio.file.Paths
 
+@Suppress("unused")
 open class SqliteConnection(private val env: Environment, config: ConnectionConfig? = null) : DatabaseConnection {
     open val dialect = config?.sqlDialect ?: SQLiteDialect()
     open val extraParams = config?.extraParams ?: emptyMap()
@@ -25,7 +24,7 @@ open class SqliteConnection(private val env: Environment, config: ConnectionConf
 
     private fun defaultDatabase(): String {
         val db = "${env("DB_DATABASE", "dev")}.sqlite"
-        return Paths.get(env.rootDir, "database", db).toAbsolutePath().toString()
+        return env.rootPath("database", db)
     }
 
     private fun createDatabaseFile(path: String) {

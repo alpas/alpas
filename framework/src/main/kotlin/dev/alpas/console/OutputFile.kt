@@ -57,4 +57,9 @@ class OutputFile {
         this.replacements = replacements
         return this
     }
+
+    fun replacements(replacement: Pair<String, String>, vararg replacements: Pair<String, String>): OutputFile {
+        this.replacements = mapOf(replacement) + replacements.toMap()
+        return this
+    }
 }

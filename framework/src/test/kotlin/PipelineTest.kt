@@ -13,15 +13,15 @@ class PipelineTest {
     fun `a passable object is sent through in order`() {
         val passables = mutableListOf<String>()
         val middleware1 = object : Middleware<String>() {
-            override fun invoke(call: String, forward: Handler<String>) {
-                passables.add(call)
-                forward("$call 1")
+            override fun invoke(passable: String, forward: Handler<String>) {
+                passables.add(passable)
+                forward("$passable 1")
             }
         }
         val middleware2 = object : Middleware<String>() {
-            override fun invoke(call: String, forward: Handler<String>) {
-                passables.add(call)
-                forward("$call 2")
+            override fun invoke(passable: String, forward: Handler<String>) {
+                passables.add(passable)
+                forward("$passable 2")
             }
         }
 
@@ -37,15 +37,15 @@ class PipelineTest {
     fun `pipeline is activated only after invoking then()`() {
         val passables = mutableListOf<String>()
         val middleware1 = object : Middleware<String>() {
-            override fun invoke(call: String, forward: Handler<String>) {
-                passables.add(call)
-                forward("$call 1")
+            override fun invoke(passable: String, forward: Handler<String>) {
+                passables.add(passable)
+                forward("$passable 1")
             }
         }
         val middleware2 = object : Middleware<String>() {
-            override fun invoke(call: String, forward: Handler<String>) {
-                passables.add(call)
-                forward("$call 2")
+            override fun invoke(passable: String, forward: Handler<String>) {
+                passables.add(passable)
+                forward("$passable 2")
             }
         }
         Pipeline<String>().send("start").through(middleware2, middleware1)
@@ -56,22 +56,22 @@ class PipelineTest {
     fun `more pipes can be appended to a pipeline`() {
         val passables = mutableListOf<String>()
         val middleware1 = object : Middleware<String>() {
-            override fun invoke(call: String, forward: Handler<String>) {
-                passables.add(call)
-                forward("$call 1")
+            override fun invoke(passable: String, forward: Handler<String>) {
+                passables.add(passable)
+                forward("$passable 1")
             }
         }
         val middleware2 = object : Middleware<String>() {
-            override fun invoke(call: String, forward: Handler<String>) {
-                passables.add(call)
-                forward("$call 2")
+            override fun invoke(passable: String, forward: Handler<String>) {
+                passables.add(passable)
+                forward("$passable 2")
             }
         }
         val pipeline = Pipeline<String>().send("start").through(middleware2, middleware1)
         val middleware3 = object : Middleware<String>() {
-            override fun invoke(call: String, forward: Handler<String>) {
-                passables.add(call)
-                forward("$call 3")
+            override fun invoke(passable: String, forward: Handler<String>) {
+                passables.add(passable)
+                forward("$passable 3")
             }
         }
 
@@ -89,8 +89,8 @@ class PipelineTest {
     @Test
     fun `an invoked pipeline cannot be invoked again`() {
         val middleware = object : Middleware<String>() {
-            override fun invoke(call: String, forward: Handler<String>) {
-                forward("$call 2")
+            override fun invoke(passable: String, forward: Handler<String>) {
+                forward("$passable 2")
             }
         }
         val pipeline = Pipeline<String>()

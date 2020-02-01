@@ -1,8 +1,8 @@
-package dev.alpas.tests.auth
+package dev.alpas.tests.commands
 
 import dev.alpas.SRC_DIR_KEY
 import dev.alpas.auth.console.MakeAuthCommand
-import org.junit.jupiter.api.AfterEach
+import dev.alpas.tests.CommandTestBase
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -11,8 +11,7 @@ import java.io.File
 import java.nio.file.Path
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class MakeControllerTest {
-    private var lastCommand: MakeAuthCommand? = null
+class MakeAuthTest : CommandTestBase() {
     @Test
     fun `controller files are created`(@TempDir tempDir: Path) {
         val tempPath = tempDir.toAbsolutePath().toString()
@@ -72,14 +71,5 @@ class MakeControllerTest {
         val layoutDir = File(templatesDir, "layout")
         assertTrue(layoutDir.exists())
         assertTrue(File(layoutDir, "app.peb").exists())
-    }
-
-    @AfterEach
-    fun afterEach() {
-        lastCommand?.deleteResources()
-    }
-
-    private fun MakeAuthCommand.deleteResources() {
-        resourcesDir.deleteRecursively()
     }
 }

@@ -15,10 +15,11 @@ enum class RunMode {
 const val ROOT_DIR_KEY = "alpas_root_dir"
 const val SRC_DIR_KEY = "alpas_src_dir"
 const val RUN_MODE = "alpas_run_mode"
+val RESOURCES_DIRS = arrayOf("src", "main", "resources")
 
 class Environment(
     private val dotenv: Dotenv,
-    val rootDir: String,
+    private val rootPath: String,
     val entryPackage: String,
     val runMode: RunMode
 ) {
@@ -57,7 +58,20 @@ class Environment(
     val isProduction by lazy { invoke("APP_LEVEL").isOneOf("prod", "production", "live") }
     val isLocal by lazy { invoke("APP_LEVEL").isOneOf("dev", "debug", "local") }
     val isDev = isLocal
-    val storagePath: String = Paths.get(rootDir, "storage").toAbsolutePath().toString()
+    private val storagePath: String = rootPath("storage")
+
+    fun rootPath(vararg paths: String): String {
+        return if (paths.isEmpty()) {
+            rootPath
+        } else Paths.get(rootPath, *paths).toAbsolutePath().toString()
+    }
+
+    fun storagePath(vararg paths: String): String {
+        return if (paths.isEmpty()) {
+            storagePath
+        } else Paths.get(storagePath, *paths).toAbsolutePath().toString()
+    }
+
     var supportsSession = false
         internal set
 }

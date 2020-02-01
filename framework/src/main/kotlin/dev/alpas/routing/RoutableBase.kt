@@ -206,7 +206,7 @@ abstract class RoutableBase(
         vararg others: KClass<out Middleware<HttpCall>>,
         block: RouteGroup.() -> Unit
     ) =
-        group("", listOf(middleware, *others).toSet(), block)
+        group("", setOf(middleware, *others), block)
 
     fun group(block: RouteGroup.() -> Unit) = group("", mutableSetOf(), block)
     fun group(prefix: String, block: RouteGroup.() -> Unit) = group(prefix, mutableSetOf(), block)
