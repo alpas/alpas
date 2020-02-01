@@ -10,11 +10,11 @@ import dev.alpas.session.CSRF_SESSION_KEY
 import java.security.MessageDigest
 
 open class VerifyCsrfToken : Middleware<HttpCall>() {
-    override fun invoke(call: HttpCall, forward: Handler<HttpCall>) {
-        if (call.method.isOneOf(Method.GET, Method.HEAD, Method.OPTIONS) || isValidXSRFToken(call)) {
-            forward(call)
-            if (call.sessionIsValid()) {
-                addXSRFToken(call)
+    override fun invoke(passable: HttpCall, forward: Handler<HttpCall>) {
+        if (passable.method.isOneOf(Method.GET, Method.HEAD, Method.OPTIONS) || isValidXSRFToken(passable)) {
+            forward(passable)
+            if (passable.sessionIsValid()) {
+                addXSRFToken(passable)
             }
         } else {
             throw TokenMismatchException("Token doesn't match")
