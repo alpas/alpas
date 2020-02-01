@@ -1,12 +1,12 @@
 package dev.alpas.pulsar
 
-import com.github.javafaker.Faker
 import dev.alpas.*
 import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.http.HttpCall
 import dev.alpas.http.middleware.VerifyCsrfToken
 import dev.alpas.routing.Router
+import dev.alpas.http.ViewResponse
 import io.restassured.RestAssured
 import io.restassured.config.SessionConfig
 import io.restassured.http.ContentType
@@ -159,7 +159,10 @@ abstract class TestBase(entryClass: Class<*>) {
     }
 
     protected fun assertViewIs(viewName: String) {
-        assertEquals(viewName, call().view.name)
+        when (val response = call().response) {
+            is ViewResponse -> assertEquals(viewName, response.name)
+            else -> fail("Response is not a view. But is ${response.javaClass.name}")
+        }
     }
 
     protected fun assertViewHas(expectedArgs: Map<String, Any?>, argsSizeShouldMatch: Boolean = false) {
@@ -173,7 +176,10 @@ abstract class TestBase(entryClass: Class<*>) {
     }
 
     protected fun viewArgs(): Map<String, Any?>? {
-        return call().view.args
+        return when (val response = call().response) {
+            is ViewResponse -> response.args
+            else -> emptyMap()
+        }
     }
 
     protected fun assertAuthenticated(user: Authenticatable? = null) {
