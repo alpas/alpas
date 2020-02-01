@@ -1,5 +1,6 @@
 package dev.alpas.session
 
+import dev.alpas.isOneOf
 import javax.servlet.http.HttpServletRequest
 
 const val CSRF_SESSION_KEY = "_csrf"
@@ -99,6 +100,10 @@ class Session(private val request: HttpServletRequest) {
 
     fun flashBag(): Map<String, Any?> {
         return previousFlashBag()
+    }
+
+    fun userFlashBag(): Map<String, Any?> {
+        return flashBag().filterNot { it.key.isOneOf(OLD_INPUTS_KEY, VALIDATION_ERRORS_KEY) }
     }
 
     fun reflash() {
