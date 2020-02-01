@@ -1,9 +1,13 @@
 package dev.alpas.http
 
+import dev.alpas.Middleware
+import dev.alpas.Pipeline
 import dev.alpas.cookie.CookieJar
 import dev.alpas.routing.UrlGenerator
 import org.eclipse.jetty.http.HttpStatus
 import org.eclipse.jetty.server.Response
+
+open class RedirectFilter : Middleware<Redirect>()
 
 interface Redirectable {
     fun isBeingRedirected(): Boolean
@@ -39,6 +43,8 @@ interface Redirectable {
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
         headers: Map<String, String> = emptyMap()
     )
+
+    fun pushFilter(filter: RedirectFilter)
 }
 
 class Redirector(
@@ -50,6 +56,7 @@ class Redirector(
     lateinit var redirect: Redirect
         private set
 
+    private val redirectFilters: MutableList<RedirectFilter> = mutableListOf()
 
     override fun isBeingRedirected() = ::redirect.isInitialized
 
@@ -80,6 +87,10 @@ class Redirector(
         sendRedirect(Redirect(url, status, headers))
     }
 
+    override fun pushFilter(filter: RedirectFilter) {
+        redirectFilters.add(filter)
+    }
+
     private fun commit(redirectObj: Redirect) {
         copyHeaders(redirectObj.headers)
         saveCookies(redirectObj.cookie)
@@ -88,8 +99,10 @@ class Redirector(
 
     private fun sendRedirect(redirectObj: Redirect) {
         redirect = redirectObj
-        (response.servletResponse as? Response)?.sendRedirect(redirectObj.status, redirectObj.location)
+        Pipeline<Redirect>().send(redirectObj).through(redirectFilters).then { finalRedirect ->
+            (response.servletResponse as? Response)?.sendRedirect(finalRedirect.status, finalRedirect.location)
         request.jettyRequest.isHandled = true
+    }
     }
 
     private fun copyHeaders(headers: Map<String, String>) {
