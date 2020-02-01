@@ -106,7 +106,7 @@ abstract class TestBase(entryClass: Class<*>) {
 
     protected fun assertRedirect(location: String, status: Int? = null) {
         val redirector = call().redirector
-        if (!redirector.isDone()) {
+        if (!redirector.isBeingRedirected()) {
             fail("Call wasn't redirected.")
         }
         val redirect = redirector.redirect

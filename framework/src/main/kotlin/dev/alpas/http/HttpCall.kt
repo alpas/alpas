@@ -158,6 +158,10 @@ class HttpCall internal constructor(
         return redirector
     }
 
+    fun isBeingRedirected(): Boolean {
+        return redirect().isBeingRedirected()
+    }
+
     private fun handleException(e: Throwable) {
         // Check if the top layer is an HTTP exception type since most of the times the exception is thrown from
         // a controller, the controller will be wrapped in an InvocationTargetException object. Hence, we'd have to

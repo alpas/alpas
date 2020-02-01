@@ -6,7 +6,8 @@ import org.eclipse.jetty.http.HttpStatus
 import org.eclipse.jetty.server.Response
 
 interface Redirectable {
-    val redirect: Redirect
+    fun isBeingRedirected(): Boolean
+
     fun to(
         to: String,
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
@@ -46,12 +47,11 @@ class Redirector(
     private val urlGenerator: UrlGenerator
 ) : Redirectable {
 
-    override lateinit var redirect: Redirect
+    lateinit var redirect: Redirect
         private set
 
-    fun isDone(): Boolean {
-        return ::redirect.isInitialized
-    }
+
+    override fun isBeingRedirected() = ::redirect.isInitialized
 
     override fun to(to: String, status: Int, headers: Map<String, String>) {
         commit(Redirect(to, status, headers, request.cookie))
