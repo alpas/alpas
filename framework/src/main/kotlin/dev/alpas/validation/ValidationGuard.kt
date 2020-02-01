@@ -3,8 +3,8 @@ package dev.alpas.validation
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
 
-open class ValidationGuard(val shouldFailFast: Boolean = false) {
-    internal var inJsonBodyContext: Boolean = false
+open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Boolean = false) {
+    internal var inJsonBodyContext: Boolean = inJsonBody
     private val rules = mutableListOf<Rule>()
     lateinit var call: HttpCall
         internal set
@@ -36,6 +36,9 @@ open class ValidationGuard(val shouldFailFast: Boolean = false) {
 
     private fun validate(attribute: String, errorBag: ErrorBag, rules: Iterable<Rule>) {
         rules.forEach {
+            if (inJsonBodyContext || call.validateUsingJsonBody.get()) {
+                it.inJsonBody()
+            }
             if (!it.check(attribute, call)) {
                 errorBag.add(RequestError(attribute, call.params(attribute), it.error))
                 if (shouldFailFast) {

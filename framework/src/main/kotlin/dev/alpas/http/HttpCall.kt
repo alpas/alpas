@@ -18,6 +18,7 @@ import org.eclipse.jetty.http.HttpStatus
 import uy.klutter.core.uri.buildUri
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import kotlin.reflect.KClass
@@ -56,6 +57,8 @@ class HttpCall internal constructor(
     val env by lazy { make<Environment>() }
     val redirector by lazy { Redirector(requestableCall, responsableCall, urlGenerator) }
     val urlGenerator: UrlGenerator by lazy { container.make<UrlGenerator>() }
+    internal var validateUsingJsonBody: AtomicBoolean = AtomicBoolean(false)
+        private set
 
     init {
         singleton(UrlGenerator(buildUri(requestableCall.rootUrl).toURI(), make(), make()))
@@ -91,8 +94,13 @@ class HttpCall internal constructor(
         jettyRequest.isHandled = true
     }
 
-    fun applyRules(attribute: String, failfast: Boolean = false, rules: ValidationGuard.() -> Unit): HttpCall {
-        ValidationGuard(failfast).also {
+    fun applyRules(
+        attribute: String,
+        failfast: Boolean = false,
+        inJsonBody: Boolean = false,
+        rules: ValidationGuard.() -> Unit
+    ): HttpCall {
+        ValidationGuard(failfast, inJsonBody).also {
             it.call = this
             it.rules()
             it.validate(attribute, errorBag)
@@ -105,8 +113,12 @@ class HttpCall internal constructor(
         return this
     }
 
-    fun applyRules(rules: Map<String, Iterable<Rule>>, failfast: Boolean = false): HttpCall {
-        ValidationGuard(failfast).also {
+    fun applyRules(
+        rules: Map<String, Iterable<Rule>>,
+        failfast: Boolean = false,
+        inJsonBody: Boolean = false
+    ): HttpCall {
+        ValidationGuard(failfast, inJsonBody).also {
             it.call = this
             it.validate(rules, errorBag)
             checkValidationErrors { errorBag ->
@@ -202,5 +214,9 @@ class HttpCall internal constructor(
     fun onBeforeRender(context: RenderContext) {
         logger.debug { "Calling beforeRender hook for ${callHooks.size} hooks" }
         callHooks.forEach { it.beforeRender(context) }
+    }
+
+    fun validateUsingJsonBody() {
+        validateUsingJsonBody.set(true)
     }
 }
