@@ -32,8 +32,8 @@ fun LocalDateTime.format(pattern: String): String? {
     return format(DateTimeFormatter.ofPattern(pattern))
 }
 
-fun String.relativize(other: String) = this.relativize(other.asPath())
-fun String.relativize(other: Path) = this.asPath().relativize(other).toString()
+fun String.relativize(other: String) = this.relativize(other.toPath())
+fun String.relativize(other: Path) = this.toPath().relativize(other).toString()
 
 fun String.now(): String? {
     return LocalDateTime.now().format(this)
@@ -103,7 +103,8 @@ fun Any?.printAsInfo() {
 }
 
 fun Any.asGray() = TermColors().gray.invoke(this.toString())
-fun Any.asPath() = Paths.get(this.toString())
+fun Any.toPath(): Path = Paths.get(this.toString())
+fun Any.asYellow() = TermColors().yellow.invoke(this.toString())
 
 val Throwable.stackTraceString: String
     get() {
