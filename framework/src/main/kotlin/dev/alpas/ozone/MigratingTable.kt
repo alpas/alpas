@@ -13,6 +13,11 @@ abstract class MigratingTable<E : Entity<E>>(tableName: String, alias: String? =
 
     internal val metadataMap = hashMapOf<String, ColumnMetadata>()
 
+    inline fun <C : Any, R : Entity<R>> ColumnRegistration<C>.belongsTo(
+        referenceTable: Table<R>,
+        selector: (E) -> R?
+    ) = apply { references(referenceTable, selector) }
+
     fun ColumnRegistration<String>.size(size: Int): ColumnRegistration<String> {
         val columnName = getColumn().name
         val metadata = metadataMap[columnName]
