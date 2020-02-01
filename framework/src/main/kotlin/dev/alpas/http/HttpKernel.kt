@@ -18,6 +18,7 @@ import dev.alpas.view.ViewServiceProvider
 import kotlin.reflect.KClass
 
 open class HttpKernel : AlpasServer(), Kernel {
+    private val pushedMiddleware = mutableListOf<KClass<out Middleware<HttpCall>>>()
     private val routeEntryMiddlewareGroups: Map<String, List<KClass<out Middleware<HttpCall>>>> by lazy {
         val groups: HashMap<String, List<KClass<out Middleware<HttpCall>>>> = hashMapOf()
         groups["web"] = webMiddlewareGroup()
@@ -37,12 +38,13 @@ open class HttpKernel : AlpasServer(), Kernel {
     }
 
     override fun serverEntryMiddleware(app: Application): Iterable<KClass<out Middleware<HttpCall>>> {
-        val middleware = mutableListOf<KClass<out Middleware<HttpCall>>>()
+        val middleware = mutableSetOf<KClass<out Middleware<HttpCall>>>()
         registerServerEntryMiddleware(middleware)
+        middleware.addAll(pushedMiddleware)
         return middleware
     }
 
-    protected open fun registerServerEntryMiddleware(middleware: MutableList<KClass<out Middleware<HttpCall>>>) {
+    protected open fun registerServerEntryMiddleware(middleware: MutableSet<KClass<out Middleware<HttpCall>>>) {
     }
 
     open fun webMiddlewareGroup(): List<KClass<out Middleware<HttpCall>>> {
@@ -65,6 +67,10 @@ open class HttpKernel : AlpasServer(), Kernel {
             OzoneServiceProvider::class,
             QueueServiceProvider::class
         )
+    }
+
+    override fun append(middleware: KClass<out Middleware<HttpCall>>, vararg others: KClass<out Middleware<HttpCall>>) {
+        pushedMiddleware.addAll(listOf(middleware, *others))
     }
 }
 
