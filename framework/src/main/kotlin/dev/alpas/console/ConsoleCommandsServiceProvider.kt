@@ -15,7 +15,8 @@ class ConsoleCommandsServiceProvider(private val args: Array<String>) : ServiceP
             MakeCommandCommand(app.srcPackage),
             MakeServiceProviderCommand(app.srcPackage),
             KeyGenerateCommand(),
-            LinkWebCommand(app.env, app.makeElse { AppConfig(app.env) })
+            LinkWebCommand(app.env, app.makeElse { AppConfig(app.env) }),
+            LinkTemplatesCommand(app.env)
         ) + app.kernel.commands(app)
     }
 }

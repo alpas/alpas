@@ -20,12 +20,15 @@ class OzoneServiceProvider : ServiceProvider {
         val config = app.make<DatabaseConfig>()
         return if (config.canConnect()) {
             return listOf(
-                DatabaseMigrateCommand(srcPackage),
-                DatabaseRollbackCommand(srcPackage),
-                MakeEntityCommand(srcPackage),
                 DatabaseCreateCommand(),
+                DatabaseMigrateCommand(srcPackage),
+                DatabaseRefreshCommand(srcPackage),
+                DatabaseRollbackCommand(srcPackage),
+                DatabaseSeedCommand(app),
+                MakeEntityCommand(srcPackage),
+                MakeFactoryCommand(srcPackage),
                 MakeMigrationCommand(srcPackage),
-                DatabaseRefreshCommand(srcPackage)
+                MakeSeederCommand(srcPackage)
             )
         } else {
             emptyList()
