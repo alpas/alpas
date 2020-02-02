@@ -9,17 +9,17 @@ import dev.alpas.Application
 import dev.alpas.RESOURCES_DIRS
 import dev.alpas.make
 import dev.alpas.validation.SharedDataBag
+import uy.klutter.core.common.mustEndWith
 import uy.klutter.core.common.mustStartWith
 import java.io.File
 import java.io.StringWriter
 
 open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
-    private lateinit var templateExtension: String
+    private var templateExtension: String = ""
     private val engine: PebbleEngine by lazy { engineBuilder.cacheActive(app.env.isProduction).build() }
 
     private val engineBuilder by lazy {
         val viewConfig = app.make<ViewConfig>()
-        templateExtension = viewConfig.templateExtension.mustStartWith(".")
         PebbleEngine.Builder()
             .loader(loader(app, viewConfig))
             .apply { if (app.env.isDev) templateCache(null) }
@@ -27,11 +27,12 @@ open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
 
     protected open fun loader(app: Application, config: ViewConfig): Loader<String> {
         // Check if storage/src/main/resources/templates directory exists if so use the file Loader instead.
+        templateExtension = config.templateExtension.mustStartWith(".")
         val storageTemplatesPath = app.env.storagePath(*RESOURCES_DIRS, "templates")
         if (File(storageTemplatesPath).exists()) {
-            return FileLoader().apply { prefix = storageTemplatesPath; suffix = templateExtension }
+            return FileLoader().apply { prefix = storageTemplatesPath }
         }
-        return ClasspathLoader().apply { prefix = config.templatesDirectory; suffix = templateExtension }
+        return ClasspathLoader().apply { prefix = config.templatesDirectory }
     }
 
     override fun extend(extension: AbstractExtension, vararg extensions: AbstractExtension) {
@@ -45,7 +46,7 @@ open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
         val view = viewName ?: return ""
 
         return StringWriter().use { writer ->
-            val template = engine.getTemplate(view)
+            val template = engine.getTemplate(view.mustEndWith(templateExtension))
             val templateContext = (viewArgs ?: emptyMap()) + (sharedDataBag.all())
             template.evaluate(writer, templateContext)
             writer.toString()
