@@ -26,17 +26,24 @@ fun Database.isOfType(name: String): Boolean {
 }
 
 /**
- * Checks whether this databse is of type MySQL.
+ * Checks whether this database is of type MySQL.
  */
 fun Database.isMySql(): Boolean {
     return isOfType("mysql")
 }
 
 /**
- * Checks whether this databse is of type SQLite.
+ * Checks whether this database is of type SQLite.
  */
 fun Database.isSqlite(): Boolean {
     return isOfType("sqlite")
+}
+
+/**
+ * Checks whether this database is of type PostgreSQL.
+ */
+fun Database.isPostgreSQL(): Boolean {
+    return isOfType("postgresql")
 }
 
 /**

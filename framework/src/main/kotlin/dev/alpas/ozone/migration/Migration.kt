@@ -39,4 +39,8 @@ abstract class Migration {
 
     open fun up() {}
     open fun down() {}
+
+    protected fun execute(query: String) {
+        adapter.execute(query)
+    }
 }

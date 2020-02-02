@@ -1,6 +1,7 @@
 package dev.alpas.ozone.migration
 
 import dev.alpas.ozone.isMySql
+import dev.alpas.ozone.isPostgreSQL
 import dev.alpas.ozone.isSqlite
 import dev.alpas.printAsError
 import dev.alpas.printAsInfo
@@ -17,7 +18,7 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
         }, ifNotExists)
     }
 
-    protected open fun execute(sql: String): Boolean {
+    internal open fun execute(sql: String): Boolean {
         return if (isDryRun) {
             sql.printAsInfo()
             true
@@ -30,7 +31,7 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
         }
     }
 
-    fun dropTable(tableName: String) {
+    open fun dropTable(tableName: String) {
         execute("DROP TABLE `$tableName`")
     }
 
@@ -50,6 +51,7 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
             return when {
                 db.isMySql() -> MySqlAdapter(isDryRun, quiet)
                 db.isSqlite() -> SqliteAdapter(isDryRun, quiet)
+                db.isPostgreSQL() -> PostgreSQLAdapter(isDryRun, quiet)
                 else -> throw Exception("Database adapter not supported: '${db.productName}'.")
             }
         }

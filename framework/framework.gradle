@@ -18,8 +18,8 @@ dependencies {
     implementation "org.simplejavamail:simple-java-mail:5.5.1"
     implementation "com.github.alpas:url-signer:0.1.7"
     implementation "com.github.freva:ascii-table:1.1.0"
-    implementation "com.zaxxer:HikariCP:3.4.1"
 
+    compile "com.zaxxer:HikariCP:3.4.1"
     compile "com.github.cesarferreira:kotlin-pluralizer:0.2.9"
     compile "io.pebbletemplates:pebble:3.1.2"
     compile "com.github.ajalt:clikt:2.3.0"
@@ -28,6 +28,7 @@ dependencies {
     compile "me.liuwj.ktorm:ktorm-core:${ktormVersion}"
     compile "me.liuwj.ktorm:ktorm-jackson:${ktormVersion}"
     compile "me.liuwj.ktorm:ktorm-support-mysql:${ktormVersion}"
+    compile "me.liuwj.ktorm:ktorm-support-postgresql:${ktormVersion}"
     compile "me.liuwj.ktorm:ktorm-support-sqlite:${ktormVersion}"
     compile "com.github.marlonlom:timeago:4.0.1"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
