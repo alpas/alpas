@@ -1,14 +1,15 @@
 package dev.alpas.tests.views
 
 import com.mitchellbosecke.pebble.extension.AbstractExtension
-import dev.alpas.*
-import dev.alpas.http.RenderContext
+import dev.alpas.AppConfig
+import dev.alpas.Application
+import dev.alpas.Environment
+import dev.alpas.tryMake
 import dev.alpas.view.*
 import dev.alpas.view.extensions.BuiltInExtensions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import kotlin.reflect.KClass
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ViewServiceProviderTest {
@@ -108,9 +109,6 @@ class ViewServiceProviderTest {
                 extended.add(extension)
                 extended.addAll(extensions)
             }
-
-            override fun render(context: RenderContext, viewArgs: Map<String, Any?>?) = "test"
-            override fun render(template: String, args: Map<String, Any?>?) = "test"
         }
         val provider = object : ViewServiceProvider() {
             override fun viewRenderer(app: Application) = renderer
@@ -133,18 +131,4 @@ class ViewServiceProviderTest {
             app.bind(AppConfig::class, AppConfig(it))
         }
     }
-}
-
-class AlpasTest : Container by DefaultContainer(), AppBase(emptyArray(), AlpasTest::class.java) {
-    override fun loadKernel() {}
-
-    override fun ignite() {}
-
-    override fun takeOff() {}
-
-    override fun stop() = picoContainer.dispose()
-
-    override fun <T : ServiceProvider> registerProvider(provider: T) {}
-
-    override fun <T : ServiceProvider> registerProviders(providers: Iterable<KClass<out T>>) {}
 }
