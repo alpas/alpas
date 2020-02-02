@@ -1,6 +1,9 @@
 package dev.alpas.tests.rules
 
+import dev.alpas.http.HttpCall
 import dev.alpas.validation.*
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -270,6 +273,115 @@ class ValidationRulesTests {
         MatchesRegularExpression("null") { attr, value -> "$attr value should not be $value" }.apply {
             check("expression", null)
             assertEquals("expression value should not be null", error)
+        }
+    }
+
+    @Test
+    fun `check passes if a field matches field_confirm` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns "secret"
+        every { call.param("password_confirm")} returns "secret"
+        Confirm().apply {
+            assertTrue(check("password", call))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+    }
+
+    @Test
+    fun `check passes if a field matches confirm_field` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns "secret"
+        every { call.param("password_confirm")} returns null
+        every { call.param("confirm_password")} returns "secret"
+        Confirm().apply {
+            assertTrue(check("password", call))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+    }
+
+    @Test
+    fun `check fails if field_confirm returns null and confirm_field is not provided` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns "secret"
+        every { call.param("password_confirm")} returns null
+        Confirm().apply {
+            assertFalse(check("password", call))
+            assertEquals("The 'password' confirmation does not match.", error)
+        }
+    }
+
+    @Test
+    fun `check fails if a http call returns null` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns null
+        every { call.param("password_confirm")} returns null
+        every { call.param("confirm_password")} returns null
+        Confirm().apply {
+            assertFalse(check("password", call))
+            assertEquals("The 'password' confirmation does not match.", error)
+        }
+    }
+
+    @Test
+    fun `check fails if a http call returns blank` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns ""
+        every { call.param("password_confirm")} returns ""
+        every { call.param("confirm_password")} returns ""
+        Confirm().apply {
+            assertFalse(check("password", call))
+            assertEquals("The 'password' confirmation does not match.", error)
+        }
+    }
+
+    @Test
+    fun `check fails if a http call returns whitespaces` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns "   "
+        every { call.param("password_confirm")} returns "   "
+        every { call.param("confirm_password")} returns "   "
+        Confirm().apply {
+            assertFalse(check("password", call))
+            assertEquals("The 'password' confirmation does not match.", error)
+        }
+    }
+
+    @Test
+    fun `check fails if a field does not match field_confirm` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns "secret"
+        every { call.param("password_confirm")} returns "notsecret"
+        Confirm().apply {
+            assertFalse(check("password", call))
+            assertEquals("The 'password' confirmation does not match.", error)
+        }
+    }
+
+    @Test
+    fun `check fails if a field does not match confirm_field` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns "secret"
+        every { call.param("password_confirm")} returns null
+        every { call.param("confirm_password")} returns "notsecret"
+        Confirm().apply {
+            assertFalse(check("password", call))
+            assertEquals("The 'password' confirmation does not match.", error)
+        }
+    }
+
+    @Test
+    fun `confirm message check` () {
+        val call = mockk<HttpCall>(relaxed = true)
+        every { call.param("password") } returns "secret"
+        every { call.param("password_confirm")} returns null
+        every { call.param("confirm_password")} returns "notsecret"
+        Confirm() { attr, value -> "$attr value should not be $value" }.apply {
+            check("password", call)
+            assertEquals("password value should not be notsecret", error)
         }
     }
 }
