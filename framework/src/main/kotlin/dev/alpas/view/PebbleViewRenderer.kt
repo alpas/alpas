@@ -35,7 +35,8 @@ open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
     }
 
     override fun extend(extension: AbstractExtension, vararg extensions: AbstractExtension) {
-        (listOf(extension) + extensions).forEach {
+        engineBuilder.extension(extension)
+        extensions.forEach {
             engineBuilder.extension(it)
         }
     }

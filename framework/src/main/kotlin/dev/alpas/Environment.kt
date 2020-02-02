@@ -17,15 +17,21 @@ const val SRC_DIR_KEY = "alpas_src_dir"
 const val RUN_MODE = "alpas_run_mode"
 val RESOURCES_DIRS = arrayOf("src", "main", "resources")
 
-class Environment(
+open class Environment(
     private val dotenv: Dotenv,
     private val rootPath: String,
     val entryPackage: String,
     val runMode: RunMode
 ) {
-    internal val entries = dotenv.entries()
-    val inTestMode by lazy { runMode.isTest() }
-    val inConsoleMode by lazy { runMode.isConsole() }
+    val entries = dotenv.entries().map { entry -> entry.key to entry.value }.toMap()
+    val inTestMode = runMode.isTest()
+    val inConsoleMode = runMode.isConsole()
+    val isProduction = invoke("APP_LEVEL").isOneOf("prod", "production", "live")
+    val isLocal = invoke("APP_LEVEL").isOneOf("dev", "debug", "local")
+    val isDev = isLocal
+    val storagePath = rootPath("storage")
+    var supportsSession = false
+        internal set
 
     operator fun invoke(key: String): String? {
         return dotenv[key]
@@ -51,15 +57,6 @@ class Environment(
         return dotenv[key] ?: defaultValue
     }
 
-    fun check(key: String, against: List<String>): Boolean {
-        return against.contains(this(key)?.toLowerCase())
-    }
-
-    val isProduction by lazy { invoke("APP_LEVEL").isOneOf("prod", "production", "live") }
-    val isLocal by lazy { invoke("APP_LEVEL").isOneOf("dev", "debug", "local") }
-    val isDev = isLocal
-    private val storagePath: String = rootPath("storage")
-
     fun rootPath(vararg paths: String): String {
         return if (paths.isEmpty()) {
             rootPath
@@ -71,7 +68,4 @@ class Environment(
             storagePath
         } else Paths.get(storagePath, *paths).toAbsolutePath().toString()
     }
-
-    var supportsSession = false
-        internal set
 }

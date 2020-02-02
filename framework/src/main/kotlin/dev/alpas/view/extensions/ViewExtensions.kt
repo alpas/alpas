@@ -49,7 +49,7 @@ internal class BuiltInExtensions(private val app: Application) : AbstractExtensi
     }
 
     override fun getGlobalVariables(): Map<String, Any> {
-        val envEntries = app.env.entries.map { entry -> entry.key to entry.value }.toMap()
+        val envEntries: Map<String, String> = app.env.entries
         return mapOf("_configs" to makeViewConfigs(app), "_env" to envEntries)
     }
 

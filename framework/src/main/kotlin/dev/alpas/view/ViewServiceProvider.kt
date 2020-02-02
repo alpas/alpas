@@ -21,10 +21,11 @@ open class ViewServiceProvider : ServiceProvider {
     private lateinit var customTags: CustomTags
 
     override fun register(app: Application) {
-        val isEnabled = app.config { ViewConfig(app.env).apply { register(app) } }.isEnabled
-        if (!isEnabled) {
+        val viewConfig = app.config { ViewConfig(app.env) }
+        if (!viewConfig.isEnabled) {
             return
         }
+        viewConfig.register(app)
 
         // todo: add all extensions from user land
         val viewRenderer = viewRenderer(app)
@@ -39,7 +40,7 @@ open class ViewServiceProvider : ServiceProvider {
         }
     }
 
-    open fun viewRenderer(app: Application) = PebbleViewRenderer(app)
+    open fun viewRenderer(app: Application): ViewRenderer = PebbleViewRenderer(app)
 
     @Suppress("UNCHECKED_CAST")
     override fun boot(app: Application) {

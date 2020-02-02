@@ -6,7 +6,7 @@ import java.io.File
 import java.nio.file.Paths
 
 open class ViewConfig(env: Environment) : Config {
-    open val isEnabled = true
+    open val isEnabled get() = true
     open val mixManifestDirectory = env("MIX_MANIFEST_DIRECTORY", "")
     open val templatesDirectory = "templates"
     open val templateExtension = "peb"
