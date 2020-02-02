@@ -1,4 +1,4 @@
-package dev.alpas.tests
+package dev.alpas.tests.routing
 
 import dev.alpas.Middleware
 import dev.alpas.auth.middleware.AuthOnlyMiddleware
@@ -10,6 +10,9 @@ import dev.alpas.routing.Controller
 import dev.alpas.routing.ControllerHandler
 import dev.alpas.routing.dynamicControllerFactory
 import dev.alpas.routing.middleware.SignedRequestMiddleware
+import dev.alpas.tests.TestController
+import dev.alpas.tests.controllerMethod
+import dev.alpas.tests.withRouter
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -324,7 +327,7 @@ class RoutesTest {
             assertEquals(name, route?.controllerMethod())
             assertEquals("/", route?.path)
             assertEquals(
-                "dev.alpas.tests.TypedController",
+                "dev.alpas.tests.routing.TypedController",
                 (route?.handler as ControllerHandler)?.controller.qualifiedName
             )
         }
@@ -349,7 +352,7 @@ class RoutesTest {
             assertEquals(name, route?.controllerMethod())
             assertEquals("/", route?.path)
             assertEquals(
-                "dev.alpas.tests.TypedController",
+                "dev.alpas.tests.routing.TypedController",
                 (route?.handler as ControllerHandler)?.controller.qualifiedName
             )
         }
@@ -394,7 +397,7 @@ class RoutesTest {
             assertEquals("${route?.path?.toLowerCase()}", route?.path)
             assertEquals("test${method.toString().toLowerCase()}", (route?.handler as ControllerHandler).method)
             assertEquals(
-                "dev.alpas.tests.TypedController",
+                "dev.alpas.tests.routing.TypedController",
                 (route?.handler as ControllerHandler)?.controller.qualifiedName
             )
         }

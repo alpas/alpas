@@ -1,4 +1,4 @@
-package dev.alpas.tests
+package dev.alpas.tests.ozone
 
 import dev.alpas.Environment
 import dev.alpas.ozone.ConnectionConfig

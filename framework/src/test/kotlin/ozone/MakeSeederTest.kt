@@ -1,4 +1,4 @@
-package dev.alpas.tests.commands
+package dev.alpas.tests.ozone
 
 import dev.alpas.SRC_DIR_KEY
 import dev.alpas.ozone.console.MakeSeederCommand

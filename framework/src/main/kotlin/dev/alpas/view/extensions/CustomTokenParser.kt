@@ -10,7 +10,6 @@ import com.mitchellbosecke.pebble.template.PebbleTemplateImpl
 import com.mitchellbosecke.pebble.tokenParser.TokenParser
 import dev.alpas.view.TagContext
 import dev.alpas.view.ViewRenderer
-import dev.alpas.http.ViewResponse
 import dev.alpas.view.httpCall
 import java.io.Writer
 
@@ -37,12 +36,20 @@ internal class CustomNode(
     lineNumber: Int,
     private val callback: TagContext.() -> String,
     private val viewRenderer: ViewRenderer
-) :
-    AbstractRenderableNode(lineNumber) {
+) : AbstractRenderableNode(lineNumber) {
     override fun render(self: PebbleTemplateImpl, writer: Writer, context: EvaluationContextImpl) {
         val call = context.httpCall
         val text = callback(TagContext(call, lineNumber, self.name, context))
-        writer.write(viewRenderer.render(text, (call.response as? ViewResponse)?.args))
+        writer.write(viewRenderer.render(text, currentArgs(context)))
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    // FIXME: This is just a temporary hack until this is resolved: https://github.com/PebbleTemplates/pebble/issues/291
+    private fun currentArgs(context: EvaluationContextImpl): Map<String, Any?> {
+        return context.scopeChain.globalScopes.map {
+            val stack = it.javaClass.getDeclaredField("backingMap").apply { isAccessible = true }
+            stack.get(it) as Map<String, Any?>
+        }.reduce { acc, map -> acc + map }
     }
 
     override fun accept(visitor: NodeVisitor) {
