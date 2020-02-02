@@ -228,4 +228,48 @@ class ValidationRulesTests {
             assertEquals("email value should not be 2022020", error)
         }
     }
+
+    @Test
+    fun `matches-regular-expression rule test` () {
+        MatchesRegularExpression("test").apply {
+            assertTrue(check("expression", "test"))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MatchesRegularExpression(" ").apply {
+            assertTrue(check("expression", " "))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MatchesRegularExpression("123").apply {
+            assertTrue(check("expression", 123))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MatchesRegularExpression(" ").apply {
+            assertFalse(check("expression", "       "))
+            assertEquals("The field 'expression' did not match the required format.", error)
+        }
+
+        MatchesRegularExpression("123").apply {
+            assertFalse(check("expression", 1234))
+            assertEquals("The field 'expression' did not match the required format.", error)
+        }
+
+        MatchesRegularExpression("null").apply {
+            assertFalse(check("expression", null))
+            assertEquals("The field 'expression' did not match the required format.", error)
+        }
+
+        MatchesRegularExpression("null") { attr, value -> "$attr value should not be $value" }.apply {
+            check("expression", null)
+            assertEquals("expression value should not be null", error)
+        }
+    }
 }
