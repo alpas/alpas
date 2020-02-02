@@ -7,8 +7,8 @@ import com.mitchellbosecke.pebble.loader.FileLoader
 import com.mitchellbosecke.pebble.loader.Loader
 import dev.alpas.Application
 import dev.alpas.RESOURCES_DIRS
-import dev.alpas.http.RenderContext
 import dev.alpas.make
+import dev.alpas.validation.SharedDataBag
 import uy.klutter.core.common.mustStartWith
 import java.io.File
 import java.io.StringWriter
@@ -29,9 +29,9 @@ open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
         // Check if storage/src/main/resources/templates directory exists if so use the file Loader instead.
         val storageTemplatesPath = app.env.storagePath(*RESOURCES_DIRS, "templates")
         if (File(storageTemplatesPath).exists()) {
-            return FileLoader().apply { prefix = storageTemplatesPath }
+            return FileLoader().apply { prefix = storageTemplatesPath; suffix = templateExtension }
         }
-        return ClasspathLoader().apply { prefix = config.templatesDirectory }
+        return ClasspathLoader().apply { prefix = config.templatesDirectory; suffix = templateExtension }
     }
 
     override fun extend(extension: AbstractExtension, vararg extensions: AbstractExtension) {
@@ -41,30 +41,21 @@ open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
         }
     }
 
-    override fun render(context: RenderContext, viewArgs: Map<String, Any?>?): String {
-        val view = context.viewName ?: return ""
+    override fun render(viewName: String?, sharedDataBag: SharedDataBag, viewArgs: Map<String, Any?>?): String {
+        val view = viewName ?: return ""
 
-        return StringWriter().let { writer ->
-            val template = engine.getTemplate("${view}$templateExtension")
-
-            try {
-                val templateContext = (viewArgs ?: emptyMap()) + (context.sharedDataBag.all())
-                template.evaluate(writer, templateContext)
-                writer.toString()
-            } catch (e: Exception) {
-                throw e
-            }
+        return StringWriter().use { writer ->
+            val template = engine.getTemplate(view)
+            val templateContext = (viewArgs ?: emptyMap()) + (sharedDataBag.all())
+            template.evaluate(writer, templateContext)
+            writer.toString()
         }
     }
 
     override fun render(template: String, args: Map<String, Any?>?): String {
-        return StringWriter().let { writer ->
-            try {
-                engine.getLiteralTemplate(template).evaluate(writer, args ?: emptyMap())
-                writer.toString()
-            } catch (e: Exception) {
-                throw e
-            }
+        return StringWriter().use { writer ->
+            engine.getLiteralTemplate(template).evaluate(writer, args ?: emptyMap())
+            writer.toString()
         }
     }
 }

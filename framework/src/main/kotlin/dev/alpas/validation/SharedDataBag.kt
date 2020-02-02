@@ -7,11 +7,11 @@ class SharedDataBag : Iterable<Any> {
     private val contexts = mutableMapOf<String, Any?>()
 
     internal fun add(pair: Pair<String, Any?>, vararg pairs: Pair<String, Any>) {
-        contexts.putAll(mapOf(pair) + pairs.toMap())
+        contexts[pair.first] = pair.second
+        contexts.putAll(pairs)
     }
 
     fun all() = contexts.toImmutable()
-
 
     override fun iterator(): Iterator<Any> {
         return contexts.iterator()
