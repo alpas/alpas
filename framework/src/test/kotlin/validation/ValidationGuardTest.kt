@@ -1,4 +1,4 @@
-package dev.alpas.tests
+package dev.alpas.tests.validation
 
 import dev.alpas.http.HttpCall
 import dev.alpas.validation.*

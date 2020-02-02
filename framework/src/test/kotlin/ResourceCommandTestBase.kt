@@ -4,7 +4,7 @@ import dev.alpas.auth.console.MakeAuthCommand
 import dev.alpas.console.Command
 import org.junit.jupiter.api.AfterEach
 
-abstract class CommandTestBase {
+abstract class ResourceCommandTestBase {
     protected var lastCommand: MakeAuthCommand? = null
 
     @AfterEach

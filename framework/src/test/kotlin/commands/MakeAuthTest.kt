@@ -2,7 +2,7 @@ package dev.alpas.tests.commands
 
 import dev.alpas.SRC_DIR_KEY
 import dev.alpas.auth.console.MakeAuthCommand
-import dev.alpas.tests.CommandTestBase
+import dev.alpas.tests.ResourceCommandTestBase
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -11,7 +11,7 @@ import java.io.File
 import java.nio.file.Path
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class MakeAuthTest : CommandTestBase() {
+class MakeAuthTest : ResourceCommandTestBase() {
     @Test
     fun `controller files are created`(@TempDir tempDir: Path) {
         val tempPath = tempDir.toAbsolutePath().toString()

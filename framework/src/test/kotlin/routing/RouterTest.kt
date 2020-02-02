@@ -1,6 +1,7 @@
-package dev.alpas.tests
+package dev.alpas.tests.routing
 
 import dev.alpas.http.Method
+import dev.alpas.tests.withRouter
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
