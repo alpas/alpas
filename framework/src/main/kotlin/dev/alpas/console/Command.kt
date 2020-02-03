@@ -76,7 +76,7 @@ abstract class Command(
 
     fun withColors(output: TermColors.() -> Unit) {
         if (!quiet) {
-            with(TermColors()) {
+            with(terminalColors) {
                 output()
             }
         }

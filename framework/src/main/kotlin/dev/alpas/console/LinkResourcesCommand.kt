@@ -1,9 +1,6 @@
 package dev.alpas.console
 
-import dev.alpas.Environment
-import dev.alpas.asGray
-import dev.alpas.relativize
-import dev.alpas.toPath
+import dev.alpas.*
 import java.io.File
 import java.nio.file.Files
 
@@ -15,7 +12,8 @@ abstract class LinkResourcesCommand(
 ) :
     Command(
         name = name,
-        help = "Link ${env.rootPath().relativize(dest).asGray()} to ${target.asGray()} directory"
+        help = "Link to ${target.asGray()} directory",
+        epilog = "This command links ${env.rootPath().relativize(dest).asMagenta()} to ${target.asMagenta()} directory."
     ) {
 
     protected abstract val docsUrl: String

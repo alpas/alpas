@@ -4,14 +4,14 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import dev.alpas.Application
 import dev.alpas.PackageClassLoader
-import dev.alpas.asYellow
+import dev.alpas.asMagenta
 import dev.alpas.console.Command
 import dev.alpas.ozone.Seeder
 import kotlin.reflect.full.createInstance
 
 class DatabaseSeedCommand(private val app: Application) : Command(name = "db:seed", help = "Seed a database") {
     private val defaultSeederName = "DatabaseSeeder"
-    private val name by argument(help = "The name of the seeder to run. Uses ${defaultSeederName.asYellow()} by default.").optional()
+    private val name by argument(help = "The name of the seeder to run. Uses ${defaultSeederName.asMagenta()} by default.").optional()
     private val packageClassLoader: PackageClassLoader by lazy { PackageClassLoader(app.srcPackage) }
 
     override fun run() {
@@ -20,9 +20,9 @@ class DatabaseSeedCommand(private val app: Application) : Command(name = "db:see
         if (classInfo == null) {
             error("Cannot find the seeder $seederName to run.")
         } else {
-            val seeder = classInfo.loadClass().kotlin.createInstance() as Seeder
+            val seeder = classInfo.loadClass().kotlin.let { it.objectInstance ?: it.createInstance() } as Seeder
             seeder.run(app)
-            success("🙌 Successfully seeded the database using $seederName!")
+            success("🙌 Successfully ran $seederName!")
         }
     }
 }
