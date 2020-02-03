@@ -241,13 +241,6 @@ class ValidationRulesTests {
             }
         }
 
-        MatchesRegularExpression(" ").apply {
-            assertTrue(check("expression", " "))
-            assertThrows(UninitializedPropertyAccessException::class.java) {
-                error
-            }
-        }
-
         MatchesRegularExpression("123").apply {
             assertTrue(check("expression", 123))
             assertThrows(UninitializedPropertyAccessException::class.java) {
@@ -255,8 +248,29 @@ class ValidationRulesTests {
             }
         }
 
-        MatchesRegularExpression(" ").apply {
-            assertFalse(check("expression", "       "))
+        MatchesRegularExpression("a{5}").apply {
+            assertTrue(check("expression", "aaaaa"))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MatchesRegularExpression("\\d{5}").apply {
+            assertTrue(check("expression", "12345"))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MatchesRegularExpression("\\d{5}\\s\\w{4}").apply {
+            assertTrue(check("expression", "12345 test"))
+            assertThrows(UninitializedPropertyAccessException::class.java) {
+                error
+            }
+        }
+
+        MatchesRegularExpression("\\d{5}\\s\\w{4}").apply {
+            assertFalse(check("expression", "12345 test or notest"))
             assertEquals("The field 'expression' did not match the required format.", error)
         }
 
@@ -265,14 +279,14 @@ class ValidationRulesTests {
             assertEquals("The field 'expression' did not match the required format.", error)
         }
 
-        MatchesRegularExpression("null").apply {
-            assertFalse(check("expression", null))
+        MatchesRegularExpression("test").apply {
+            assertFalse(check("expression", "testing"))
             assertEquals("The field 'expression' did not match the required format.", error)
         }
 
-        MatchesRegularExpression("null") { attr, value -> "$attr value should not be $value" }.apply {
-            check("expression", null)
-            assertEquals("expression value should not be null", error)
+        MatchesRegularExpression("\\d{5}\\s\\w{4}") { attr, value -> "$attr value should not be $value" }.apply {
+            check("expression","12345 test or notest" )
+            assertEquals("expression value should not be 12345 test or notest", error)
         }
     }
 
