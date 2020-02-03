@@ -5,6 +5,7 @@ package dev.alpas
 import com.github.ajalt.clikt.output.TermUi.echo
 import com.github.ajalt.mordant.TermColors
 import dev.alpas.exceptions.toHttpException
+import io.github.classgraph.ClassInfo
 import org.eclipse.jetty.http.HttpStatus
 import org.sagebionetworks.url.UrlData
 import uy.klutter.core.common.mustStartWith
@@ -24,6 +25,7 @@ import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.servlet.http.HttpServletResponse
+import kotlin.reflect.full.createInstance
 
 val terminalColors = TermColors(TermColors.Level.ANSI256)
 
@@ -184,4 +186,8 @@ inline fun <R> executeAndMeasureTimeMillis(block: () -> R): Pair<R, Long> {
 
 fun <E> E?.orAbort(message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): E {
     return this ?: throw statusCode.toHttpException(message)
+}
+
+inline fun <reified T : Any> ClassInfo.load(): T {
+    return loadClass().kotlin.let { it.objectInstance ?: it.createInstance() } as T
 }

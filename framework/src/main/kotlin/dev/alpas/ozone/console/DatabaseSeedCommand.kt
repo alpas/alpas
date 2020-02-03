@@ -6,8 +6,8 @@ import dev.alpas.Application
 import dev.alpas.PackageClassLoader
 import dev.alpas.asMagenta
 import dev.alpas.console.Command
+import dev.alpas.load
 import dev.alpas.ozone.Seeder
-import kotlin.reflect.full.createInstance
 
 class DatabaseSeedCommand(private val app: Application) : Command(name = "db:seed", help = "Seed a database") {
     private val defaultSeederName = "DatabaseSeeder"
@@ -20,7 +20,7 @@ class DatabaseSeedCommand(private val app: Application) : Command(name = "db:see
         if (classInfo == null) {
             error("Cannot find the seeder $seederName to run.")
         } else {
-            val seeder = classInfo.loadClass().kotlin.let { it.objectInstance ?: it.createInstance() } as Seeder
+            val seeder = classInfo.load<Seeder>()
             seeder.run(app)
             success("🙌 Successfully ran $seederName!")
         }
