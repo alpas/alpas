@@ -315,7 +315,7 @@ class ValidationRulesTests {
     }
 
     @Test
-    fun `check fails if a http call returns null` () {
+    fun `check fails if a confirm field is null` () {
         val call = mockk<HttpCall>(relaxed = true)
         every { call.param("password") } returns null
         every { call.param("password_confirm")} returns null
@@ -327,7 +327,7 @@ class ValidationRulesTests {
     }
 
     @Test
-    fun `check fails if a http call returns blank` () {
+    fun `check fails if a confirm field is blank` () {
         val call = mockk<HttpCall>(relaxed = true)
         every { call.param("password") } returns ""
         every { call.param("password_confirm")} returns ""
@@ -339,7 +339,7 @@ class ValidationRulesTests {
     }
 
     @Test
-    fun `check fails if a http call returns whitespaces` () {
+    fun `check fails if a confirm field is whitespaces` () {
         val call = mockk<HttpCall>(relaxed = true)
         every { call.param("password") } returns "   "
         every { call.param("password_confirm")} returns "   "
