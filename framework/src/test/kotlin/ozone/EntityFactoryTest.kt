@@ -125,6 +125,17 @@ class EntityFactoryTest : BaseTest() {
 
         assertEquals(all.random().name, "Same Name")
     }
+
+    @Test
+    fun `creating many entities returns fresh copies`() {
+        execSqlScript(TestTable.createSql)
+
+        val entities = from(TestObjectFactory, 10, "name" to "Same Name")
+        assertEquals(10, entities.size)
+
+        assertNotNull(entities.random().id)
+        assertEquals(entities.random().name, "Same Name")
+    }
 }
 
 object TestObjectFactory : EntityFactory<TestEntity> {

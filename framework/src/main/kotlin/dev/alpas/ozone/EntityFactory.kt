@@ -3,22 +3,23 @@
 package dev.alpas.ozone
 
 import com.github.javafaker.Faker
+import me.liuwj.ktorm.dsl.batchInsert
 import me.liuwj.ktorm.dsl.insertAndGenerateKey
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.entity.findById
-import me.liuwj.ktorm.schema.BaseTable
+import me.liuwj.ktorm.schema.Table
 
 val faker by lazy(LazyThreadSafetyMode.NONE) { Faker() }
 
 /**
  * A factory for creating one or many instances of an Entity class.
  */
-interface EntityFactory<E : Entity<*>> {
+interface EntityFactory<E : Entity<E>> {
 
     /**
      * The entity's table
      */
-    val table: BaseTable<E>
+    val table: Table<E>
 
     /**
      * Build and persist an entity to a database. Before persisting, its property will be overriden by the
@@ -39,7 +40,7 @@ interface EntityFactory<E : Entity<*>> {
 
     /**
      * Persist the given entity in the database and return its primary key. The entity's properties
-     * are inspected first to make sure that the corresponding columns exist in the entity'stable.
+     * are inspected first to make sure that the corresponding columns exist in the entity's table.
      * If the table doesn't have those columns, those properties are ignored and not persisted.
      *
      * @param entity An entity to persist in the database.
@@ -47,9 +48,34 @@ interface EntityFactory<E : Entity<*>> {
      */
     fun save(entity: E): Any {
         return table.insertAndGenerateKey { builder ->
-            entity.properties.forEach { (key, value) ->
-                table.columns.find { it.name == key }?.let {
-                    builder[key] to value
+            entity.properties.forEach { (name, value) ->
+                table.columns.find { it.name == name }?.let {
+                    builder[name] to value
+                }
+            }
+        }
+    }
+
+    /**
+     * Persist a list of entities in the database and affected row IDs. An entity's properties are
+     * inspected first to make sure that the corresponding columns exist in the entity's table.
+     * If the table is missing those columns, those properties are ignored and not persisted.
+     *
+     * Currently this method isn't returning the affected row IDs. Will revisit this again
+     * after this has been addressed: https://github.com/vincentlauvlwj/Ktorm/issues/87
+     *
+     * @param entities A list of entities to persist in the database.
+     * @return The affected row IDs
+     */
+    private fun save(entities: List<E>): IntArray {
+        return table.batchInsert {
+            for (entity in entities) {
+                item { builder ->
+                    for ((name, value) in entity.properties) {
+                        table.columns.find { it.name == name }?.let {
+                            builder[name] to value
+                        }
+                    }
                 }
             }
         }
@@ -78,7 +104,7 @@ interface EntityFactory<E : Entity<*>> {
 
     fun build(attrs: Map<String, Any?> = emptyMap()): E {
         return entity().also {
-            attrs.forEach { (key, value) -> it[key] = value }
+            attrs.forEach { (name, value) -> it[name] = value }
         }
     }
 
@@ -97,7 +123,7 @@ interface EntityFactory<E : Entity<*>> {
  * @param attrs A map of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E, EF : EntityFactory<E>> from(factory: EF, attrs: Map<String, Any?> = emptyMap()): E {
+fun <E : Entity<E>, EF : EntityFactory<E>> from(factory: EF, attrs: Map<String, Any?> = emptyMap()): E {
     return factory.create(attrs)
 }
 
@@ -110,7 +136,11 @@ fun <E, EF : EntityFactory<E>> from(factory: EF, attrs: Map<String, Any?> = empt
  * @param attrs Pairs of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E, EF : EntityFactory<E>> from(factory: EF, attr: Pair<String, Any?>, vararg attrs: Pair<String, Any?>): E {
+fun <E : Entity<E>, EF : EntityFactory<E>> from(
+    factory: EF,
+    attr: Pair<String, Any?>,
+    vararg attrs: Pair<String, Any?>
+): E {
     return from(factory, mapOf(attr, *attrs))
 }
 
@@ -118,17 +148,21 @@ fun <E, EF : EntityFactory<E>> from(factory: EF, attr: Pair<String, Any?>, varar
  * A convenience proxy method for creating one or more instances of an entity using the given factory.
  * This method calls `create()` method of the factory, which means it will be persisted.
  *
+ * TODO: Optimize this after https://github.com/vincentlauvlwj/Ktorm/issues/87 is addressed.
+ *
  * @param factory The factory responsible for creating the actual instance.
  * @param count The number of entity instances to create.
  * @param attrs A map of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A list of fresh entities from the database.
  */
-fun <E, EF : EntityFactory<E>> from(
+fun <E : Entity<E>, EF : EntityFactory<E>> from(
     factory: EF,
     count: Int = 1,
     attrs: Map<String, Any?> = emptyMap()
 ): List<E> {
-    return (1..count).map { from(factory, attrs) }
+    return (1..count).map {
+        from(factory, attrs)
+    }
 }
 
 /**
@@ -141,7 +175,7 @@ fun <E, EF : EntityFactory<E>> from(
  * @param attrs Pairs of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E, EF : EntityFactory<E>> from(
+fun <E : Entity<E>, EF : EntityFactory<E>> from(
     factory: EF,
     count: Int = 1,
     attr: Pair<String, Any?>,

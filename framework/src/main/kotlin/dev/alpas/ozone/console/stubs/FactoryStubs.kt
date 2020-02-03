@@ -11,7 +11,7 @@ internal class FactoryStubs {
                 import StubEntitiesPackage.StubEntityClazzName
                 import StubEntitiesPackage.StubTableClazzName
 
-                internal class StubClazzName : EntityFactory<StubEntityClazzName> {
+                internal object StubClazzName : EntityFactory<StubEntityClazzName> {
                     override val table = StubTableClazzName
                     
                     override fun entity(): StubEntityClazzName {
