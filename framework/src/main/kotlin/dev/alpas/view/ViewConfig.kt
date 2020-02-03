@@ -8,7 +8,6 @@ import java.nio.file.Paths
 open class ViewConfig(env: Environment) : Config {
     open val isEnabled get() = true
     open val mixManifestDirectory = env("MIX_MANIFEST_DIRECTORY", "")
-    open val templatesDirectory = "templates"
     open val templateExtension = "peb"
     open val mixManifestFilename = "mix-manifest.json"
     open var cacheTemplates = false

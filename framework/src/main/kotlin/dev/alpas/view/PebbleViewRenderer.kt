@@ -28,11 +28,12 @@ open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
     protected open fun loader(app: Application, config: ViewConfig): Loader<String> {
         // Check if storage/src/main/resources/templates directory exists if so use the file Loader instead.
         templateExtension = config.templateExtension.mustStartWith(".")
-        val storageTemplatesPath = app.env.storagePath(*RESOURCES_DIRS, "templates")
+        val templatesDir = "templates"
+        val storageTemplatesPath = app.env.storagePath(*RESOURCES_DIRS, templatesDir)
         if (File(storageTemplatesPath).exists()) {
             return FileLoader().apply { prefix = storageTemplatesPath }
         }
-        return ClasspathLoader().apply { prefix = config.templatesDirectory }
+        return ClasspathLoader().apply { prefix = templatesDir }
     }
 
     override fun extend(extension: AbstractExtension, vararg extensions: AbstractExtension) {

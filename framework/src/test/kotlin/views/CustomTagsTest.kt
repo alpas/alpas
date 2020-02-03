@@ -2,6 +2,7 @@ package dev.alpas.tests.views
 
 import dev.alpas.AppConfig
 import dev.alpas.Environment
+import dev.alpas.PackageClassLoader
 import dev.alpas.http.HttpCall
 import dev.alpas.make
 import dev.alpas.validation.SharedDataBag
@@ -20,7 +21,7 @@ class CustomTagsTest {
         val app = AlpasTest()
         bindDependencies(app)
         TestViewServiceProvider.apply {
-            register(app)
+            register(app, PackageClassLoader(app.srcPackage))
             app.make<CustomTags>().add("greet") { "<h1>hello</h1>" }
             boot(app)
         }
@@ -34,7 +35,7 @@ class CustomTagsTest {
         val app = AlpasTest()
         bindDependencies(app)
         TestViewServiceProvider.apply {
-            register(app)
+            register(app, PackageClassLoader(app.srcPackage))
             app.make<CustomTags>().add("greet") { "<h1>hello {{ name }}</h1>" }
             boot(app)
         }
@@ -50,7 +51,7 @@ class CustomTagsTest {
         val app = AlpasTest()
         bindDependencies(app)
         TestViewServiceProvider.apply {
-            register(app)
+            register(app, PackageClassLoader(app.srcPackage))
             app.make<CustomTags>().add("greet") { "<h1>hello {{ name | upper }}</h1>" }
             boot(app)
         }

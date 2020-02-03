@@ -1,19 +1,20 @@
 package dev.alpas.view.extensions
 
-import com.mitchellbosecke.pebble.extension.AbstractExtension
 import com.mitchellbosecke.pebble.extension.Filter
 import com.mitchellbosecke.pebble.extension.Function
 import com.mitchellbosecke.pebble.tokenParser.TokenParser
 import dev.alpas.Application
 import dev.alpas.config
 import dev.alpas.make
+import dev.alpas.view.ConditionalTags
+import dev.alpas.view.CustomTags
 import dev.alpas.view.ViewConfig
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
 
-internal class BuiltInExtensions(private val app: Application) : AbstractExtension() {
-    override fun getFunctions(): Map<String, Function> {
+internal class PebbleExtensions : PebbleExtension {
+    override fun functions(app: Application): Map<String, Function> {
         return mapOf(
             "mix" to MixFunction(app.make()),
             "route" to RouteFunction(),
@@ -32,7 +33,7 @@ internal class BuiltInExtensions(private val app: Application) : AbstractExtensi
         )
     }
 
-    override fun getFilters(): Map<String, Filter> {
+    override fun filters(app: Application): Map<String, Filter> {
         return mapOf(
             "int" to IntFilter(),
             "json_encode" to JsonEncodeFilter(),
@@ -40,7 +41,7 @@ internal class BuiltInExtensions(private val app: Application) : AbstractExtensi
         )
     }
 
-    override fun getTokenParsers(): List<TokenParser> {
+    override fun tokenParsers(app: Application): List<TokenParser> {
         return mutableListOf(
             CsrfTokenParser(),
             ConditionalTokenParser("auth") { it.call.isAuthenticated },
@@ -48,7 +49,7 @@ internal class BuiltInExtensions(private val app: Application) : AbstractExtensi
         )
     }
 
-    override fun getGlobalVariables(): Map<String, Any> {
+    override fun globalVariables(app: Application): Map<String, Any> {
         val envEntries: Map<String, String> = app.env.entries
         return mapOf("_configs" to makeViewConfigs(app), "_env" to envEntries)
     }

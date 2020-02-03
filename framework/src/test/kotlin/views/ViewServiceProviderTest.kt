@@ -1,12 +1,9 @@
 package dev.alpas.tests.views
 
 import com.mitchellbosecke.pebble.extension.AbstractExtension
-import dev.alpas.AppConfig
-import dev.alpas.Application
-import dev.alpas.Environment
-import dev.alpas.tryMake
+import dev.alpas.*
 import dev.alpas.view.*
-import dev.alpas.view.extensions.BuiltInExtensions
+import dev.alpas.view.extensions.PebbleExtensionWrapper
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -26,7 +23,7 @@ class ViewServiceProviderTest {
             }
         }
         app.bind(ViewConfig::class, viewConfig)
-        ViewServiceProvider().register(app)
+        ViewServiceProvider().register(app, PackageClassLoader(app.srcPackage))
 
         assertFalse(isRegistered)
     }
@@ -44,7 +41,7 @@ class ViewServiceProviderTest {
             }
         }
         app.bind(ViewConfig::class, viewConfig)
-        ViewServiceProvider().register(app)
+        ViewServiceProvider().register(app, PackageClassLoader(app.srcPackage))
 
         assertTrue(isRegistered)
     }
@@ -71,7 +68,7 @@ class ViewServiceProviderTest {
         val viewConfig = viewConfig(env, true)
 
         app.bind(ViewConfig::class, viewConfig)
-        ViewServiceProvider().register(app)
+        ViewServiceProvider().register(app, PackageClassLoader(app.srcPackage))
 
         assertNotNull(app.tryMake<ConditionalTags>())
         assertNotNull(app.tryMake<CustomTags>())
@@ -88,7 +85,7 @@ class ViewServiceProviderTest {
         val extended = bootServiceProvider(app)
 
         assertEquals(1, extended.size)
-        assertTrue(extended.first() is BuiltInExtensions)
+        assertTrue(extended.first() is PebbleExtensionWrapper)
     }
 
     @Test
@@ -114,7 +111,7 @@ class ViewServiceProviderTest {
             override fun viewRenderer(app: Application) = renderer
         }
 
-        provider.register(app)
+        provider.register(app, PackageClassLoader(app.srcPackage))
         provider.boot(app)
         return extended
     }

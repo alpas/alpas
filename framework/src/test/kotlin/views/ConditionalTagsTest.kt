@@ -2,6 +2,7 @@ package dev.alpas.tests.views
 
 import dev.alpas.AppConfig
 import dev.alpas.Environment
+import dev.alpas.PackageClassLoader
 import dev.alpas.http.HttpCall
 import dev.alpas.make
 import dev.alpas.validation.SharedDataBag
@@ -21,7 +22,7 @@ class ConditionalTagsTest {
         val app = AlpasTest()
         bindDependencies(app)
         TestViewServiceProvider.apply {
-            register(app)
+            register(app, PackageClassLoader(app.srcPackage))
             app.make<ConditionalTags>().add("prod") { true }
             boot(app)
         }
@@ -43,7 +44,7 @@ class ConditionalTagsTest {
         val app = AlpasTest()
         bindDependencies(app)
         TestViewServiceProvider.apply {
-            register(app)
+            register(app, PackageClassLoader(app.srcPackage))
             app.make<ConditionalTags>().add("prod") { false }
             boot(app)
         }
@@ -65,7 +66,7 @@ class ConditionalTagsTest {
         val app = AlpasTest()
         bindDependencies(app)
         TestViewServiceProvider.apply {
-            register(app)
+            register(app, PackageClassLoader(app.srcPackage))
             app.make<ConditionalTags>().add("prod") { true }
             boot(app)
         }
@@ -85,7 +86,7 @@ class ConditionalTagsTest {
         val app = AlpasTest()
         bindDependencies(app)
         TestViewServiceProvider.apply {
-            register(app)
+            register(app, PackageClassLoader(app.srcPackage))
             app.make<ConditionalTags>().add("prod") { true }
             boot(app)
         }
