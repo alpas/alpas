@@ -304,7 +304,7 @@ class ValidationRulesTests {
     }
 
     @Test
-    fun `check fails if field_confirm returns null and confirm_field is not provided` () {
+    fun `check fails if field_confirm is null and confirm_field is not provided` () {
         val call = mockk<HttpCall>(relaxed = true)
         every { call.param("password") } returns "secret"
         every { call.param("password_confirm")} returns null
