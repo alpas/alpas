@@ -1,15 +1,17 @@
 package dev.alpas.tests.views
 
+import com.mitchellbosecke.pebble.template.EvaluationContext
 import dev.alpas.AppConfig
 import dev.alpas.Application
 import dev.alpas.Config
 import dev.alpas.Environment
-import dev.alpas.view.Mix
-import dev.alpas.view.ViewConfig
-import dev.alpas.view.extensions.PebbleExtensions
-import dev.alpas.view.extensions.ConditionalTokenParser
-import dev.alpas.view.extensions.CsrfTokenParser
+import dev.alpas.http.HttpCall
+import dev.alpas.session.CSRF_SESSION_KEY
+import dev.alpas.view.*
 import dev.alpas.view.extensions.PebbleExtensionWrapper
+import dev.alpas.view.extensions.PebbleExtensions
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -50,25 +52,136 @@ class PebbleExtensionsTest {
     }
 
     @Test
-    fun `token parsers are added`() {
-        val extensions = builtInExtensions()
-        assertEquals(3, extensions.tokenParsers?.size)
-        assertNotNull(extensions.tokenParsers?.find { it is CsrfTokenParser })
-        assertNotNull(extensions.tokenParsers?.find { it is ConditionalTokenParser })
+    fun `token parsers are added during registration`() {
+        val customTagNames = mutableListOf<String>()
+        val customTags = object : CustomTags {
+            override fun add(tagName: String, callback: TagContext.() -> String) {
+                customTagNames.add(tagName)
+            }
+        }
+        val conditionalTagNames = mutableListOf<String>()
+        val conditionalTags = object : ConditionalTags {
+            override fun add(tagName: String, condition: (context: TagContext) -> Boolean) {
+                conditionalTagNames.add(tagName)
+            }
+        }
+
+        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+
+        assertEquals(1, customTagNames.size)
+        assertTrue(customTagNames.contains("csrf"))
+        assertEquals(2, conditionalTagNames.size)
+        assertTrue(conditionalTagNames.contains("auth"))
+        assertTrue(conditionalTagNames.contains("guest"))
     }
 
     @Test
-    fun `auth token is added`() {
-        val extensions = builtInExtensions()
-        val conditionalTag = extensions.tokenParsers?.find { it is ConditionalTokenParser && it.tag == "auth" }
-        assertNotNull(conditionalTag)
+    fun `csrf token parser render correct field`() {
+        val customCallbacks = mutableListOf<TagContext.() -> String>()
+        val customTags = object : CustomTags {
+            override fun add(tagName: String, callback: TagContext.() -> String) {
+                if (tagName == "csrf") customCallbacks.add(callback)
+            }
+        }
+        val conditionalTags = object : ConditionalTags {
+            override fun add(tagName: String, condition: (context: TagContext) -> Boolean) {}
+        }
+
+        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+
+        val callback = customCallbacks.first()
+        val context = mockk<EvaluationContext>()
+        every { context.getVariable(CSRF_SESSION_KEY) } returns "test_code"
+        val tag = callback(TagContext(mockk(), 1, "", context))
+        assertEquals("""<input type="hidden" name="_csrf" value="test_code">""", tag)
     }
 
     @Test
-    fun `guest token is added`() {
-        val extensions = builtInExtensions()
-        val conditionalTag = extensions.tokenParsers?.find { it is ConditionalTokenParser && it.tag == "guest" }
-        assertNotNull(conditionalTag)
+    fun `auth token parser evaluates if a call is authenticated`() {
+        val conditionalCallbacks = mutableListOf<TagContext.() -> Boolean>()
+        val customTags = object : CustomTags {
+            override fun add(tagName: String, callback: TagContext.() -> String) {}
+        }
+        val conditionalTags = object : ConditionalTags {
+            override fun add(tagName: String, condition: TagContext.() -> Boolean) {
+                if (tagName == "auth") conditionalCallbacks.add(condition)
+            }
+        }
+
+        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+
+        val callback = conditionalCallbacks.first()
+        val call = mockk<HttpCall>()
+        every { call.isAuthenticated } returns true
+
+        val condition = callback(TagContext(call, 1, "", mockk()))
+        assertTrue(condition)
+    }
+
+    @Test
+    fun `auth token parser does not if a call is not authenticated`() {
+        val conditionalCallbacks = mutableListOf<TagContext.() -> Boolean>()
+        val customTags = object : CustomTags {
+            override fun add(tagName: String, callback: TagContext.() -> String) {}
+        }
+        val conditionalTags = object : ConditionalTags {
+            override fun add(tagName: String, condition: TagContext.() -> Boolean) {
+                if (tagName == "auth") conditionalCallbacks.add(condition)
+            }
+        }
+
+        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+
+        val callback = conditionalCallbacks.first()
+        val call = mockk<HttpCall>()
+        every { call.isAuthenticated } returns false
+
+        val condition = callback(TagContext(call, 1, "", mockk()))
+        assertFalse(condition)
+    }
+
+    @Test
+    fun `guest token parser evaluates if a call is authenticated`() {
+        val conditionalCallbacks = mutableListOf<TagContext.() -> Boolean>()
+        val customTags = object : CustomTags {
+            override fun add(tagName: String, callback: TagContext.() -> String) {}
+        }
+        val conditionalTags = object : ConditionalTags {
+            override fun add(tagName: String, condition: TagContext.() -> Boolean) {
+                if (tagName == "guest") conditionalCallbacks.add(condition)
+            }
+        }
+
+        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+
+        val callback = conditionalCallbacks.first()
+        val call = mockk<HttpCall>()
+        every { call.isAuthenticated } returns true
+
+        val condition = callback(TagContext(call, 1, "", mockk()))
+        assertFalse(condition)
+    }
+
+    @Test
+    fun `guest token parser is not evaluated if a call is not authenticated`() {
+        val conditionalCallbacks = mutableListOf<TagContext.() -> Boolean>()
+        val customTags = object : CustomTags {
+            override fun add(tagName: String, callback: TagContext.() -> String) {}
+        }
+        val conditionalTags = object : ConditionalTags {
+            override fun add(tagName: String, condition: TagContext.() -> Boolean) {
+                if (tagName == "guest") conditionalCallbacks.add(condition)
+            }
+        }
+
+        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+
+        val callback = conditionalCallbacks.first()
+        val call = mockk<HttpCall>()
+        every { call.isAuthenticated } returns false
+
+        val condition = callback(TagContext(call, 1, "", mockk()))
+        assertTrue(condition)
     }
 
     @Test

@@ -20,7 +20,7 @@ internal class CustomTagsImpl(private val viewRenderer: ViewRenderer) :
 }
 
 interface ConditionalTags {
-    fun add(tagName: String, condition: (context: TagContext) -> Boolean)
+    fun add(tagName: String, condition: TagContext.() -> Boolean)
 }
 
 internal class ConditionalTagsImpl(private val viewRenderer: ViewRenderer) :

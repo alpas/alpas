@@ -53,7 +53,7 @@ class ViewServiceProviderTest {
         val viewConfig = viewConfig(env, false)
 
         app.bind(ViewConfig::class, viewConfig)
-        ViewServiceProvider().register(app)
+        ViewServiceProvider().register(app, PackageClassLoader(app.srcPackage))
 
         assertNull(app.tryMake<ConditionalTags>())
         assertNull(app.tryMake<CustomTags>())
