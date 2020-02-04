@@ -33,6 +33,8 @@ open class ViewServiceProvider : ServiceProvider {
         registerPebbleExtensions(app, loader, conditionalTags, customTags)
 
         app.apply {
+            singleton(conditionalTags)
+            singleton(customTags)
             singleton(Mix(this))
             singleton(viewRenderer)
         }

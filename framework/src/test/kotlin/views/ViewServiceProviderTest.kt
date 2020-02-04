@@ -84,8 +84,8 @@ class ViewServiceProviderTest {
         app.bind(ViewConfig::class, viewConfig)
         val extended = bootServiceProvider(app)
 
-        assertEquals(1, extended.size)
-        assertTrue(extended.first() is PebbleExtensionWrapper)
+        assertEquals(4, extended.size)
+        assertNotNull(extended.find { it is PebbleExtensionWrapper })
     }
 
     @Test
