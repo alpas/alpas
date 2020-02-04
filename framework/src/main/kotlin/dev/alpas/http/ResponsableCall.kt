@@ -30,7 +30,7 @@ interface ResponsableCall {
         return this
     }
 
-    fun <T> replyAsJson(payload: Map<String, Any>, statusCode: Int = HttpStatus.OK_200): ResponsableCall {
+    fun <T : Map<*, *>> replyAsJson(payload: T, statusCode: Int = HttpStatus.OK_200): ResponsableCall {
         response = JsonResponse(payload)
         status(statusCode)
         asJson()
