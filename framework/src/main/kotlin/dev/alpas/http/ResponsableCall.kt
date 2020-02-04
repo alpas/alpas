@@ -2,7 +2,6 @@ package dev.alpas.http
 
 import dev.alpas.JsonSerializable
 import dev.alpas.exceptions.toHttpException
-import dev.alpas.session.OLD_INPUTS_KEY
 import dev.alpas.validation.ErrorBag
 import dev.alpas.validation.SharedDataBag
 import org.eclipse.jetty.http.HttpStatus
@@ -158,7 +157,6 @@ class Responsable internal constructor(override val servletResponse: HttpServlet
     }
 
     private fun copyContent(call: HttpCall) {
-        buildSharedData(call)
         renderView(call)
     }
 
@@ -170,20 +168,6 @@ class Responsable internal constructor(override val servletResponse: HttpServlet
             response.render(context) { copyTo(servletResponse.outputStream) }
         } catch (e: Exception) {
             response.renderException(e, context) { copyTo(servletResponse.outputStream) }
-        }
-    }
-
-    private fun buildSharedData(call: HttpCall) {
-        share("_csrf" to call.session.csrfToken())
-        share("call" to call)
-
-        share(OLD_INPUTS_KEY to call.session.old())
-        share("errors" to call.session.errors())
-
-        if (!call.isDropped) {
-            share("_route" to call.route.target())
-            share("_flash" to call.session.userFlashBag())
-            share("auth" to call.authChannel)
         }
     }
 
