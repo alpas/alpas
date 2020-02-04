@@ -13,7 +13,13 @@ import dev.alpas.view.ConditionalTags
 import dev.alpas.view.CustomTags
 
 interface PebbleExtension {
-    fun register(app: Application, conditionalTags: ConditionalTags, customTags: CustomTags) {}
+    fun register(app: Application, conditionalTags: ConditionalTags, customTags: CustomTags) {
+        register(app, conditionalTags)
+        register(app, customTags)
+    }
+
+    fun register(app: Application, conditionalTags: ConditionalTags) {}
+    fun register(app: Application, customTags: CustomTags) {}
 
     fun boot(app: Application) {}
 

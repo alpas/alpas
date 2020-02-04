@@ -2,7 +2,6 @@ package dev.alpas.view.extensions
 
 import com.mitchellbosecke.pebble.extension.Filter
 import com.mitchellbosecke.pebble.extension.Function
-import com.mitchellbosecke.pebble.tokenParser.TokenParser
 import dev.alpas.Application
 import dev.alpas.config
 import dev.alpas.make
@@ -15,16 +14,19 @@ import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
 
 internal class PebbleExtensions : PebbleExtension {
-    override fun register(app: Application, conditionalTags: ConditionalTags, customTags: CustomTags) {
-        customTags.add("csrf") {
-            val csrf = this.context.getVariable(CSRF_SESSION_KEY)
-            """<input type="hidden" name="$CSRF_SESSION_KEY" value="$csrf">"""
-        }
+    override fun register(app: Application, conditionalTags: ConditionalTags) {
         conditionalTags.add("auth") {
             call.isAuthenticated
         }
         conditionalTags.add("guest") {
             !call.isAuthenticated
+        }
+    }
+
+    override fun register(app: Application, customTags: CustomTags) {
+        customTags.add("csrf") {
+            val csrf = this.context.getVariable(CSRF_SESSION_KEY)
+            """<input type="hidden" name="$CSRF_SESSION_KEY" value="$csrf">"""
         }
     }
 
