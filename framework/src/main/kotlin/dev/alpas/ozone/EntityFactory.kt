@@ -50,7 +50,7 @@ interface EntityFactory<E : Entity<E>> {
         return table.insertAndGenerateKey { builder ->
             entity.properties.forEach { (name, value) ->
                 table.columns.find { it.name == name }?.let {
-                    builder[name] to value
+                    builder[name] to transform(name, value)
                 }
             }
         }
@@ -73,13 +73,24 @@ interface EntityFactory<E : Entity<E>> {
                 item { builder ->
                     for ((name, value) in entity.properties) {
                         table.columns.find { it.name == name }?.let {
-                            builder[name] to value
+                            builder[name] to transform(name, value)
                         }
                     }
                 }
             }
         }
     }
+
+    /**
+     * Transform the given value for the given name before persisting the value in the database.
+     *
+     * By default this just returns the value as it is.
+     *
+     * @param name The name of the property.
+     * @param value The value of the property.
+     * @return A transformed value for the given property value.
+     */
+    fun transform(name: String, value: Any?) = value
 
     /**
      * Persist the given entity in the database and return a fresh copy of it. The entity's properties

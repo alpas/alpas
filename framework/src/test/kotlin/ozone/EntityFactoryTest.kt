@@ -60,6 +60,21 @@ class EntityFactoryTest : BaseTest() {
     }
 
     @Test
+    fun `can transform a value before persisting in the database`() {
+        execSqlScript(TestTable.createSql)
+
+        val entity = from(TransformingTestObjectFactory)
+        val all = TestTable().findAll()
+        assertEquals(1, all.size)
+        val dbEntity = TestTable().findById(entity.id)
+        assertNotNull(dbEntity)
+
+        assertNotEquals("Default Name", dbEntity?.name)
+        assertEquals("DEFAULT NAME", dbEntity?.name)
+        assertEquals("Default Email", dbEntity?.email)
+    }
+
+    @Test
     fun `can override persistent entity's properties`() {
         execSqlScript(TestTable.createSql)
 
@@ -145,6 +160,25 @@ object TestObjectFactory : EntityFactory<TestEntity> {
         return TestEntity {
             name = "Default Name"
             email = "Default Email"
+        }
+    }
+}
+
+object TransformingTestObjectFactory : EntityFactory<TestEntity> {
+    override val table = TestTable()
+
+    override fun entity(): TestEntity {
+        return TestEntity {
+            name = "Default Name"
+            email = "Default Email"
+        }
+    }
+
+    override fun transform(name: String, value: Any?): Any? {
+        return if(name == "name") {
+            value?.toString()?.toUpperCase()
+        } else {
+            value
         }
     }
 }
