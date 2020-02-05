@@ -33,11 +33,11 @@ subprojects { project ->
     }
 
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "9"
         kotlinOptions.allWarningsAsErrors = true
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "9"
     }
 
     if (project.name != 'runner') {
