@@ -15,16 +15,23 @@ enum class RunMode {
 const val ROOT_DIR_KEY = "alpas_root_dir"
 const val SRC_DIR_KEY = "alpas_src_dir"
 const val RUN_MODE = "alpas_run_mode"
+val RESOURCES_DIRS = arrayOf("src", "main", "resources")
 
-class Environment(
+open class Environment(
     private val dotenv: Dotenv,
-    val rootDir: String,
+    private val rootPath: String,
     val entryPackage: String,
     val runMode: RunMode
 ) {
-    internal val entries = dotenv.entries()
-    val inTestMode by lazy { runMode.isTest() }
-    val inConsoleMode by lazy { runMode.isConsole() }
+    val entries = dotenv.entries().map { entry -> entry.key to entry.value }.toMap()
+    val inTestMode = runMode.isTest()
+    val inConsoleMode = runMode.isConsole()
+    val isProduction = invoke("APP_LEVEL").isOneOf("prod", "production", "live")
+    val isLocal = invoke("APP_LEVEL").isOneOf("dev", "debug", "local")
+    val isDev = isLocal
+    val storagePath = rootPath("storage")
+    var supportsSession = false
+        internal set
 
     operator fun invoke(key: String): String? {
         return dotenv[key]
@@ -50,14 +57,15 @@ class Environment(
         return dotenv[key] ?: defaultValue
     }
 
-    fun check(key: String, against: List<String>): Boolean {
-        return against.contains(this(key)?.toLowerCase())
+    fun rootPath(vararg paths: String): String {
+        return if (paths.isEmpty()) {
+            rootPath
+        } else Paths.get(rootPath, *paths).toAbsolutePath().toString()
     }
 
-    val isProduction by lazy { invoke("APP_LEVEL").isOneOf("prod", "production", "live") }
-    val isLocal by lazy { invoke("APP_LEVEL").isOneOf("dev", "debug", "local") }
-    val isDev = isLocal
-    val storagePath: String = Paths.get(rootDir, "storage").toAbsolutePath().toString()
-    var supportsSession = false
-        internal set
+    fun storagePath(vararg paths: String): String {
+        return if (paths.isEmpty()) {
+            storagePath
+        } else Paths.get(storagePath, *paths).toAbsolutePath().toString()
+    }
 }

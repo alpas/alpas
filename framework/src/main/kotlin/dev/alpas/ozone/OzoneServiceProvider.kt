@@ -9,7 +9,7 @@ import dev.alpas.ozone.console.*
 
 class OzoneServiceProvider : ServiceProvider {
     override fun register(app: Application) {
-        val dbConfig = app.makeElse { DatabaseConfig(it.make()) }
+        val dbConfig = app.makeElse { bind(DatabaseConfig(it.make())) }
         if (dbConfig.canConnect()) {
             dbConfig.connect()
         }
@@ -17,18 +17,23 @@ class OzoneServiceProvider : ServiceProvider {
 
     override fun commands(app: Application): List<Command> {
         val srcPackage = app.srcPackage
+        val coreOzoneCommands = listOf(
+            MakeEntityCommand(srcPackage),
+            MakeFactoryCommand(srcPackage),
+            MakeMigrationCommand(srcPackage),
+            MakeSeederCommand(srcPackage)
+        )
         val config = app.make<DatabaseConfig>()
         return if (config.canConnect()) {
-            return listOf(
-                DatabaseMigrateCommand(srcPackage),
-                DatabaseRollbackCommand(srcPackage),
-                MakeEntityCommand(srcPackage),
+            listOf(
                 DatabaseCreateCommand(),
-                MakeMigrationCommand(srcPackage),
-                DatabaseRefreshCommand(srcPackage)
-            )
+                DatabaseMigrateCommand(srcPackage),
+                DatabaseRefreshCommand(srcPackage),
+                DatabaseRollbackCommand(srcPackage),
+                DatabaseSeedCommand(app)
+            ).plus(coreOzoneCommands)
         } else {
-            emptyList()
+            coreOzoneCommands
         }
     }
 }

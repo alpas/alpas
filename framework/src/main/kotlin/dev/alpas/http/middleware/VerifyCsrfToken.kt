@@ -3,18 +3,17 @@ package dev.alpas.http.middleware
 import dev.alpas.*
 import dev.alpas.encryption.Encrypter
 import dev.alpas.http.HttpCall
-import dev.alpas.http.Method
 import dev.alpas.session.SessionConfig
 import dev.alpas.session.TokenMismatchException
 import dev.alpas.session.CSRF_SESSION_KEY
 import java.security.MessageDigest
 
 open class VerifyCsrfToken : Middleware<HttpCall>() {
-    override fun invoke(call: HttpCall, forward: Handler<HttpCall>) {
-        if (call.method.isOneOf(Method.GET, Method.HEAD, Method.OPTIONS) || isValidXSRFToken(call)) {
-            forward(call)
-            if (call.sessionIsValid()) {
-                addXSRFToken(call)
+    override fun invoke(passable: HttpCall, forward: Handler<HttpCall>) {
+        if (passable.method.isReading() || isValidXSRFToken(passable)) {
+            forward(passable)
+            if (passable.sessionIsValid()) {
+                addXSRFToken(passable)
             }
         } else {
             throw TokenMismatchException("Token doesn't match")
@@ -50,9 +49,9 @@ open class VerifyCsrfToken : Middleware<HttpCall>() {
 
     private fun getCallToken(call: HttpCall): String? {
         val token = call.paramAsString(CSRF_SESSION_KEY) ?: call.header("X-CSRF-TOKEN")
-        val header = call.header("X-XSRF-TOKEN")
-        return if (token == null && header != null) {
-            return call.make<Encrypter>().decrypt(header)
+        val encryptedToken = call.header("X-XSRF-TOKEN")
+        return if (token == null && encryptedToken != null) {
+            return call.make<Encrypter>().decrypt(encryptedToken)
         } else {
             token
         }

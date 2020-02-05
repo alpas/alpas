@@ -5,12 +5,7 @@ import dev.alpas.ozone.increments
 import me.liuwj.ktorm.dsl.delete
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.dsl.max
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.entity.add
-import me.liuwj.ktorm.entity.aggregateColumns
-import me.liuwj.ktorm.entity.asSequenceWithoutReferences
-import me.liuwj.ktorm.entity.findAll
-import me.liuwj.ktorm.entity.findList
+import me.liuwj.ktorm.entity.*
 import me.liuwj.ktorm.schema.int
 import me.liuwj.ktorm.schema.varchar
 
@@ -27,9 +22,10 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
     private val migrations by lazy { Migrations.findAll() }
 
     private fun setupMigrationsTable() {
-        CreateMigrationMigrations().also {
-            it.adapter = dbAdapter
-        }.up()
+        CreateMigrationMigrations().apply {
+            adapter = dbAdapter
+            up()
+        }
     }
 
     private val nextBatch by lazy { (migrations.lastOrNull()?.batch ?: 0) + 1 }
@@ -49,9 +45,11 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
 
     fun latestMigrationBatch(): Pair<List<Migration>, Int?> {
         // get the max batch number
-        val batch = Migrations.asSequenceWithoutReferences().aggregateColumns { max(
-            Migrations.batch
-        ) }
+        val batch = Migrations.asSequenceWithoutReferences().aggregateColumns {
+            max(
+                Migrations.batch
+            )
+        }
         // find all the migrations from the above batch number
         val migrations = batch?.let { latestVersion ->
             Migrations.findList { Migrations.batch eq latestVersion }
@@ -80,6 +78,20 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
 
 internal class CreateMigrationMigrations : Migration() {
     override fun up() {
-        createTable(MigrationRepo.Migrations, true)
+        if (adapter is PostgreSqlAdapter) {
+
+            val query = """
+            CREATE TABLE IF NOT EXISTS "migrations"(
+                "id" serial4 not null,
+                "name" varchar(255) not null,
+                "batch" int not null,
+                primary key ("id")
+            )
+        """.trimIndent()
+
+            execute(query)
+        } else {
+            createTable(MigrationRepo.Migrations, true)
+        }
     }
 }

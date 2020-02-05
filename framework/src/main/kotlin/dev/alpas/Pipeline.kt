@@ -4,7 +4,7 @@ package dev.alpas
 typealias Handler<T> = (T) -> Unit
 
 open class Middleware<T> : (T, Handler<T>) -> Unit {
-    override fun invoke(call: T, forward: Handler<T>) {
+    override fun invoke(passable: T, forward: Handler<T>) {
     }
 }
 

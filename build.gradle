@@ -14,7 +14,7 @@ buildscript {
 
 allprojects {
     group = "dev.alpas"
-    version = '0.13.0'
+    version = '0.14.0'
 }
 
 subprojects { project ->
@@ -33,79 +33,77 @@ subprojects { project ->
     }
 
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "9"
         kotlinOptions.allWarningsAsErrors = true
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "9"
     }
 
-    if (project.name != 'runner') {
-        apply plugin: "maven-publish"
-        apply plugin: "com.jfrog.bintray"
+    apply plugin: "maven-publish"
+    apply plugin: "com.jfrog.bintray"
 
-        task generateSourcesJar(type: Jar) {
-            classifier = "sources"
-            from sourceSets.main.allSource
-        }
+    task generateSourcesJar(type: Jar) {
+        classifier = "sources"
+        from sourceSets.main.allSource
+    }
 
-        task generateJavadoc(type: Jar) {
-            classifier = "javadoc"
-        }
+    task generateJavadoc(type: Jar) {
+        classifier = "javadoc"
+    }
 
-        publishing {
-            publications {
-                bintray(MavenPublication) {
-                    from components.java
-                    artifact generateSourcesJar
-                    artifact generateJavadoc
+    publishing {
+        publications {
+            bintray(MavenPublication) {
+                from components.java
+                artifact generateSourcesJar
+                artifact generateJavadoc
 
-                    groupId project.group
-                    artifactId project.name
-                    version project.version
+                groupId project.group
+                artifactId project.name
+                version project.version
 
-                    pom {
-                        name = project.name
-                        description = "A web framework for Kotlin."
-                        url = "https://github.com/ashokgelal/alpas"
-                        licenses {
-                            license {
-                                name = "The Apache Software License, Version 2.0"
-                                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                            }
+                pom {
+                    name = project.name
+                    description = "A web framework for Kotlin."
+                    url = "https://github.com/ashokgelal/alpas"
+                    licenses {
+                        license {
+                            name = "The Apache Software License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
                         }
-                        developers {
-                            developer {
-                                id = "ashokgelal"
-                                name = "Ashok Gelal"
-                                email = "ashokgelal@gmail.com"
-                            }
+                    }
+                    developers {
+                        developer {
+                            id = "ashokgelal"
+                            name = "Ashok Gelal"
+                            email = "ashokgelal@gmail.com"
                         }
-                        scm {
-                            url = "https://github.com/ashokgelal/alpas.git"
-                        }
+                    }
+                    scm {
+                        url = "https://github.com/ashokgelal/alpas.git"
                     }
                 }
             }
         }
-        bintray {
-            user = System.getenv("BINTRAY_USER")
-            key = System.getenv("BINTRAY_KEY")
-            publications = ["bintray"]
-            publish = true
+    }
+    bintray {
+        user = System.getenv("BINTRAY_USER")
+        key = System.getenv("BINTRAY_KEY")
+        publications = ["bintray"]
+        publish = true
 
-            pkg {
-                repo = "Alpas"
-                name = project.name
-                licenses = ["Apache-2.0"]
-                vcsUrl = "https://github.com/ashokgelal/alpas.git"
-                labels = ["Kotlin", "web framework"]
+        pkg {
+            repo = "Alpas"
+            name = project.name
+            licenses = ["Apache-2.0"]
+            vcsUrl = "https://github.com/ashokgelal/alpas.git"
+            labels = ["Kotlin", "web framework"]
 
-                version {
-                    name = project.version
-                    released = new Date()
-                    vcsTag = project.version
-                }
+            version {
+                name = project.version
+                released = new Date()
+                vcsTag = project.version
             }
         }
     }

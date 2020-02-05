@@ -27,9 +27,9 @@ internal class EntityStubs {
         private fun simpleTableStub(): String {
             return """
                 object StubTableClazzName : MigratingTable<StubClazzName>("StubTableName") {
-                    val id by bigIncrements("id")
-                    val createdAt by timestamp("created_at")
-                    val updatedAt by timestamp("updated_at")
+                    var id by bigIncrements("id")
+                    var createdAt by timestamp("created_at")
+                    var updatedAt by timestamp("updated_at")
 
                     override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean): StubClazzName {
                         return StubClazzName(id = row[id] ?: 0, createdAt = row[createdAt], updatedAt = row[updatedAt])
@@ -56,9 +56,9 @@ internal class EntityStubs {
                 import java.time.Instant
 
                 interface StubClazzName : Entity<StubClazzName> {
-                    val id: Long
-                    val createdAt: Instant?
-                    val updatedAt: Instant?
+                    var id: Long
+                    var createdAt: Instant?
+                    var updatedAt: Instant?
 
                     companion object : Entity.Factory<StubClazzName>()
                 }

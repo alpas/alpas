@@ -5,6 +5,7 @@ package dev.alpas
 import com.github.ajalt.clikt.output.TermUi.echo
 import com.github.ajalt.mordant.TermColors
 import dev.alpas.exceptions.toHttpException
+import io.github.classgraph.ClassInfo
 import org.eclipse.jetty.http.HttpStatus
 import org.sagebionetworks.url.UrlData
 import uy.klutter.core.common.mustStartWith
@@ -24,6 +25,9 @@ import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.servlet.http.HttpServletResponse
+import kotlin.reflect.full.createInstance
+
+val terminalColors = TermColors(TermColors.Level.ANSI256)
 
 inline fun String?.ifNotBlank(defaultValue: (String) -> String): String =
     if (!isNullOrBlank()) defaultValue(this!!) else ""
@@ -32,8 +36,8 @@ fun LocalDateTime.format(pattern: String): String? {
     return format(DateTimeFormatter.ofPattern(pattern))
 }
 
-fun String.relativize(other: String) = this.relativize(other.asPath())
-fun String.relativize(other: Path) = this.asPath().relativize(other).toString()
+fun String.relativize(other: String) = this.relativize(other.toPath())
+fun String.relativize(other: Path) = this.toPath().relativize(other).toString()
 
 fun String.now(): String? {
     return LocalDateTime.now().format(this)
@@ -87,23 +91,27 @@ fun ZonedDateTime.toDate(): Date {
 }
 
 fun Any?.printAsError() {
-    echo(TermColors().red(this.toString()))
+    echo(terminalColors.red(this.toString()))
 }
 
 fun Any?.printAsSuccess() {
-    echo(TermColors().green(this.toString()))
+    echo(terminalColors.green(this.toString()))
 }
 
 fun Any?.printAsWarning() {
-    echo(TermColors().yellow(this.toString()))
+    echo(terminalColors.yellow(this.toString()))
 }
 
 fun Any?.printAsInfo() {
-    echo(TermColors().blue(this.toString()))
+    echo(terminalColors.blue(this.toString()))
 }
 
-fun Any.asGray() = TermColors().gray.invoke(this.toString())
-fun Any.asPath() = Paths.get(this.toString())
+fun Any.asGray() = terminalColors.gray.invoke(this.toString())
+fun Any.toPath(): Path = Paths.get(this.toString())
+fun Any.asYellow() = terminalColors.yellow.invoke(this.toString())
+fun Any.asMagenta() = terminalColors.magenta.invoke(this.toString())
+fun Any.asCyan() = terminalColors.cyan.invoke(this.toString())
+fun Any.asBlue() = terminalColors.blue.invoke(this.toString())
 
 val Throwable.stackTraceString: String
     get() {
@@ -178,4 +186,8 @@ inline fun <R> executeAndMeasureTimeMillis(block: () -> R): Pair<R, Long> {
 
 fun <E> E?.orAbort(message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): E {
     return this ?: throw statusCode.toHttpException(message)
+}
+
+inline fun <reified T : Any> ClassInfo.load(): T {
+    return loadClass().kotlin.let { it.objectInstance ?: it.createInstance() } as T
 }

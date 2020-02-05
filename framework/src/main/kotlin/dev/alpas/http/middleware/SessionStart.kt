@@ -6,12 +6,12 @@ import dev.alpas.http.HttpCall
 import dev.alpas.http.Method
 
 class SessionStart : Middleware<HttpCall>() {
-    override fun invoke(call: HttpCall, forward: Handler<HttpCall>) {
-        call.authChannel.tryLogin()
-        if (call.methodIs(Method.GET) && !call.isAjax && !call.isPrefetch) {
-            call.session.savePreviousUrl(call.fullUrl)
+    override fun invoke(passable: HttpCall, forward: Handler<HttpCall>) {
+        passable.authChannel.tryLogin()
+        if (passable.methodIs(Method.GET) && !passable.isAjax && !passable.isPrefetch) {
+            passable.session.savePreviousUrl(passable.fullUrl)
         }
-        call.session.copyPreviousFlashBag()
-        forward(call)
+        passable.session.copyPreviousFlashBag()
+        forward(passable)
     }
 }

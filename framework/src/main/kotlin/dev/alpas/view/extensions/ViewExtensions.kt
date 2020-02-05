@@ -1,19 +1,38 @@
 package dev.alpas.view.extensions
 
-import com.mitchellbosecke.pebble.extension.AbstractExtension
 import com.mitchellbosecke.pebble.extension.Filter
 import com.mitchellbosecke.pebble.extension.Function
-import com.mitchellbosecke.pebble.tokenParser.TokenParser
-import dev.alpas.Container
+import dev.alpas.Application
+import dev.alpas.config
 import dev.alpas.make
+import dev.alpas.session.CSRF_SESSION_KEY
+import dev.alpas.view.ConditionalTags
+import dev.alpas.view.CustomTags
+import dev.alpas.view.ViewConfig
+import kotlin.reflect.KProperty1
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.memberProperties
 
-internal class BuiltInExtensions(
-    private val container: Container,
-    private val userTags: List<ConditionalTokenParser>
-) : AbstractExtension() {
-    override fun getFunctions(): Map<String, Function> {
+internal class PebbleExtensions : PebbleExtension {
+    override fun register(app: Application, conditionalTags: ConditionalTags) {
+        conditionalTags.add("auth") {
+            call.isAuthenticated
+        }
+        conditionalTags.add("guest") {
+            !call.isAuthenticated
+        }
+    }
+
+    override fun register(app: Application, customTags: CustomTags) {
+        customTags.add("csrf") {
+            val csrf = this.context.getVariable(CSRF_SESSION_KEY)
+            """<input type="hidden" name="$CSRF_SESSION_KEY" value="$csrf">"""
+        }
+    }
+
+    override fun functions(app: Application): Map<String, Function> {
         return mapOf(
-            "mix" to MixFunction(container.make()),
+            "mix" to MixFunction(app.make()),
             "route" to RouteFunction(),
             "hasRoute" to HasRouteFunction(),
             "routeIs" to RouteIsFunction(),
@@ -30,7 +49,7 @@ internal class BuiltInExtensions(
         )
     }
 
-    override fun getFilters(): Map<String, Filter> {
+    override fun filters(app: Application): Map<String, Filter> {
         return mapOf(
             "int" to IntFilter(),
             "json_encode" to JsonEncodeFilter(),
@@ -38,11 +57,29 @@ internal class BuiltInExtensions(
         )
     }
 
-    override fun getTokenParsers(): List<TokenParser> {
-        return mutableListOf(
-            CsrfTokenParser(),
-            ConditionalTokenParser("auth") { it.isAuthenticated },
-            ConditionalTokenParser("guest") { !it.isAuthenticated }
-        ).apply { addAll(userTags) }
+    override fun globalVariables(app: Application): Map<String, Any> {
+        val envEntries: Map<String, String> = app.env.entries
+        return mapOf("_configs" to makeViewConfigs(app), "_env" to envEntries)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun makeViewConfigs(app: Application): Map<String, Any?> {
+        val configs = app.configs.flatMap { config ->
+            config::class.memberProperties.map { property ->
+                val name = property.name
+                val value = readInstanceProperty(config, property as KProperty1<Any, *>)
+                "${config::class.simpleName?.replace("Config", "")?.toLowerCase()}.$name" to value
+            }
+        }.toMap()
+
+        return app.config<ViewConfig>().configsAvailableForView() + configs
+    }
+
+    private fun readInstanceProperty(instance: Any, property: KProperty1<Any, *>): Any? {
+        return if (property.visibility == KVisibility.PUBLIC) {
+            property.get(instance)
+        } else {
+            null
+        }
     }
 }

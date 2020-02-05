@@ -33,7 +33,7 @@ class AlpasCommand(private val commandAliases: Map<String, List<String>> = empty
 }
 
 private object ColorHelpFormatter : CliktHelpFormatter() {
-    private val tc = TermColors(TermColors.Level.ANSI16)
+    private val tc = TermColors(TermColors.Level.ANSI256)
 
     override fun renderTag(tag: String, value: String) = tc.green(super.renderTag(tag, value))
     override fun renderOptionName(name: String) = tc.green(super.renderOptionName(name))

@@ -7,9 +7,9 @@ import dev.alpas.session.SessionConfig
 import javax.servlet.http.Cookie
 
 class EncryptCookies : Middleware<HttpCall>() {
-    override fun invoke(call: HttpCall, forward: Handler<HttpCall>) {
-        val incomingCookies = cookiesToEncrypt(call, call.cookie.incomingCookies)
-        val encrypter = call.make<Encrypter>()
+    override fun invoke(passable: HttpCall, forward: Handler<HttpCall>) {
+        val incomingCookies = cookiesToEncrypt(passable, passable.cookie.incomingCookies)
+        val encrypter = passable.make<Encrypter>()
         if (incomingCookies.count() > 0) {
             // decrypt incoming cookies
             incomingCookies.forEach {
@@ -21,9 +21,9 @@ class EncryptCookies : Middleware<HttpCall>() {
             }
         }
 
-        forward(call)
+        forward(passable)
 
-        val outgoingCookies = cookiesToEncrypt(call, call.cookie.outgoingCookies.toTypedArray())
+        val outgoingCookies = cookiesToEncrypt(passable, passable.cookie.outgoingCookies.toTypedArray())
         if (outgoingCookies.count() > 0) {
             // encrypt outgoing cookies
             outgoingCookies.forEach {

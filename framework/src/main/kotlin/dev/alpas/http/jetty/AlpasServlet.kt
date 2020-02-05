@@ -4,6 +4,7 @@ import dev.alpas.*
 import dev.alpas.exceptions.MethodNotAllowedException
 import dev.alpas.exceptions.NotFoundHttpException
 import dev.alpas.http.HttpCall
+import dev.alpas.http.HttpCallHook
 import dev.alpas.http.Method
 import dev.alpas.http.StaticAssetHandler
 import dev.alpas.routing.Route
@@ -25,22 +26,40 @@ class AlpasServlet(
         val router = app.make<Router>()
         val route = router.routeFor(methodName = req.method(), uri = req.requestURI)
         ChildContainer(app).use { container ->
-            val call = HttpCall(container, req, resp, route)
-            app.recordLastCall(call)
+            val callHooks = app.callHooks.map {
+                it.createInstance()
+            }
+            val call = HttpCall(container, req, resp, route, callHooks).also {
+                if (app.env.inTestMode) {
+                    app.recordLastCall(it)
+                }
+            }
+
             try {
                 if (!staticHandler.handle(call)) {
-                    call.sendCallThroughServerEntryMiddleware().then(::matchRoute)
+
+                    call.logger.debug { "Booting ${callHooks.size} HttpCall hooks" }
+                    callHooks.forEach { it.boot(call) }
+                    call.logger.debug { "Registering ${callHooks.size} HttpCall hooks" }
+                    callHooks.forEach { it.register(call) }
+
+                    call.sendCallThroughServerEntryMiddleware().then { matchRoute(it, callHooks) }
+
+                    call.logger.debug { "Clean closing ${callHooks.size} HttpCall hooks" }
+                    callHooks.forEach { it.beforeClose(call, true) }
                     call.close()
                 }
             } catch (e: Exception) {
+                call.logger.debug { "Unclean closing ${callHooks.size} HttpCall hooks" }
+                callHooks.forEach { it.beforeClose(call, false) }
                 call.drop(e)
             }
         }
     }
 
-    private fun matchRoute(call: HttpCall) {
+    private fun matchRoute(call: HttpCall, callHooks: List<HttpCallHook>) {
         when (call.route.status()) {
-            RouteMatchStatus.SUCCESS -> call.dispatchToRouteHandler(call.route.target())
+            RouteMatchStatus.SUCCESS -> call.dispatchToRouteHandler(call.route.target(), callHooks)
             RouteMatchStatus.METHOD_NOT_ALLOWED -> {
                 throw MethodNotAllowedException(
                     "Method ${call.method} is not allowed for this operation. Only ${call.route.allowedMethods().joinToString(
@@ -52,14 +71,16 @@ class AlpasServlet(
         }
     }
 
-    private fun HttpCall.dispatchToRouteHandler(route: Route) {
+    private fun HttpCall.dispatchToRouteHandler(route: Route, callHooks: List<HttpCallHook>) {
         val groupMiddleware = mutableListOf<Middleware<HttpCall>>()
         route.middlewareGroups.forEach {
             groupMiddleware.addAll(makeMiddleware(routeEntryMiddlewareGroups[it]))
         }
         val middleware = groupMiddleware.plus(makeMiddleware(route.middleware))
-        Pipeline<HttpCall>().send(this).through(middleware).then {
-            route.handle(it)
+        Pipeline<HttpCall>().send(this).through(middleware).then { call ->
+            logger.debug { "Calling before route handle hook for ${callHooks.size} hooks" }
+            callHooks.forEach { it -> it.beforeRouteHandle(call, route) }
+            route.handle(call)
         }
     }
 
