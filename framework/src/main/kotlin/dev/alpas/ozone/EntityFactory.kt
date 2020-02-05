@@ -7,6 +7,7 @@ import me.liuwj.ktorm.dsl.batchInsert
 import me.liuwj.ktorm.dsl.insertAndGenerateKey
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.entity.findById
+import me.liuwj.ktorm.schema.NestedBinding
 import me.liuwj.ktorm.schema.Table
 
 val faker by lazy(LazyThreadSafetyMode.NONE) { Faker() }
@@ -14,12 +15,27 @@ val faker by lazy(LazyThreadSafetyMode.NONE) { Faker() }
 /**
  * A factory for creating one or many instances of an Entity class.
  */
-interface EntityFactory<E : Entity<E>> {
+abstract class EntityFactory<E : Entity<E>> {
 
     /**
      * The entity's table
      */
-    val table: Table<E>
+    protected abstract val table: Table<E>
+
+    /**
+     * A map of an entity's column name to the actual corresponding column name in the table.
+     */
+    protected open val mappedColumnNames by lazy(LazyThreadSafetyMode.NONE) {
+        table.columns.map { col ->
+            val colNameInTable = when (val binding = col.binding) {
+                is NestedBinding -> {
+                    binding.properties[0].name
+                }
+                else -> col.name
+            }
+            Pair(colNameInTable, col.name)
+        }.toMap()
+    }
 
     /**
      * Build and persist an entity to a database. Before persisting, its property will be overriden by the
@@ -34,7 +50,7 @@ interface EntityFactory<E : Entity<E>> {
      * @return A fresh entity from the database.
      *
      */
-    fun create(attrs: Map<String, Any?> = emptyMap()): E {
+    open fun create(attrs: Map<String, Any?> = emptyMap()): E {
         return saveAndRefresh(build(attrs))
     }
 
@@ -46,11 +62,11 @@ interface EntityFactory<E : Entity<E>> {
      * @param entity An entity to persist in the database.
      * @return The primary key of the entity after saving it in the database.
      */
-    fun save(entity: E): Any {
+    open fun save(entity: E): Any {
         return table.insertAndGenerateKey { builder ->
             entity.properties.forEach { (name, value) ->
-                table.columns.find { it.name == name }?.let {
-                    builder[name] to transform(name, value)
+                mappedColumnNames[name]?.let {
+                    builder[it] to transform(name, value)
                 }
             }
         }
@@ -72,8 +88,8 @@ interface EntityFactory<E : Entity<E>> {
             for (entity in entities) {
                 item { builder ->
                     for ((name, value) in entity.properties) {
-                        table.columns.find { it.name == name }?.let {
-                            builder[name] to transform(name, value)
+                        mappedColumnNames[name]?.let {
+                            builder[it] to transform(name, value)
                         }
                     }
                 }
@@ -90,7 +106,7 @@ interface EntityFactory<E : Entity<E>> {
      * @param value The value of the property.
      * @return A transformed value for the given property value.
      */
-    fun transform(name: String, value: Any?) = value
+    protected open fun transform(name: String, value: Any?) = value
 
     /**
      * Persist the given entity in the database and return a fresh copy of it. The entity's properties
@@ -100,7 +116,7 @@ interface EntityFactory<E : Entity<E>> {
      * @param entity An entity to persist in the database.
      * @return The fresh copy of the entity from the database.
      */
-    fun saveAndRefresh(entity: E): E {
+    open fun saveAndRefresh(entity: E): E {
         return save(entity).let {
             table.findById(it)!!
         }
@@ -113,7 +129,7 @@ interface EntityFactory<E : Entity<E>> {
      * @param attrs A map of attributes for overriding entity's properties.
      */
 
-    fun build(attrs: Map<String, Any?> = emptyMap()): E {
+    open fun build(attrs: Map<String, Any?> = emptyMap()): E {
         return entity().also {
             attrs.forEach { (name, value) -> it[name] = value }
         }
@@ -123,7 +139,7 @@ interface EntityFactory<E : Entity<E>> {
      * The actual entity that this factory is responsible for building. An implementor of this interface
      * should not persist it in the database but simply just return an instance of it.
      */
-    fun entity(): E
+    abstract fun entity(): E
 }
 
 /**

@@ -38,12 +38,12 @@ class EntityFactoryTest : BaseTest() {
     @Test
     fun `can override entity's properties`() {
         TestObjectFactory.build().apply {
-            assertEquals("Default Name", name)
+            assertEquals("Default Name", firstName)
             assertEquals("Default Email", email)
         }
 
-        TestObjectFactory.build(mapOf("name" to "New Name")).apply {
-            assertEquals("New Name", name)
+        TestObjectFactory.build(mapOf("firstName" to "New Name")).apply {
+            assertEquals("New Name", firstName)
             assertEquals("Default Email", email)
         }
     }
@@ -69,8 +69,8 @@ class EntityFactoryTest : BaseTest() {
         val dbEntity = TestTable().findById(entity.id)
         assertNotNull(dbEntity)
 
-        assertNotEquals("Default Name", dbEntity?.name)
-        assertEquals("DEFAULT NAME", dbEntity?.name)
+        assertNotEquals("Default Name", dbEntity?.firstName)
+        assertEquals("DEFAULT NAME", dbEntity?.firstName)
         assertEquals("Default Email", dbEntity?.email)
     }
 
@@ -78,24 +78,24 @@ class EntityFactoryTest : BaseTest() {
     fun `can override persistent entity's properties`() {
         execSqlScript(TestTable.createSql)
 
-        val entity = from(TestObjectFactory, "name" to "Test Name")
+        val entity = from(TestObjectFactory, "firstName" to "Test Name")
         val all = TestTable().findAll()
         assertEquals(1, all.size)
         val dbEntity = TestTable().findById(entity.id)
         assertNotNull(dbEntity)
-        assertEquals("Test Name", dbEntity?.name)
+        assertEquals("Test Name", dbEntity?.firstName)
     }
 
     @Test
     fun `extra properties will be ignored`() {
         execSqlScript(TestTable.createSql)
 
-        val entity = from(TestObjectFactory, "name" to "Test Name", "address" to "Random Street")
+        val entity = from(TestObjectFactory, "firstName" to "Test Name", "address" to "Random Street")
         val all = TestTable().findAll()
         assertEquals(1, all.size)
         val dbEntity = TestTable().findById(entity.id)
         assertNotNull(dbEntity)
-        assertEquals("Test Name", dbEntity?.name)
+        assertEquals("Test Name", dbEntity?.firstName)
         assertFalse(dbEntity?.properties?.containsKey("address") ?: true)
     }
 
@@ -134,48 +134,48 @@ class EntityFactoryTest : BaseTest() {
     fun `entity can create persist in the database`() {
         execSqlScript(TestTable.createSql)
 
-        from(TestObjectFactory, 5, "name" to "Same Name")
+        from(TestObjectFactory, 5, "firstName" to "Same Name")
         val all = TestTable().findAll()
         assertEquals(5, all.size)
 
-        assertEquals(all.random().name, "Same Name")
+        assertEquals(all.random().firstName, "Same Name")
     }
 
     @Test
     fun `creating many entities returns fresh copies`() {
         execSqlScript(TestTable.createSql)
 
-        val entities = from(TestObjectFactory, 10, "name" to "Same Name")
+        val entities = from(TestObjectFactory, 10, "firstName" to "Same Name")
         assertEquals(10, entities.size)
 
         assertNotNull(entities.random().id)
-        assertEquals(entities.random().name, "Same Name")
+        assertEquals(entities.random().firstName, "Same Name")
     }
 }
 
-object TestObjectFactory : EntityFactory<TestEntity> {
+private object TestObjectFactory : EntityFactory<TestEntity>() {
     override val table = TestTable()
 
     override fun entity(): TestEntity {
         return TestEntity {
-            name = "Default Name"
+            firstName = "Default Name"
             email = "Default Email"
         }
     }
 }
 
-object TransformingTestObjectFactory : EntityFactory<TestEntity> {
+private object TransformingTestObjectFactory : EntityFactory<TestEntity>() {
     override val table = TestTable()
 
     override fun entity(): TestEntity {
         return TestEntity {
-            name = "Default Name"
+            firstName = "Default Name"
             email = "Default Email"
         }
     }
 
     override fun transform(name: String, value: Any?): Any? {
-        return if(name == "name") {
+        return if(name == "firstName") {
             value?.toString()?.toUpperCase()
         } else {
             value
@@ -183,29 +183,26 @@ object TransformingTestObjectFactory : EntityFactory<TestEntity> {
     }
 }
 
-interface TestEntity : Entity<TestEntity> {
+private interface TestEntity : Entity<TestEntity> {
     val id: Long
-    var name: String
+    var firstName: String
     var email: String
 
     companion object : Entity.Factory<TestEntity>()
 }
 
-class TestTable : MigratingTable<TestEntity>("test_table") {
+private class TestTable : MigratingTable<TestEntity>("test_table") {
     val id by bigIncrements("id").bindTo { it.id }
-    val name by string("name").bindTo { it.name }
+    val firstName by string("first_name").bindTo { it.firstName }
     val email by string("email").bindTo { it.email }
 
     companion object {
         val createSql = """
         create table test_table(
             id integer primary key autoincrement,
-            name varchar(128) not null,
+            first_name varchar(128) not null,
             email varchar(128) not null
         );
     """.trimIndent()
     }
 }
-
-
-

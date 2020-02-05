@@ -120,7 +120,7 @@ class MakeFactoryTest {
         import dev.alpas.tests.entities.Test
         import dev.alpas.tests.entities.Tests
 
-        internal object TestFactory : EntityFactory<Test> {
+        internal object TestFactory : EntityFactory<Test>() {
             override val table = Tests
             
             override fun entity(): Test {
@@ -128,8 +128,8 @@ class MakeFactoryTest {
 
                 return Test {
                     // name = faker.name().name()
-                    // updatedAt = faker.date().past(1, TimeUnit.HOURS).toInstant()
-                    // createdAt = Instant.now()
+                    // updatedAt = Instant.now()
+                    // createdAt = faker.date().past(1, TimeUnit.HOURS).toInstant()
                 }
             }
         }

@@ -11,7 +11,7 @@ internal class FactoryStubs {
                 import StubEntitiesPackage.StubEntityClazzName
                 import StubEntitiesPackage.StubTableClazzName
 
-                internal object StubClazzName : EntityFactory<StubEntityClazzName> {
+                internal object StubClazzName : EntityFactory<StubEntityClazzName>() {
                     override val table = StubTableClazzName
                     
                     override fun entity(): StubEntityClazzName {
@@ -19,8 +19,8 @@ internal class FactoryStubs {
 
                         return StubEntityClazzName {
                             // name = faker.name().name()
-                            // updatedAt = faker.date().past(1, TimeUnit.HOURS).toInstant()
-                            // createdAt = Instant.now()
+                            // updatedAt = Instant.now()
+                            // createdAt = faker.date().past(1, TimeUnit.HOURS).toInstant()
                         }
                     }
                 }
