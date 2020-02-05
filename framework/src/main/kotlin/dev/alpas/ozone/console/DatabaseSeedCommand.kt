@@ -22,7 +22,7 @@ class DatabaseSeedCommand(private val app: Application) : Command(name = "db:see
         } else {
             val seeder = classInfo.load<Seeder>()
             seeder.run(app)
-            success("🙌 Successfully ran $seederName!")
+            success("🙌 Successfully seeded the database using $seederName!")
         }
     }
 }

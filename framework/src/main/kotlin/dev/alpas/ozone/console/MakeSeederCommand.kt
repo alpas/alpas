@@ -20,6 +20,7 @@ class MakeSeederCommand(srcPackage: String) :
         withColors {
             echo(green("SEEDER CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/seeding"))
         }
     }
 }

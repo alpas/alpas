@@ -34,6 +34,7 @@ class MakeFactoryCommand(srcPackage: String) :
         withColors {
             echo(green("FACTORY CREATED 🙌"))
             echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
+            echo(yellow("https://alpas.dev/docs/entity-factory"))
         }
     }
 }
