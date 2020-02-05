@@ -6,7 +6,7 @@ import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.support.postgresql.PostgreSqlDialect
 
 @Suppress("unused")
-open class PostgreSQLConnection(env: Environment, config: ConnectionConfig? = null) : DatabaseConnection {
+open class PostgreSqlConnection(env: Environment, config: ConnectionConfig? = null) : DatabaseConnection {
     open val host = config?.host ?: env("DB_HOST", "localhost")
     open val port = config?.port ?: env("DB_PORT", 5432)
     open val database = config?.database ?: env("DB_DATABASE", "")

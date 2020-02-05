@@ -51,7 +51,7 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
             return when {
                 db.isMySql() -> MySqlAdapter(isDryRun, quiet)
                 db.isSqlite() -> SqliteAdapter(isDryRun, quiet)
-                db.isPostgreSQL() -> PostgreSQLAdapter(isDryRun, quiet)
+                db.isPostgreSQL() -> PostgreSqlAdapter(isDryRun, quiet)
                 else -> throw Exception("Database adapter not supported: '${db.productName}'.")
             }
         }

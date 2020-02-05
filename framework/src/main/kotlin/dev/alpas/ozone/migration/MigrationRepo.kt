@@ -78,7 +78,7 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
 
 internal class CreateMigrationMigrations : Migration() {
     override fun up() {
-        if (adapter is PostgreSQLAdapter) {
+        if (adapter is PostgreSqlAdapter) {
 
             val query = """
             CREATE TABLE IF NOT EXISTS "migrations"(

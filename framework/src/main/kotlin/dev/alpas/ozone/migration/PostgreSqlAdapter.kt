@@ -2,7 +2,7 @@ package dev.alpas.ozone.migration
 
 import dev.alpas.printAsSuccess
 
-internal class PostgreSQLAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDryRun, quiet) {
+internal class PostgreSqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDryRun, quiet) {
     override fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean) {
         TODO("Create table not yet supported for PostgreSQL")
     }
