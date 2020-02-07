@@ -1,10 +1,10 @@
 package dev.alpas.ozone.console
 
-import com.cesarferreira.pluralize.pluralize
 import dev.alpas.console.GeneratorCommand
 import dev.alpas.console.OutputFile
 import dev.alpas.extensions.toPascalCase
 import dev.alpas.ozone.console.stubs.FactoryStubs
+import org.atteo.evo.inflector.English
 import java.io.File
 
 private const val SUFFIX = "factory"
@@ -25,7 +25,7 @@ class MakeFactoryCommand(srcPackage: String) :
             .stub(FactoryStubs.stub())
             .replacements(
                 "StubEntityClazzName" to entityName,
-                "StubTableClazzName" to entityName.pluralize(),
+                "StubTableClazzName" to English.plural(entityName),
                 "StubEntitiesPackage" to entitiesPackage
             )
     }

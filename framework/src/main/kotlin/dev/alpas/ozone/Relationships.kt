@@ -2,7 +2,6 @@
 
 package dev.alpas.ozone
 
-import com.cesarferreira.pluralize.singularize
 import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.entity.Entity
@@ -11,6 +10,7 @@ import me.liuwj.ktorm.entity.findOne
 import me.liuwj.ktorm.schema.BaseTable
 import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.ColumnDeclaring
+import org.atteo.evo.inflector.English
 
 inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasManyBy(
     table: T,
@@ -90,7 +90,7 @@ inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasOne(
 }
 
 val BaseTable<*>.hasOneCacheKey: String
-    get() = "${tableName.singularize()}_cache_key"
+    get() = "${English.plural(tableName, 1)}_cache_key"
 
 val BaseTable<*>.hasManyCacheKey: String
     get() = "${tableName}_cache_key"
