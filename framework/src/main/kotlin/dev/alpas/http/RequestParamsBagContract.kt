@@ -75,7 +75,7 @@ interface RequestParamsBagContract {
         return queryParams?.get(key)
     }
 
-    fun onlyParams(key: String, vararg keys: String): Map<String, Any?> {
+    fun params(key: String, vararg keys: String): Map<String, Any?> {
         return params
             ?.filterKeys { it.isOneOf(key, *keys) }
             ?.filterNotNullValues() // remove nulls
