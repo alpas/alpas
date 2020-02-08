@@ -18,7 +18,6 @@ class MakeEntityCommand(srcPackage: String) :
     ) {
 
     private val tableName by option("--table", help = "Name of the table. e.g. --table=users")
-    private val simple by option("--simple", help = "Create a simple data based entity.").flag()
     private val migration by option("--migration", "-m", help = "Create a migration for the entity.").flag()
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
@@ -26,17 +25,13 @@ class MakeEntityCommand(srcPackage: String) :
         return OutputFile()
             .target(File(sourceOutputPath("entities", *parentDirs), "${filename.toPascalCase()}.kt"))
             .packageName(makePackageName("entities", *parentDirs))
-            .stub(entityStub())
+            .stub(EntityStubs.stub())
             .replacements(
                 mapOf(
                     "StubTableClazzName" to table.toPascalCase(),
                     "StubTableName" to table.toSnakeCase().toLowerCase()
                 )
             )
-    }
-
-    private fun entityStub(): String {
-        return if (simple) EntityStubs.simpleStub() else EntityStubs.stub()
     }
 
     override fun onCompleted(outputFile: OutputFile) {
@@ -47,7 +42,11 @@ class MakeEntityCommand(srcPackage: String) :
         }
         if (migration) {
             val table = tableName ?: English.plural(outputFile.target.nameWithoutExtension)
-            MakeMigrationCommand(srcPackage).main(arrayOf("create_${table.toSnakeCase()}_table", "--create=${table}"))
+            val migrationOptions = mutableListOf("create_${table.toSnakeCase()}_table", "--create=${table}")
+            if (quiet) {
+                migrationOptions.add("--quiet")
+            }
+            MakeMigrationCommand(srcPackage).main(migrationOptions)
         }
     }
 }
