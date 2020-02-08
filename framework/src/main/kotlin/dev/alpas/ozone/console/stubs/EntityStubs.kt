@@ -3,10 +3,7 @@ package dev.alpas.ozone.console.stubs
 internal class EntityStubs {
     companion object {
         fun simpleStub(): String {
-            return """
-                ${simpleEntityStub()}
-                ${simpleTableStub()}
-            """.trimIndent()
+            return """${simpleEntityStub()} ${simpleTableStub()}""".trimIndent()
         }
 
         private fun simpleEntityStub(): String {
@@ -39,10 +36,7 @@ internal class EntityStubs {
         }
 
         fun stub(): String {
-            return """
-                ${entityStub()}
-                ${tableStub()}
-            """.trimIndent()
+            return """${entityStub()} ${tableStub()}""".trimIndent()
         }
 
         private fun entityStub(): String {
