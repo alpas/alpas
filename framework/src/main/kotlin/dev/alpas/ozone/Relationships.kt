@@ -2,6 +2,7 @@
 
 package dev.alpas.ozone
 
+import dev.alpas.extensions.toSnakeCase
 import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.entity.Entity
@@ -96,4 +97,4 @@ val BaseTable<*>.hasManyCacheKey: String
     get() = "${tableName}_cache_key"
 
 val Entity<*>.defaultForeignKey: String
-    get() = "${this.entityClass.simpleName?.toLowerCase()!!}_id"
+    get() = "${this.entityClass.simpleName?.toSnakeCase()!!}_id"
