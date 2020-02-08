@@ -1,7 +1,7 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.ozone.MigratingTable
-import me.liuwj.ktorm.entity.Entity
+import dev.alpas.ozone.Ozone
+import dev.alpas.ozone.OzoneTable
 
 // todo: support adding composite keys
 // todo: support collation
@@ -13,8 +13,8 @@ abstract class Migration {
     internal lateinit var filename: String
     internal lateinit var adapter: DbAdapter
 
-    fun <E : Entity<E>> createTable(
-        table: MigratingTable<E>,
+    fun <E : Ozone<E>> createTable(
+        table: OzoneTable<E>,
         ifNotExists: Boolean = false,
         block: (TableBuilder.() -> Unit)? = null
     ) {
@@ -33,7 +33,7 @@ abstract class Migration {
         }
     }
 
-    fun <E : Entity<E>> dropTable(table: MigratingTable<E>) {
+    fun <E : Ozone<E>> dropTable(table: OzoneTable<E>) {
         adapter.dropTable(table.tableName)
     }
 

@@ -183,16 +183,16 @@ private object TransformingTestObjectFactory : EntityFactory<TestEntity>() {
     }
 }
 
-private interface TestEntity : Entity<TestEntity> {
+private interface TestEntity : Ozone<TestEntity> {
     val id: Long
     var firstName: String
     var email: String
 
-    companion object : Entity.Factory<TestEntity>()
+    companion object : Ozone.Of<TestEntity>()
 }
 
-private class TestTable : MigratingTable<TestEntity>("test_table") {
-    val id by bigIncrements("id").bindTo { it.id }
+private class TestTable : OzoneTable<TestEntity>("test_table") {
+    val id by bigIncrements().bindTo { it.id }
     val firstName by string("first_name").bindTo { it.firstName }
     val email by string("email").bindTo { it.email }
 

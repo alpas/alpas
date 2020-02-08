@@ -1,17 +1,13 @@
 package dev.alpas.queue.database
 
-import dev.alpas.ozone.MigratingTable
-import dev.alpas.ozone.bigIncrements
-import dev.alpas.ozone.longText
-import dev.alpas.ozone.tinyInt
-import me.liuwj.ktorm.entity.Entity
+import dev.alpas.ozone.*
 import me.liuwj.ktorm.schema.long
 import me.liuwj.ktorm.schema.timestamp
 import me.liuwj.ktorm.schema.varchar
 import java.time.Instant
 
-interface JobRecord : Entity<JobRecord> {
-    companion object : Entity.Factory<JobRecord>()
+interface JobRecord : Ozone<JobRecord> {
+    companion object : Ozone.Of<JobRecord>()
 
     var id: Long
     var queue: String
@@ -22,7 +18,7 @@ interface JobRecord : Entity<JobRecord> {
     var createdAt: Long
 }
 
-interface FailedJobRecord : Entity<FailedJobRecord> {
+interface FailedJobRecord : Ozone<FailedJobRecord> {
     var id: Long
     var connection: String
     var queue: String
@@ -31,7 +27,7 @@ interface FailedJobRecord : Entity<FailedJobRecord> {
     val failedAt: Instant
 }
 
-object JobRecords : MigratingTable<JobRecord>("jobs") {
+object JobRecords : OzoneTable<JobRecord>("jobs") {
     val id by bigIncrements("id").bindTo { it.id }
     val queue by varchar("queue").index().bindTo { it.queue }
     val payload by longText("payload").bindTo { it.payload }
@@ -41,7 +37,7 @@ object JobRecords : MigratingTable<JobRecord>("jobs") {
     val createdAt by long("created_at").unsigned().bindTo { it.createdAt }
 }
 
-object FailedJobRecords : MigratingTable<FailedJobRecord>("failed_jobs") {
+object FailedJobRecords : OzoneTable<FailedJobRecord>("failed_jobs") {
     val id by bigIncrements("id").bindTo { it.id }
     val connection by varchar("connection").index().bindTo { it.connection }
     val queue by varchar("queue").index().bindTo { it.queue }

@@ -1,6 +1,7 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.ozone.MigratingTable
+import dev.alpas.ozone.Ozone
+import dev.alpas.ozone.OzoneTable
 import dev.alpas.ozone.increments
 import me.liuwj.ktorm.dsl.delete
 import me.liuwj.ktorm.dsl.eq
@@ -10,7 +11,6 @@ import me.liuwj.ktorm.schema.int
 import me.liuwj.ktorm.schema.varchar
 
 private const val MIGRATION_TABLE = "migrations"
-private const val ID_COLUMN = "id"
 private const val NAME_COLUMN = "name"
 private const val BATCH_COLUMN = "batch"
 
@@ -61,16 +61,16 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
         Migrations.delete { Migrations.batch eq batch }
     }
 
-    internal interface Migration : Entity<Migration> {
+    internal interface Migration : Ozone<Migration> {
         val id: Int
         var name: String
         var batch: Int
 
-        companion object : Entity.Factory<Migration>()
+        companion object : Ozone.Of<Migration>()
     }
 
-    internal object Migrations : MigratingTable<Migration>(MIGRATION_TABLE) {
-        val id by increments(ID_COLUMN).bindTo { it.id }
+    internal object Migrations : OzoneTable<Migration>(MIGRATION_TABLE) {
+        val id by increments().bindTo { it.id }
         val migration by varchar(NAME_COLUMN).bindTo { it.name }
         val batch by int(BATCH_COLUMN).bindTo { it.batch }
     }

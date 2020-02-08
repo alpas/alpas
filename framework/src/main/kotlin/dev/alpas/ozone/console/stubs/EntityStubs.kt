@@ -43,28 +43,25 @@ internal class EntityStubs {
             return """
                 package StubPackageName
                 
-                import dev.alpas.ozone.MigratingTable
-                import dev.alpas.ozone.bigIncrements
-                import me.liuwj.ktorm.entity.Entity
-                import me.liuwj.ktorm.schema.timestamp
+                import dev.alpas.ozone.*
                 import java.time.Instant
 
-                interface StubClazzName : Entity<StubClazzName> {
+                interface StubClazzName : Ozone<StubClazzName> {
                     var id: Long
                     var createdAt: Instant?
                     var updatedAt: Instant?
 
-                    companion object : Entity.Factory<StubClazzName>()
+                    companion object : Ozone.Of<StubClazzName>()
                 }
             """
         }
 
         private fun tableStub(): String {
             return """
-                object StubTableClazzName : MigratingTable<StubClazzName>("StubTableName") {
-                    val id by bigIncrements("id").bindTo { it.id }
-                    val createdAt by timestamp("created_at").nullable().bindTo { it.createdAt }
-                    val updatedAt by timestamp("updated_at").nullable().bindTo { it.updatedAt }
+                object StubTableClazzName : OzoneTable<StubClazzName>("StubTableName") {
+                    val id by bigIncrements().bindTo { it.id }
+                    val createdAt by createdAt()
+                    val updatedAt by updatedAt()
                 }
             """
         }

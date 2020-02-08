@@ -1,19 +1,18 @@
 package dev.alpas.ozone
 
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.DecimalSqlType
-import me.liuwj.ktorm.schema.DoubleSqlType
-import me.liuwj.ktorm.schema.FloatSqlType
-import me.liuwj.ktorm.schema.Table
+import dev.alpas.extensions.toCamelCase
+import me.liuwj.ktorm.schema.*
+import java.time.Instant
 import java.time.temporal.Temporal
 import kotlin.reflect.KClass
+import kotlin.reflect.full.memberProperties
 
-abstract class MigratingTable<E : Entity<E>>(tableName: String, alias: String? = null, entityClass: KClass<E>? = null) :
+abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null, entityClass: KClass<E>? = null) :
     Table<E>(tableName, alias, entityClass) {
 
     internal val metadataMap = hashMapOf<String, ColumnMetadata>()
 
-    inline fun <C : Any, R : Entity<R>> ColumnRegistration<C>.belongsTo(
+    inline fun <C : Any, R : Ozone<R>> ColumnRegistration<C>.belongsTo(
         referenceTable: Table<R>,
         selector: (E) -> R?
     ) = apply { references(referenceTable, selector) }
@@ -128,6 +127,34 @@ abstract class MigratingTable<E : Entity<E>>(tableName: String, alias: String? =
         }
 
         return this
+    }
+
+    /**
+     * Define a created_at column typed of [InstantSqlType].
+     */
+    fun createdAt(name: String = "created_at"): ColumnRegistration<Instant> {
+        return bindTimestamp(name)
+    }
+
+    /**
+     * Define a updated_at column typed of [InstantSqlType].
+     */
+    fun updatedAt(name: String = "updated_at"): ColumnRegistration<Instant> {
+        return bindTimestamp(name)
+    }
+
+    /**
+     * Define a updated_at column typed of [InstantSqlType].
+     */
+    private fun bindTimestamp(name: String): ColumnRegistration<Instant> {
+        val entityClass = this.entityClass ?: error("No entity class configured for table: $tableName")
+        return registerColumn(name, InstantSqlType).nullable().apply {
+            val colName = name.toCamelCase()
+            val props = entityClass.memberProperties.find { prop ->
+                prop.name == colName
+            } ?: throw IllegalStateException("Entity ${entityClass.simpleName} doesn't contain property $colName.")
+            doBindInternal(NestedBinding(listOf(props)))
+        }
     }
 }
 

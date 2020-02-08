@@ -1,13 +1,11 @@
 package dev.alpas.ozone.migration
 
 import dev.alpas.isOneOf
+import dev.alpas.ozone.*
 import dev.alpas.ozone.ColumnInfo
 import dev.alpas.ozone.ColumnKey
 import dev.alpas.ozone.ColumnMetadata
-import dev.alpas.ozone.ColumnReferenceConstraint
-import dev.alpas.ozone.MigratingTable
 import dev.alpas.ozone.isVarChar
-import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.schema.Column
 import java.sql.Types
 
@@ -16,7 +14,7 @@ class TableBuilder(val tableName: String) {
     internal var keys = mutableSetOf<ColumnKey>()
     internal var constraints = mutableSetOf<ColumnReferenceConstraint>()
 
-    internal fun <E : Entity<E>> addColumn(col: Column<*>, table: MigratingTable<E>) {
+    internal fun <E : Ozone<E>> addColumn(col: Column<*>, table: OzoneTable<E>) {
         val meta = table.metadataMap[col.name]
         columns.add(ColumnInfo(col, meta))
     }
@@ -79,18 +77,18 @@ class TableBuilder(val tableName: String) {
         }
     }
 
-    fun <E : Entity<E>> addReference(
+    fun <E : Ozone<E>> addReference(
         foreignColumn: Column<*>,
-        tableToRefer: MigratingTable<E>,
+        tableToRefer: OzoneTable<E>,
         columnToRefer: Column<*>? = null
     ): ColumnReferenceConstraint {
         checkColumnsTypes(foreignColumn, tableToRefer, columnToRefer)
         return addReference(foreignColumn.name, tableToRefer.tableName, columnToRefer?.name)
     }
 
-    private fun <E : Entity<E>> checkColumnsTypes(
+    private fun <E : Ozone<E>> checkColumnsTypes(
         foreignColumn: Column<*>,
-        tableToRefer: MigratingTable<E>,
+        tableToRefer: OzoneTable<E>,
         columnToRefer: Column<*>?
     ) {
         // If the referencing column is unsigned but the foreign key column isn't then adding constraint
