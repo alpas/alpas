@@ -6,6 +6,9 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Types
 import java.time.Instant
+import java.util.*
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 
 /**
@@ -24,7 +27,7 @@ fun <E : Ozone<E>> OzoneTable<E>.increments(name: String = "id"): BaseTable<E>.C
 
 private fun <E : Ozone<E>, C : Number> OzoneTable<E>.incrementsColumn(name: String, sqlType: SqlType<C>)
         : BaseTable<E>.ColumnRegistration<C> {
-    return registerColumn(name, sqlType).also {
+    return registerAndBind(name, sqlType).also {
         it.primaryKey()
         it.unsigned()
         it.autoIncrement()

@@ -133,22 +133,22 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
      * Define a created_at column typed of [InstantSqlType].
      */
     fun createdAt(name: String = "created_at"): ColumnRegistration<Instant> {
-        return bindTimestamp(name)
+        return registerAndBind(name, InstantSqlType)
     }
 
     /**
      * Define a updated_at column typed of [InstantSqlType].
      */
     fun updatedAt(name: String = "updated_at"): ColumnRegistration<Instant> {
-        return bindTimestamp(name)
+        return registerAndBind(name, InstantSqlType)
     }
 
     /**
-     * Define a updated_at column typed of [InstantSqlType].
+     * Automatically bind a column under the given name and type
      */
-    private fun bindTimestamp(name: String): ColumnRegistration<Instant> {
+    internal fun <T : Any> registerAndBind(name: String, type: SqlType<T>): ColumnRegistration<T> {
         val entityClass = this.entityClass ?: error("No entity class configured for table: $tableName")
-        return registerColumn(name, InstantSqlType).nullable().apply {
+        return registerColumn(name, type).nullable().apply {
             val colName = name.toCamelCase()
             val props = entityClass.memberProperties.find { prop ->
                 prop.name == colName
@@ -156,6 +156,19 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
             doBindInternal(NestedBinding(listOf(props)))
         }
     }
+/**
+ * A map of an entity's column name to the actual corresponding column name in the table.
+ */
+fun <T : Entity<T>> Table<T>.mappedColumnNames(): Map<String, String> {
+    return columns.map { col ->
+        val colNameInTable = when (val binding = col.binding) {
+            is NestedBinding -> {
+                binding.properties[0].name
+            }
+            else -> col.name
+        }
+        Pair(colNameInTable, col.name)
+    }.toMap()
 }
 
 internal data class ColumnMetadata(

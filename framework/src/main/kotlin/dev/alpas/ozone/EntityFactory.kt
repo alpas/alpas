@@ -7,7 +7,6 @@ import me.liuwj.ktorm.dsl.batchInsert
 import me.liuwj.ktorm.dsl.insertAndGenerateKey
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.entity.findById
-import me.liuwj.ktorm.schema.NestedBinding
 import me.liuwj.ktorm.schema.Table
 
 val faker by lazy(LazyThreadSafetyMode.NONE) { Faker() }
@@ -25,17 +24,7 @@ abstract class EntityFactory<E : Entity<E>> {
     /**
      * A map of an entity's column name to the actual corresponding column name in the table.
      */
-    protected open val mappedColumnNames by lazy(LazyThreadSafetyMode.NONE) {
-        table.columns.map { col ->
-            val colNameInTable = when (val binding = col.binding) {
-                is NestedBinding -> {
-                    binding.properties[0].name
-                }
-                else -> col.name
-            }
-            Pair(colNameInTable, col.name)
-        }.toMap()
-    }
+    protected open val mappedColumnNames by lazy(LazyThreadSafetyMode.NONE) { table.mappedColumnNames() }
 
     /**
      * Build and persist an entity to a database. Before persisting, its property will be overriden by the
