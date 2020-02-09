@@ -1,6 +1,11 @@
 package dev.alpas.ozone
 
 import dev.alpas.extensions.toCamelCase
+import me.liuwj.ktorm.dsl.combineConditions
+import me.liuwj.ktorm.dsl.eq
+import me.liuwj.ktorm.dsl.isNull
+import me.liuwj.ktorm.entity.Entity
+import me.liuwj.ktorm.entity.findOne
 import me.liuwj.ktorm.schema.*
 import java.time.Instant
 import java.time.temporal.Temporal
@@ -156,6 +161,32 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
             doBindInternal(NestedBinding(listOf(props)))
         }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    fun findOrCreate(whereAttributes: Map<String, Any?>, attributes: Map<String, Any?> = emptyMap()): E {
+        if (whereAttributes.isEmpty()) {
+            throw IllegalArgumentException("whereAttributes cannot be empty.")
+        }
+        val table = this
+        val whereConditions = whereAttributes.map {
+            val col = table[it.key] as Column<Any>
+            when (val value = it.value) {
+                null -> col.isNull()
+                else -> col.eq(value)
+            }
+        }
+        return findOne { whereConditions.combineConditions() }
+            ?: create { builder ->
+                val allAttributes = whereAttributes.plus(attributes)
+                for ((name, value) in allAttributes) {
+                    table.columns.find { it.name == name }?.let {
+                        builder[name] to value
+                    }
+                }
+            }
+    }
+}
+
 /**
  * A map of an entity's column name to the actual corresponding column name in the table.
  */

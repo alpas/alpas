@@ -153,7 +153,7 @@ class EntityFactoryTest : BaseTest() {
     }
 }
 
-private object TestObjectFactory : EntityFactory<TestEntity>() {
+internal object TestObjectFactory : EntityFactory<TestEntity>() {
     override val table = TestTable()
 
     override fun entity(): TestEntity {
@@ -183,7 +183,7 @@ private object TransformingTestObjectFactory : EntityFactory<TestEntity>() {
     }
 }
 
-private interface TestEntity : Ozone<TestEntity> {
+internal interface TestEntity : Ozone<TestEntity> {
     val id: Long
     var firstName: String
     var email: String
@@ -191,8 +191,8 @@ private interface TestEntity : Ozone<TestEntity> {
     companion object : Ozone.Of<TestEntity>()
 }
 
-private class TestTable : OzoneTable<TestEntity>("test_table") {
-    val id by bigIncrements().bindTo { it.id }
+internal class TestTable : OzoneTable<TestEntity>("test_table") {
+    val id by bigIncrements()
     val firstName by string("first_name").bindTo { it.firstName }
     val email by string("email").bindTo { it.email }
 
