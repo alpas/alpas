@@ -10,7 +10,7 @@ class EncryptionServiceProvider : ServiceProvider {
     override fun register(app: Application) {
         val config = app.appConfig()
         var encryptionKey = config.encryptionKey
-            ?: throw Exception("APP_KEY is empty. Set the value in your .env file")
+            ?: throw Exception("APP_KEY is empty. Use `alpas key:generate` command to create one and set the value in your .env file")
         if (encryptionKey.startsWith("base64:")) {
             encryptionKey = encryptionKey.substring(7).base64Decoded()
         }
