@@ -14,7 +14,7 @@ buildscript {
 
 allprojects {
     group = "dev.alpas"
-    version = '0.14.0'
+    version = '0.14.1'
 }
 
 subprojects { project ->
@@ -33,11 +33,11 @@ subprojects { project ->
     }
 
     compileKotlin {
-        kotlinOptions.jvmTarget = "9"
+        kotlinOptions.jvmTarget = "1.8"
         kotlinOptions.allWarningsAsErrors = true
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "9"
+        kotlinOptions.jvmTarget = "1.8"
     }
 
     apply plugin: "maven-publish"

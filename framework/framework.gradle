@@ -20,7 +20,7 @@ dependencies {
     implementation "com.github.freva:ascii-table:1.1.0"
 
     compile "com.zaxxer:HikariCP:3.4.1"
-    compile "com.github.cesarferreira:kotlin-pluralizer:0.2.9"
+    compile "org.atteo:evo-inflector:1.2.2"
     compile "io.pebbletemplates:pebble:3.1.2"
     compile "com.github.ajalt:clikt:2.3.0"
     compile "com.github.ajalt:mordant:1.2.1"
