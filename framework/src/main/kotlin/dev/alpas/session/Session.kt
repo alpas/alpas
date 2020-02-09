@@ -58,17 +58,17 @@ class Session(private val request: HttpServletRequest) {
         session.setAttribute(key, value)
     }
 
-    fun <T> pull(key: String): T? {
+    fun <T: Any> pull(key: String): T? {
         return this.invoke<T?>(key)?.also {
             forget(key)
         }
     }
 
-    fun <T> pull(key: String, default: T): T {
+    fun <T: Any> pull(key: String, default: T): T {
         return this.pull(key) ?: default
     }
 
-    fun <T> pull(key: String, default: () -> T): T {
+    fun <T: Any> pull(key: String, default: () -> T): T {
         return this.pull(key) ?: default()
     }
 
