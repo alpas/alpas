@@ -26,7 +26,7 @@ class CustomTagsTest {
             boot(app)
         }
         val sharedDataBag = SharedDataBag().apply { add("call" to mockk<HttpCall>()) }
-        val html = app.make<ViewRenderer>().render("<div>{% greet %}</div>", sharedDataBag)
+        val html = app.make<ViewRenderer>().renderTemplate("<div>{% greet %}</div>", sharedDataBag)
         assertEquals("<div><h1>hello</h1></div>", html)
     }
 
@@ -42,7 +42,7 @@ class CustomTagsTest {
         val sharedDataBag = SharedDataBag().apply {
             add("name" to "john", "call" to mockk<HttpCall>(), "time" to "afternoon")
         }
-        val html = app.make<ViewRenderer>().render("<div>{% greet %} good {{ time }}</div>", sharedDataBag)
+        val html = app.make<ViewRenderer>().renderTemplate("<div>{% greet %} good {{ time }}</div>", sharedDataBag)
         assertEquals("<div><h1>hello john</h1> good afternoon</div>", html)
     }
 
@@ -58,7 +58,7 @@ class CustomTagsTest {
         val sharedDataBag = SharedDataBag().apply {
             add("name" to "john", "call" to mockk<HttpCall>(), "time" to "afternoon")
         }
-        val html = app.make<ViewRenderer>().render("<div>{% greet %} good {{ time }}</div>", sharedDataBag)
+        val html = app.make<ViewRenderer>().renderTemplate("<div>{% greet %} good {{ time }}</div>", sharedDataBag)
         assertEquals("<div><h1>hello JOHN</h1> good afternoon</div>", html)
     }
 

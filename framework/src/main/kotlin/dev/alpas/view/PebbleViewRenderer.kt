@@ -43,7 +43,7 @@ open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
         }
     }
 
-    override fun render(viewName: String?, sharedDataBag: SharedDataBag, viewArgs: Map<String, Any?>?): String {
+    override fun renderView(viewName: String?, sharedDataBag: SharedDataBag, viewArgs: Map<String, Any?>?): String {
         val view = viewName ?: return ""
 
         return StringWriter().use { writer ->
@@ -54,9 +54,10 @@ open class PebbleViewRenderer(private val app: Application) : ViewRenderer {
         }
     }
 
-    override fun render(template: String, args: Map<String, Any?>?): String {
+    override fun renderTemplate(template: String, sharedDataBag: SharedDataBag, args: Map<String, Any?>?): String {
         return StringWriter().use { writer ->
-            engine.getLiteralTemplate(template).evaluate(writer, args ?: emptyMap())
+            val templateContext = (args ?: emptyMap()) + (sharedDataBag.all())
+            engine.getLiteralTemplate(template).evaluate(writer, templateContext)
             writer.toString()
         }
     }

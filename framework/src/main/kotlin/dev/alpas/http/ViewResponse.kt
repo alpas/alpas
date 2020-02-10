@@ -11,7 +11,7 @@ data class ViewResponse(val name: String, val args: Map<String, Any?>? = null) :
     override fun render(context: RenderContext, callback: InputStream.() -> Unit) {
         val call = context.call
         val viewData = buildViewData(call, args)
-        val output = call.make<ViewRenderer>().render(context.copy(viewName = name), viewData)
+        val output = call.make<ViewRenderer>().renderContext(context.copy(viewName = name), viewData)
         StringResponse(output).render(context, callback)
     }
 

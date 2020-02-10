@@ -1,6 +1,7 @@
 package dev.alpas.mailing
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import dev.alpas.validation.SharedDataBag
 import dev.alpas.view.ViewRenderer
 
 open class MailMessage {
@@ -21,7 +22,7 @@ open class MailMessage {
 
     open fun render(viewRenderer: ViewRenderer) {
         if (view != null) {
-            message = viewRenderer.render(view!!, viewBag)
+            message = viewRenderer.renderView(view!!, SharedDataBag(), viewBag)
         }
     }
 }

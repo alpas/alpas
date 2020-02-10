@@ -8,6 +8,7 @@ import com.mitchellbosecke.pebble.parser.Parser
 import com.mitchellbosecke.pebble.template.EvaluationContextImpl
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl
 import com.mitchellbosecke.pebble.tokenParser.TokenParser
+import dev.alpas.validation.SharedDataBag
 import dev.alpas.view.TagContext
 import dev.alpas.view.ViewRenderer
 import dev.alpas.view.httpCall
@@ -40,7 +41,7 @@ internal class CustomNode(
     override fun render(self: PebbleTemplateImpl, writer: Writer, context: EvaluationContextImpl) {
         val call = context.httpCall
         val text = callback(TagContext(call, lineNumber, self.name, context))
-        writer.write(viewRenderer.render(text, currentArgs(context)))
+        writer.write(viewRenderer.renderTemplate(text, SharedDataBag(), currentArgs(context)))
     }
 
     @Suppress("UNCHECKED_CAST")
