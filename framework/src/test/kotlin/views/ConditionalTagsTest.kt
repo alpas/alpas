@@ -7,7 +7,6 @@ import dev.alpas.http.HttpCall
 import dev.alpas.make
 import dev.alpas.validation.SharedDataBag
 import dev.alpas.view.ConditionalTags
-import dev.alpas.view.CustomTags
 import dev.alpas.view.ViewConfig
 import dev.alpas.view.ViewRenderer
 import io.mockk.mockk
@@ -27,7 +26,7 @@ class ConditionalTagsTest {
             boot(app)
         }
         val sharedDataBag = SharedDataBag().apply { add("call" to mockk<HttpCall>()) }
-        val html = app.make<ViewRenderer>().render(
+        val html = app.make<ViewRenderer>().renderTemplate(
             """
                 {% prod %}
                 <div>yes</div>
@@ -49,7 +48,7 @@ class ConditionalTagsTest {
             boot(app)
         }
         val sharedDataBag = SharedDataBag().apply { add("call" to mockk<HttpCall>()) }
-        val html = app.make<ViewRenderer>().render(
+        val html = app.make<ViewRenderer>().renderTemplate(
             """
                 {% prod %}
                 <div>yes</div>
@@ -71,7 +70,7 @@ class ConditionalTagsTest {
             boot(app)
         }
         val sharedDataBag = SharedDataBag().apply { add("call" to mockk<HttpCall>()) }
-        val html = app.make<ViewRenderer>().render(
+        val html = app.make<ViewRenderer>().renderTemplate(
             """
                 {% prod %}
                 <div>yes</div>
@@ -91,7 +90,7 @@ class ConditionalTagsTest {
             boot(app)
         }
         val sharedDataBag = SharedDataBag().apply { add("call" to mockk<HttpCall>(), "name" to "John") }
-        val html = app.make<ViewRenderer>().render(
+        val html = app.make<ViewRenderer>().renderTemplate(
             """
                 {% prod %}
                 <div>hello {{ name }}!</div>
