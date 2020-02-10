@@ -1,15 +1,9 @@
 package dev.alpas.ozone
 
-import dev.alpas.extensions.toCamelCase
 import me.liuwj.ktorm.schema.*
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Types
-import java.time.Instant
-import java.util.*
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.memberProperties
 
 /**
  * Define a column typed of [LongSqlType] which is also an autoincrementing unsigned primary key.

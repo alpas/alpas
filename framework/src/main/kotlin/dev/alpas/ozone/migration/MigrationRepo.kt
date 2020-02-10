@@ -70,7 +70,7 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
     }
 
     internal object Migrations : OzoneTable<Migration>(MIGRATION_TABLE) {
-        val id by increments().bindTo { it.id }
+        val id by increments()
         val migration by varchar(NAME_COLUMN).bindTo { it.name }
         val batch by int(BATCH_COLUMN).bindTo { it.batch }
     }
