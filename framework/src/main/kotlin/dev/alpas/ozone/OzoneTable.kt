@@ -15,7 +15,13 @@ import kotlin.reflect.full.memberProperties
 abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null, entityClass: KClass<E>? = null) :
     Table<E>(tableName, alias, entityClass) {
 
+    protected open val autoBindColumnNames = arrayOf("id", "created_at", "updated_at")
+
     internal val metadataMap = hashMapOf<String, ColumnMetadata>()
+
+    open fun shouldAutoBind(column: String): Boolean {
+        return autoBindColumnNames.contains(column)
+    }
 
     inline fun <C : Any, R : Ozone<R>> ColumnRegistration<C>.belongsTo(
         referenceTable: Table<R>,
@@ -138,23 +144,34 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
      * Define a created_at column typed of [InstantSqlType].
      */
     fun createdAt(name: String = "created_at"): ColumnRegistration<Instant> {
-        return registerAndBind(name, InstantSqlType)
+        return registerAndBind(name, InstantSqlType).nullable()
     }
 
     /**
      * Define a updated_at column typed of [InstantSqlType].
      */
     fun updatedAt(name: String = "updated_at"): ColumnRegistration<Instant> {
-        return registerAndBind(name, InstantSqlType)
+        return registerAndBind(name, InstantSqlType).nullable()
     }
 
     /**
-     * Automatically bind a column under the given name and type
+     * Automatically register and bind a column under the given name and type.
      */
     internal fun <T : Any> registerAndBind(name: String, type: SqlType<T>): ColumnRegistration<T> {
+        return registerColumn(name, type).also {
+            if (shouldAutoBind(name)) {
+                autoBind(it)
+            }
+        }
+    }
+
+    /**
+     * Automatically bind a column after inferring its corresponding member name from the entity.
+     */
+    private fun <T : Any> autoBind(column: ColumnRegistration<T>): ColumnRegistration<T> {
         val entityClass = this.entityClass ?: error("No entity class configured for table: $tableName")
-        return registerColumn(name, type).nullable().apply {
-            val colName = name.toCamelCase()
+        return column.apply {
+            val colName = columnName.toCamelCase()
             val props = entityClass.memberProperties.find { prop ->
                 prop.name == colName
             } ?: throw IllegalStateException("Entity ${entityClass.simpleName} doesn't contain property $colName.")
