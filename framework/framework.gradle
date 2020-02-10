@@ -1,6 +1,6 @@
 buildscript {
     ext.jettyVersion = '9.4.26.v20200117'
-    ext.ktormVersion = '2.6'
+    ext.ktormVersion = '2.6.1'
 }
 
 dependencies {
