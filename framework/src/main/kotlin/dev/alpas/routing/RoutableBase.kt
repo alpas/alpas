@@ -203,6 +203,42 @@ abstract class RoutableBase(
     fun group(block: RouteGroup.() -> Unit) = group("", mutableSetOf(), block)
     fun group(prefix: String, block: RouteGroup.() -> Unit) = group(prefix, mutableSetOf(), block)
 
+    inline fun <reified T : Controller> resources(
+        path: String = "/",
+        only: List<String> = listOf(
+            DEFAULT_GET_METHOD,
+            DEFAULT_POST_METHOD,
+            DEFAULT_PATCH_METHOD,
+            DEFAULT_DELETE_METHOD,
+            "edit", "new", "show"
+        ),
+        except: List<String> = emptyList()
+    ): RouteGroup {
+        return group(prefix = path) {
+            if (only.contains(DEFAULT_GET_METHOD) && !except.contains(DEFAULT_GET_METHOD)) {
+                get<T>().name(DEFAULT_GET_METHOD)
+            }
+            if (only.contains("edit") && !except.contains("edit")) {
+                get<T>("<id>/edit", "edit").name("edit")
+            }
+            if (only.contains("new") && !except.contains("new")) {
+                get<T>("new", "new").name("new")
+            }
+            if (only.contains("show") && !except.contains("show")) {
+                get<T>("<id>", "show").name("show")
+            }
+            if (only.contains(DEFAULT_POST_METHOD) && !except.contains(DEFAULT_POST_METHOD)) {
+                post<T>().name(DEFAULT_POST_METHOD)
+            }
+            if (only.contains(DEFAULT_PATCH_METHOD) && !except.contains(DEFAULT_PATCH_METHOD)) {
+                patch<T>().name(DEFAULT_PATCH_METHOD)
+            }
+            if (only.contains(DEFAULT_DELETE_METHOD) && !except.contains(DEFAULT_DELETE_METHOD)) {
+                delete<T>().name(DEFAULT_DELETE_METHOD)
+            }
+        }
+    }
+
     protected open fun add(
         method: Method,
         path: String,

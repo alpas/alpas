@@ -17,7 +17,7 @@ abstract class GeneratorCommand(
     autoCompleteEnvvar: String? = "",
     private val allowMultipleNames: Boolean = true
 ) : Command(help, epilog, name, invokeWithoutSubcommand, printHelpOnEmptyArgs, helpTags, autoCompleteEnvvar) {
-    protected open val force by option("--force", "-f", help = "Force generate file(s).").flag()
+    protected open val force by option("--force", "-f", help = "Force generate file(s)").flag()
     protected open val names by argument().multiple()
 
     override fun run() {
@@ -56,16 +56,14 @@ abstract class GeneratorCommand(
             }
         }
 
-        outputFiles.forEachIndexed { index, outputFile ->
+        outputFiles.forEach { outputFile ->
             try {
                 outputFile.dump()
-                if (index == outputFiles.count() - 1) {
-                    onCompleted(outputFile)
-                }
             } catch (e: Exception) {
                 e.message?.let { error(it) }
             }
         }
+        onCompleted(outputFiles)
     }
 
     protected fun sourceOutputPath(vararg dirs: String): String? {
@@ -81,6 +79,7 @@ abstract class GeneratorCommand(
     }
 
     protected open fun onCompleted(outputFile: OutputFile) {}
+    protected open fun onCompleted(outputFiles: List<OutputFile>) {}
 
     abstract fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile
 }
