@@ -3,6 +3,7 @@ package dev.alpas.hashing
 import de.mkammerer.argon2.Argon2Factory
 import dev.alpas.base64Decoded
 import dev.alpas.base64Encoded
+import dev.alpas.secureRandomString
 
 class Hasher(private val config: HashConfig) {
     private val argon by lazy { Argon2Factory.create() }
@@ -18,6 +19,8 @@ class Hasher(private val config: HashConfig) {
     }
 
     fun hash(rawString: String, encode: Boolean = true) = hash(rawString.toCharArray(), encode)
+
+    fun randomHash(length: Int = 16, encode: Boolean = true) = hash(secureRandomString(length), encode)
 
     // verify the given value against the hashed value
     fun verify(value: String?, hashedValue: String?, decode: Boolean = true): Boolean {
