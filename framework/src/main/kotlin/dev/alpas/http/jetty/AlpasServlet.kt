@@ -7,6 +7,7 @@ import dev.alpas.http.HttpCall
 import dev.alpas.http.HttpCallHook
 import dev.alpas.http.Method
 import dev.alpas.http.StaticAssetHandler
+import dev.alpas.routing.BaseRouteLoader
 import dev.alpas.routing.Route
 import dev.alpas.routing.RouteMatchStatus
 import dev.alpas.routing.Router
@@ -27,35 +28,44 @@ class AlpasServlet(
 
         val router = app.make<Router>()
         val container = ChildContainer(app)
+
+        if (app.env.isDev) {
+            app.tryMake<BaseRouteLoader>()?.let {
+                app.logger.warn { "Reloading the router. This has a big performance hit!" }
+                it.load(router)
+                router.forceCompile(PackageClassLoader(app.srcPackage))
+            }
+        }
+
         val route = router.routeFor(methodName = req.method(), uri = req.requestURI)
-            val callHooks = app.callHooks.map {
-                it.createInstance()
-            }
+        val callHooks = app.callHooks.map {
+            it.createInstance()
+        }
 
-            val call = HttpCall(container, req, resp, route, callHooks).also {
-                if (app.env.inTestMode) {
-                    app.recordLastCall(it)
-                }
+        val call = HttpCall(container, req, resp, route, callHooks).also {
+            if (app.env.inTestMode) {
+                app.recordLastCall(it)
             }
+        }
 
-            try {
+        try {
             call.logger.debug { "Registering ${callHooks.size} HttpCall hooks" }
             callHooks.forEach { it.register(call) }
 
-                    call.logger.debug { "Booting ${callHooks.size} HttpCall hooks" }
-                    callHooks.forEach { it.boot(call) }
+            call.logger.debug { "Booting ${callHooks.size} HttpCall hooks" }
+            callHooks.forEach { it.boot(call) }
 
-                    call.sendCallThroughServerEntryMiddleware().then { matchRoute(it, callHooks) }
+            call.sendCallThroughServerEntryMiddleware().then { matchRoute(it, callHooks) }
 
-                    call.logger.debug { "Clean closing ${callHooks.size} HttpCall hooks" }
-                    callHooks.forEach { it.beforeClose(call, true) }
-                    call.close()
-            } catch (e: Exception) {
-                call.logger.debug { "Unclean closing ${callHooks.size} HttpCall hooks" }
-                callHooks.forEach { it.beforeClose(call, false) }
-                call.drop(e)
-            }
+            call.logger.debug { "Clean closing ${callHooks.size} HttpCall hooks" }
+            callHooks.forEach { it.beforeClose(call, true) }
+            call.close()
+        } catch (e: Exception) {
+            call.logger.debug { "Unclean closing ${callHooks.size} HttpCall hooks" }
+            callHooks.forEach { it.beforeClose(call, false) }
+            call.drop(e)
         }
+    }
 
     private fun matchRoute(call: HttpCall, callHooks: List<HttpCallHook>) {
         when (call.route.status()) {
@@ -64,8 +74,8 @@ class AlpasServlet(
                 throw MethodNotAllowedException(
                     "Method ${call.method} is not allowed for this operation. Only ${call.route.allowedMethods()
                         .joinToString(
-                        ", "
-                    ).toUpperCase()} methods are allowed."
+                            ", "
+                        ).toUpperCase()} methods are allowed."
                 )
             }
             else -> throw NotFoundHttpException()
