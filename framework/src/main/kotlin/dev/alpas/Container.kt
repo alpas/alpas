@@ -79,6 +79,16 @@ inline fun <reified T : Any> Container.makeElse(default: Container.(container: C
     return tryMake() ?: default(this)
 }
 
+inline fun <reified T : Any> Container.makeOrBind(default: Container.(container: Container) -> T): T {
+    return tryMake() ?: default(this).also {
+        bind(it)
+    }
+}
+
+inline fun <reified T : Any> Container.bindIfMissing(default: Container.(container: Container) -> T) {
+    tryMake() ?: default(this).also { bind(it) }
+}
+
 inline fun <reified T : Any> Container.make(default: T): T {
     return tryMake() ?: default
 }
