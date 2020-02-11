@@ -78,12 +78,12 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
             sb.append(" NULL DEFAULT NULL")
         } else {
             sb.append(" NOT NULL")
-            if (useCurrentTimestamp) {
-                sb.append(" DEFAULT CURRENT_TIMESTAMP")
-            } else {
-                defaultValue?.let { dval ->
-                    sb.append(" DEFAULT $dval")
-                }
+        }
+        if (useCurrentTimestamp) {
+            sb.append(" DEFAULT CURRENT_TIMESTAMP")
+        } else {
+            defaultValue?.let { dval ->
+                sb.append(" DEFAULT $dval")
             }
         }
         if (autoIncrement) {
