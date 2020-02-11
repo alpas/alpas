@@ -1,10 +1,13 @@
 package dev.alpas.http
 
 import dev.alpas.*
+import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.handler.ResourceHandler
 import org.eclipse.jetty.server.handler.gzip.GzipHandler
 import org.eclipse.jetty.util.resource.Resource
 import java.io.File
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 class StaticAssetHandler(app: Application) {
     private val gzipHandlers: List<GzipHandler> by lazy { makeHandlers(app) }
@@ -54,14 +57,15 @@ class StaticAssetHandler(app: Application) {
         return handlers
     }
 
-    fun handle(call: HttpCall): Boolean {
-        if (call.method.isOneOf(Method.GET, Method.HEAD)) {
+    fun handle(request: HttpServletRequest, response: HttpServletResponse): Boolean {
+        if (request.method.toUpperCase().isOneOf("GET", "HEAD")) {
+            val uri = request.requestURI
+            val jettyRequest = request.getAttribute("jetty-request") as Request
             gzipHandlers.forEach { handler ->
                 val resourceHandler = handler.handler as ResourceHandler
-                val resource = resourceHandler.getResource(call.uri)
+                val resource = resourceHandler.getResource(uri)
                 if (resource != null && resource.exists() && !resource.isDirectory) {
-                    handler.handle(call.uri, call.jettyRequest, call.jettyRequest, call.servletResponse)
-                    call.logger.debug { "Static asset ${call.url} is served from ${resourceHandler.baseResource.name}." }
+                    handler.handle(uri, jettyRequest, request, response)
                     return true
                 }
             }

@@ -23,12 +23,15 @@ class AlpasServlet(
 ) : HttpServlet() {
     private val staticHandler by lazy { StaticAssetHandler(app) }
     override fun service(req: HttpServletRequest, resp: HttpServletResponse) {
+        if (staticHandler.handle(req, resp)) return
+
         val router = app.make<Router>()
+        val container = ChildContainer(app)
         val route = router.routeFor(methodName = req.method(), uri = req.requestURI)
-        ChildContainer(app).use { container ->
             val callHooks = app.callHooks.map {
                 it.createInstance()
             }
+
             val call = HttpCall(container, req, resp, route, callHooks).also {
                 if (app.env.inTestMode) {
                     app.recordLastCall(it)
@@ -36,33 +39,31 @@ class AlpasServlet(
             }
 
             try {
-                if (!staticHandler.handle(call)) {
+            call.logger.debug { "Registering ${callHooks.size} HttpCall hooks" }
+            callHooks.forEach { it.register(call) }
 
                     call.logger.debug { "Booting ${callHooks.size} HttpCall hooks" }
                     callHooks.forEach { it.boot(call) }
-                    call.logger.debug { "Registering ${callHooks.size} HttpCall hooks" }
-                    callHooks.forEach { it.register(call) }
 
                     call.sendCallThroughServerEntryMiddleware().then { matchRoute(it, callHooks) }
 
                     call.logger.debug { "Clean closing ${callHooks.size} HttpCall hooks" }
                     callHooks.forEach { it.beforeClose(call, true) }
                     call.close()
-                }
             } catch (e: Exception) {
                 call.logger.debug { "Unclean closing ${callHooks.size} HttpCall hooks" }
                 callHooks.forEach { it.beforeClose(call, false) }
                 call.drop(e)
             }
         }
-    }
 
     private fun matchRoute(call: HttpCall, callHooks: List<HttpCallHook>) {
         when (call.route.status()) {
             RouteMatchStatus.SUCCESS -> call.dispatchToRouteHandler(call.route.target(), callHooks)
             RouteMatchStatus.METHOD_NOT_ALLOWED -> {
                 throw MethodNotAllowedException(
-                    "Method ${call.method} is not allowed for this operation. Only ${call.route.allowedMethods().joinToString(
+                    "Method ${call.method} is not allowed for this operation. Only ${call.route.allowedMethods()
+                        .joinToString(
                         ", "
                     ).toUpperCase()} methods are allowed."
                 )
