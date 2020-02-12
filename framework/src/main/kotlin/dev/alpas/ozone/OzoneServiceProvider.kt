@@ -28,7 +28,7 @@ class OzoneServiceProvider : ServiceProvider {
             listOf(
                 DatabaseCreateCommand(),
                 DatabaseMigrateCommand(srcPackage),
-                DatabaseRefreshCommand(srcPackage),
+                DatabaseRefreshCommand(app),
                 DatabaseRollbackCommand(srcPackage),
                 DatabaseSeedCommand(app)
             ).plus(coreOzoneCommands)
