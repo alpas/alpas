@@ -143,15 +143,37 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
     /**
      * Define a created_at column typed of [InstantSqlType].
      */
-    fun createdAt(name: String = "created_at"): ColumnRegistration<Instant> {
-        return registerAndBind(name, InstantSqlType).nullable()
+    fun createdAt(
+        name: String = "created_at",
+        nullable: Boolean = true,
+        useCurrent: Boolean = true
+    ): ColumnRegistration<Instant> {
+        return registerAndBind(name, InstantSqlType).apply {
+            if (nullable) {
+                nullable()
+            }
+            if (useCurrent) {
+                useCurrent()
+            }
+        }
     }
 
     /**
      * Define a updated_at column typed of [InstantSqlType].
      */
-    fun updatedAt(name: String = "updated_at"): ColumnRegistration<Instant> {
-        return registerAndBind(name, InstantSqlType).nullable()
+    fun updatedAt(
+        name: String = "updated_at",
+        nullable: Boolean = true,
+        useCurrent: Boolean = true
+    ): ColumnRegistration<Instant> {
+        return registerAndBind(name, InstantSqlType).apply {
+            if (nullable) {
+                nullable()
+            }
+            if (useCurrent) {
+                useCurrent()
+            }
+        }
     }
 
     /**
