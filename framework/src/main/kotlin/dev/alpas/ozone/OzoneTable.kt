@@ -241,7 +241,7 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
 /**
  * A map of an entity's column name to the actual corresponding column name in the table.
  */
-fun <T : Entity<T>> Table<T>.mappedColumnNames(): Map<String, String> {
+fun <T : Entity<T>> Table<T>.propertyNamesToColumnNames(): Map<String, String> {
     return columns.map { col ->
         val colNameInTable = when (val binding = col.binding) {
             is NestedBinding -> {

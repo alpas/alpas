@@ -3,28 +3,29 @@
 package dev.alpas.ozone
 
 import com.github.javafaker.Faker
+import me.liuwj.ktorm.dsl.AssignmentsBuilder
 import me.liuwj.ktorm.dsl.batchInsert
 import me.liuwj.ktorm.dsl.insertAndGenerateKey
-import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.entity.findById
-import me.liuwj.ktorm.schema.Table
+import me.liuwj.ktorm.expression.ArgumentExpression
+import me.liuwj.ktorm.expression.ColumnAssignmentExpression
 
 val faker by lazy(LazyThreadSafetyMode.NONE) { Faker() }
 
 /**
  * A factory for creating one or many instances of an Entity class.
  */
-abstract class EntityFactory<E : Entity<E>> {
+abstract class EntityFactory<E : Ozone<E>, T : OzoneTable<E>> {
 
     /**
      * The entity's table
      */
-    protected abstract val table: Table<E>
+    abstract val table: T
 
     /**
      * A map of an entity's column name to the actual corresponding column name in the table.
      */
-    protected open val mappedColumnNames by lazy(LazyThreadSafetyMode.NONE) { table.mappedColumnNames() }
+    protected open val mappedColumnNames by lazy(LazyThreadSafetyMode.NONE) { table.propertyNamesToColumnNames() }
 
     /**
      * Build and persist an entity to a database. Before persisting, its property will be overriden by the
@@ -115,12 +116,20 @@ abstract class EntityFactory<E : Entity<E>> {
      * Build an entity replacing its properties with the values from the given attributes map. All
      * the extra attributes from the map will be available as the entity's properties as well.
      *
+     * The attributes should match to that of the actual column names in the corresponding table.
+     *
      * @param attrs A map of attributes for overriding entity's properties.
      */
 
     open fun build(attrs: Map<String, Any?> = emptyMap()): E {
+        // Since we extracted the column names from a table, we need to map it back to
+        // entity's actual column names to be able to override it. Such is life!
+        val propertyNames = mappedColumnNames.map { it.value to it.key }.toMap()
         return entity().also {
-            attrs.forEach { (name, value) -> it[name] = value }
+            attrs.forEach { (name, value) ->
+                val propName = propertyNames[name] ?: name
+                it[propName] = value
+            }
         }
     }
 
@@ -139,7 +148,10 @@ abstract class EntityFactory<E : Entity<E>> {
  * @param attrs A map of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E : Entity<E>, EF : EntityFactory<E>> from(factory: EF, attrs: Map<String, Any?> = emptyMap()): E {
+fun <E : Ozone<E>, T : OzoneTable<E>> from(
+    factory: EntityFactory<E, T>,
+    attrs: Map<String, Any?> = emptyMap()
+): E {
     return factory.create(attrs)
 }
 
@@ -152,8 +164,8 @@ fun <E : Entity<E>, EF : EntityFactory<E>> from(factory: EF, attrs: Map<String, 
  * @param attrs Pairs of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E : Entity<E>, EF : EntityFactory<E>> from(
-    factory: EF,
+fun <E : Ozone<E>, T : OzoneTable<E>> from(
+    factory: EntityFactory<E, T>,
     attr: Pair<String, Any?>,
     vararg attrs: Pair<String, Any?>
 ): E {
@@ -171,8 +183,8 @@ fun <E : Entity<E>, EF : EntityFactory<E>> from(
  * @param attrs A map of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A list of fresh entities from the database.
  */
-fun <E : Entity<E>, EF : EntityFactory<E>> from(
-    factory: EF,
+fun <E : Ozone<E>, T : OzoneTable<E>> from(
+    factory: EntityFactory<E, T>,
     count: Int = 1,
     attrs: Map<String, Any?> = emptyMap()
 ): List<E> {
@@ -191,11 +203,55 @@ fun <E : Entity<E>, EF : EntityFactory<E>> from(
  * @param attrs Pairs of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E : Entity<E>, EF : EntityFactory<E>> from(
-    factory: EF,
+fun <E : Ozone<E>, T : OzoneTable<E>> from(
+    factory: EntityFactory<E, T>,
     count: Int = 1,
     attr: Pair<String, Any?>,
     vararg attrs: Pair<String, Any?>
 ): List<E> {
     return from(factory, count, mapOf(attr, *attrs))
+}
+
+/**
+ * A convenience proxy method for creating one instance of an entity using the given factory.
+ * This method calls `create()` method of the factory, which means it will be persisted.
+ *
+ * @param factory The factory responsible for creating the actual instance.
+ * @param block An assignment builder block for setting the entity's attributes.
+ * @return A fresh entity from the database.
+ */
+inline fun <reified E : Ozone<E>, reified T : OzoneTable<E>> from(
+    factory: EntityFactory<E, T>,
+    block: AssignmentsBuilder.(T) -> Unit
+): E {
+    val assignments = ArrayList<ColumnAssignmentExpression<*>>()
+    AssignmentsBuilder(assignments).block(factory.table)
+    val attrs = assignments.map {
+        it.column.name to (it.expression as ArgumentExpression).value
+    }.toMap()
+    return from(factory, attrs)
+}
+
+/**
+ * A convenience proxy method for creating one or more instances of an entity using the given factory.
+ * This method calls `create()` method of the factory, which means it will be persisted.
+ *
+ * TODO: Optimize this after https://github.com/vincentlauvlwj/Ktorm/issues/87 is addressed.
+ *
+ * @param factory The factory responsible for creating the actual instance.
+ * @param count The number of entity instances to create.
+ * @param block An assignment builder block for setting the entity's attributes.
+ * @return A list of fresh entities from the database.
+ */
+inline fun <reified E : Ozone<E>, reified T : OzoneTable<E>> from(
+    factory: EntityFactory<E, T>,
+    count: Int = 1,
+    block: AssignmentsBuilder.(T) -> Unit
+): List<E> {
+    val assignments = ArrayList<ColumnAssignmentExpression<*>>()
+    AssignmentsBuilder(assignments).block(factory.table)
+    val attrs = assignments.map {
+        it.column.name to (it.expression as ArgumentExpression).value
+    }.toMap()
+    return from(factory, count, attrs)
 }

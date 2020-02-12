@@ -120,7 +120,7 @@ class MakeFactoryTest {
         import dev.alpas.tests.entities.Test
         import dev.alpas.tests.entities.Tests
 
-        internal object TestFactory : EntityFactory<Test>() {
+        internal object TestFactory : EntityFactory<Test, Tests>() {
             override val table = Tests
             
             override fun entity(): Test {
