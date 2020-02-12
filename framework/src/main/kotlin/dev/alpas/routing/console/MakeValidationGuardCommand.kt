@@ -9,6 +9,7 @@ import java.io.File
 
 class MakeValidationGuardCommand(srcPackage: String) :
     GeneratorCommand(srcPackage, name = "make:validation-guard", help = "Make a new validation guard") {
+    override val docUrl = "https://alpas.dev/docs/validation"
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val outputDir = "guards"
@@ -17,18 +18,11 @@ class MakeValidationGuardCommand(srcPackage: String) :
             .packageName(makePackageName(outputDir, *parentDirs))
             .stub(Stubs.validationGuardStub())
     }
-
-    override fun onCompleted(outputFile: OutputFile) {
-        withColors {
-            echo(green("VALIDATION GUARD CREATED 🙌"))
-            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
-            echo(yellow("https://alpas.dev/docs/validation"))
-        }
-    }
 }
 
 class MakeValidationRuleCommand(srcPackage: String) :
     GeneratorCommand(srcPackage, name = "make:validation-rule", help = "Make a new validation rule") {
+    override val docUrl = "https://alpas.dev/docs/validation"
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val outputDir = "rules"
@@ -37,13 +31,5 @@ class MakeValidationRuleCommand(srcPackage: String) :
             .packageName(makePackageName(outputDir, *parentDirs))
             .replacements(mapOf("StubFunctionName" to actualname.toCamelCase()))
             .stub(Stubs.validationRuleStub())
-    }
-
-    override fun onCompleted(outputFile: OutputFile) {
-        withColors {
-            echo(green("VALIDATION RULE CREATED 🙌"))
-            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
-            echo(yellow("https://alpas.dev/docs/validation"))
-        }
     }
 }

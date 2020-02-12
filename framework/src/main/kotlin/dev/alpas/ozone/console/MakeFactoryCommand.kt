@@ -11,11 +11,14 @@ private const val SUFFIX = "factory"
 
 class MakeFactoryCommand(srcPackage: String) :
     GeneratorCommand(srcPackage, name = "make:factory", help = "Make an entity factory class") {
+    override val docUrl = "https://alpas.dev/docs/entity-factory"
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         // append SUFFIX to the filename if it doesn't end with the SUFFIX OR the filename itself is not called SUFFIX
         val outputFilename =
-            if (filename.toLowerCase() != SUFFIX && filename.toLowerCase().endsWith(SUFFIX)) filename else "${filename}${SUFFIX.toPascalCase()}"
+            if (filename.toLowerCase() != SUFFIX && filename.toLowerCase()
+                    .endsWith(SUFFIX)
+            ) filename else "${filename}${SUFFIX.toPascalCase()}"
         val entitiesPackage = makePackageName("entities")
         val entityName =
             if (actualname.toLowerCase() != SUFFIX) actualname.removeSuffix(SUFFIX.toPascalCase()) else actualname.toPascalCase()
@@ -28,13 +31,5 @@ class MakeFactoryCommand(srcPackage: String) :
                 "StubTableClazzName" to English.plural(entityName),
                 "StubEntitiesPackage" to entitiesPackage
             )
-    }
-
-    override fun onCompleted(outputFile: OutputFile) {
-        withColors {
-            echo(green("FACTORY CREATED 🙌"))
-            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
-            echo(yellow("https://alpas.dev/docs/entity-factory"))
-        }
     }
 }

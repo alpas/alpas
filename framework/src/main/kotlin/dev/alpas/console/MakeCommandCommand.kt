@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import dev.alpas.console.stubs.Stubs
 import dev.alpas.extensions.toPascalCase
+import dev.alpas.relativize
 import java.io.File
 
 class MakeCommandCommand(srcPackage: String) :
@@ -17,12 +18,16 @@ class MakeCommandCommand(srcPackage: String) :
             .stub(if (isGenerator) Stubs.generatorStub() else Stubs.planStub())
     }
 
-    override fun onCompleted(outputFile: OutputFile) {
+    override fun onCompleted(outputFiles: List<OutputFile>) {
         withColors {
-            echo(green("COMMAND CREATED 🙌"))
-            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
-            echo(yellow("Don't forget to register your command."))
-            echo(yellow("https://alpas.dev/docs/alpas-console"))
+            outputFiles.forEach {
+                println()
+                val path = sourceOutputPath()?.relativize(it.target.path)
+                echo("${green(" ✓")} ${brightGreen(path!!)}")
+                echo(yellow("Don't forget to register your command."))
+                println()
+                echo(yellow("https://alpas.dev/docs/alpas-console"))
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package dev.alpas.ozone.migration
 
+import com.github.ajalt.clikt.output.TermUi.echo
 import dev.alpas.*
 import dev.alpas.extensions.toPascalCase
 import java.io.File
@@ -23,18 +24,23 @@ internal class MigrationRunner(
     fun migrate() {
         val migrations = migrationsToRun()
         if (shouldTalk && migrations.isEmpty()) {
-            "Everything is already migrated!".printAsInfo()
+            "✓ Everything is already migrated!".printAsInfo()
             return
         }
         migrations.forEach {
             if (shouldTalk) {
-                "Migrating: ${it.filename}".printAsWarning()
+                terminalColors.apply {
+                    echo("${yellow("Migrating")} ${brightYellow(it.filename)}")
+                }
             }
             it.up()
             if (!isDryRun) {
                 migrationRepo.saveMigration(it.filename)
                 if (shouldTalk) {
-                    "Migrated: ${it.filename}".printAsSuccess()
+                    terminalColors.apply {
+                        deleteLastLine()
+                        echo("${brightGreen("✓ Migrated")} ${brightYellow(it.filename)}")
+                    }
                 }
             }
         }
@@ -48,11 +54,16 @@ internal class MigrationRunner(
         }
         migrations.forEach {
             if (shouldTalk) {
-                "Rolling back: ${it.filename}".printAsWarning()
+                terminalColors.apply {
+                    echo("${yellow("Rolling back")} ${brightYellow(it.filename)}")
+                }
             }
             it.down()
             if (shouldTalk) {
-                "Rolled back: ${it.filename}".printAsSuccess()
+                terminalColors.apply {
+                    deleteLastLine()
+                    echo("${brightGreen("✓ Rolled back")} ${brightYellow(it.filename)}")
+                }
             }
         }
         if (!isDryRun && batch >= 1) {

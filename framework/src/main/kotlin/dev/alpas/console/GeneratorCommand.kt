@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import dev.alpas.relativize
 import java.nio.file.Paths
 
 abstract class GeneratorCommand(
@@ -19,6 +20,7 @@ abstract class GeneratorCommand(
 ) : Command(help, epilog, name, invokeWithoutSubcommand, printHelpOnEmptyArgs, helpTags, autoCompleteEnvvar) {
     protected open val force by option("--force", "-f", help = "Force generate file(s)").flag()
     protected open val names by argument().multiple()
+    protected open val docUrl: String? = null
 
     override fun run() {
         if (!allowMultipleNames && names.size > 1) {
@@ -78,8 +80,19 @@ abstract class GeneratorCommand(
         return listOf(srcPackage, *dirs).joinToString(".")
     }
 
-    protected open fun onCompleted(outputFile: OutputFile) {}
-    protected open fun onCompleted(outputFiles: List<OutputFile>) {}
+    protected open fun onCompleted(outputFiles: List<OutputFile>) {
+        withColors {
+            outputFiles.forEach {
+                println()
+                val path = sourceOutputPath()?.relativize(it.target.path)
+                echo("${green(" ✓")} ${brightGreen(path!!)}")
+                docUrl?.let { url ->
+                    println()
+                    echo(yellow(url))
+                }
+            }
+        }
+    }
 
     abstract fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile
 }

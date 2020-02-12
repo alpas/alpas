@@ -18,7 +18,8 @@ class MakeEntityCommand(srcPackage: String) :
     ) {
 
     private val tableName by option("--table", help = "Name of the table. e.g. --table=users")
-    private val migration by option("--migration", "-m", help = "Create a migration for the entity.").flag()
+    private val migration by option("--migration", "-m", help = "Create a migration for the entity").flag()
+    override val docUrl = "https://alpas.dev/docs/ozone"
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val table = tableName ?: English.plural(filename)
@@ -34,19 +35,17 @@ class MakeEntityCommand(srcPackage: String) :
             )
     }
 
-    override fun onCompleted(outputFile: OutputFile) {
-        withColors {
-            echo(green("ENTITY CREATED 🙌"))
-            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
-            echo(yellow("https://alpas.dev/docs/ozone"))
-        }
+    override fun onCompleted(outputFiles: List<OutputFile>) {
+        super.onCompleted(outputFiles)
         if (migration) {
-            val table = tableName ?: English.plural(outputFile.target.nameWithoutExtension)
-            val migrationOptions = mutableListOf("create_${table.toSnakeCase()}_table", "--create=${table}")
-            if (quiet) {
-                migrationOptions.add("--quiet")
+            outputFiles.forEach {
+                val table = tableName ?: English.plural(it.target.nameWithoutExtension)
+                val migrationOptions = mutableListOf("create_${table.toSnakeCase()}_table", "--create=${table}")
+                if (quiet) {
+                    migrationOptions.add("--quiet")
+                }
+                MakeMigrationCommand(srcPackage).main(migrationOptions)
             }
-            MakeMigrationCommand(srcPackage).main(migrationOptions)
         }
     }
 }

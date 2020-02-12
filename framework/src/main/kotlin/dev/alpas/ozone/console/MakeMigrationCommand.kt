@@ -21,13 +21,14 @@ const val MIGRATION_FILE_DATE_FORMAT = "y_MM_dd_Hmmss"
 
 class MakeMigrationCommand(srcPackage: String) :
     GeneratorCommand(srcPackage, name = "make:migration", help = "Create a new migration class") {
+    override val docUrl = "https://alpas.dev/docs/migrations"
+
     private val action by mutuallyExclusiveOptions<MigrationTable>(
         option("--create", help = "The name of the entity table to create. e.g. --create=Users")
             .convert { CreateTable(it) },
         option("--modify", help = "The name of the entity table to modify. e.g. --modify=Users")
             .convert { ModifyTable(it) }
     ).single().required()
-
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val packageName = makePackageName("database", "migrations", *parentDirs)
@@ -46,14 +47,6 @@ class MakeMigrationCommand(srcPackage: String) :
                 )
             )
             .stub(stubFor(action))
-    }
-
-    override fun onCompleted(outputFile: OutputFile) {
-        withColors {
-            echo(green("MIGRATION CREATED 🙌"))
-            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
-            echo(yellow("https://alpas.dev/docs/migrations"))
-        }
     }
 
     private fun stubFor(action: MigrationTable): String {

@@ -1,11 +1,12 @@
 package dev.alpas.ozone.migration
 
+import com.github.ajalt.clikt.output.TermUi.echo
+import dev.alpas.deleteLastLine
 import dev.alpas.ozone.ColumnInfo
 import dev.alpas.ozone.ColumnKey
 import dev.alpas.ozone.ColumnMetadata
 import dev.alpas.ozone.ColumnReferenceConstraint
-import dev.alpas.printAsSuccess
-import dev.alpas.printAsWarning
+import dev.alpas.terminalColors
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.useConnection
 import me.liuwj.ktorm.schema.Column
@@ -98,7 +99,9 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
             val db = Database.global.name
 
             if (shouldTalk) {
-                "Dropping all tables of $db".printAsWarning()
+                terminalColors.apply {
+                    echo("${yellow("Dropping all the tables of")} ${brightYellow(db)}")
+                }
             }
             val tableNames = mutableListOf<String>()
             val selectSql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '$db'"
@@ -116,7 +119,10 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
             if (sql.isNotEmpty()) {
                 execute("DROP TABLE IF EXISTS $sql")
                 if (shouldTalk) {
-                    "Done!".printAsSuccess()
+                    terminalColors.apply {
+                        deleteLastLine()
+                        echo("${brightGreen("✓ Dropped all the tables of")} ${brightYellow(db)}")
+                    }
                 }
             }
         } finally {

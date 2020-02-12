@@ -25,7 +25,7 @@ class MakeControllerCommand(srcPackage: String) :
         withColors {
             if (isResourceful) {
                 outputFiles.forEach {
-                    echo("")
+                    println()
                     val path = sourceOutputPath()?.relativize(it.target.path)
                     echo("${green(" ✓")} ${brightGreen(path!!)}")
                     echo(
@@ -35,13 +35,13 @@ class MakeControllerCommand(srcPackage: String) :
                     )
                 }
             } else {
-                echo("")
+                println()
                 outputFiles.forEach {
                     val path = sourceOutputPath()?.relativize(it.target.path)
                     echo("${green(" ✓")} ${brightGreen(path!!)}")
                 }
             }
-            echo("")
+            println()
             echo(yellow("https://alpas.dev/docs/controllers"))
         }
     }
