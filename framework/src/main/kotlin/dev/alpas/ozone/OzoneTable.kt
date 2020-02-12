@@ -202,6 +202,18 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
                 }
             }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    fun create(attributes: Map<String, Any?>): E {
+        val table = this
+        return create { builder ->
+            for ((name, value) in attributes) {
+                table.columns.find { it.name == name }?.let {
+                    builder[name] to value
+                }
+            }
+        }
+    }
 }
 
 /**
