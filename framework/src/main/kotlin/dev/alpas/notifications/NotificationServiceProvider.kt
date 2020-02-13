@@ -12,8 +12,10 @@ class NotificationServiceProvider : ServiceProvider {
     }
 
     override fun commands(app: Application): List<Command> {
-        return listOf(
-            MakeNotificationCommand(app.srcPackage)
-        )
+        return if (app.env.isDev) {
+            listOf(MakeNotificationCommand(app.srcPackage))
+        } else {
+            emptyList()
+        }
     }
 }

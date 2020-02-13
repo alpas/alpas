@@ -10,13 +10,17 @@ class ConsoleCommandsServiceProvider(private val args: Array<String>) : ServiceP
     }
 
     override fun commands(app: Application): List<Command> {
-        return listOf(
-            ServeCommand(app.makeElse { AppConfig(app.env) }),
-            MakeCommandCommand(app.srcPackage),
-            MakeServiceProviderCommand(app.srcPackage),
-            KeyGenerateCommand(),
-            LinkWebCommand(app.env, app.makeElse { AppConfig(app.env) }),
-            LinkTemplatesCommand(app.env)
-        ) + app.kernel.commands(app)
+        return if (app.env.isDev) {
+            listOf(
+                ServeCommand(app.makeElse { AppConfig(app.env) }),
+                MakeCommandCommand(app.srcPackage),
+                MakeServiceProviderCommand(app.srcPackage),
+                KeyGenerateCommand(),
+                LinkWebCommand(app.env, app.makeElse { AppConfig(app.env) }),
+                LinkTemplatesCommand(app.env)
+            ) + app.kernel.commands(app)
+        } else {
+            app.kernel.commands(app)
+        }
     }
 }
