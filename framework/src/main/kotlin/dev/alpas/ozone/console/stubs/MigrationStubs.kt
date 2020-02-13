@@ -10,6 +10,8 @@ internal class MigrationStubs {
                 import dev.alpas.ozone.migration.Migration
 
                 class StubClazzName : Migration() {
+                    override var name = "StubMigrationName"
+                    
                     override fun up() {
                         createTable(StubTableName)
                     }

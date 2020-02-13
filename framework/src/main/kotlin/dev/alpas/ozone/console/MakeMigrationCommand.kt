@@ -43,7 +43,8 @@ class MakeMigrationCommand(srcPackage: String) :
             .replacements(
                 mapOf(
                     "StubTableName" to action.name.toPascalCase(),
-                    "StubEntityPackageName" to entityPackageName
+                    "StubEntityPackageName" to entityPackageName,
+                    "StubMigrationName" to "${datePrefix}_${filename}"
                 )
             )
             .stub(stubFor(action))

@@ -10,8 +10,9 @@ import dev.alpas.ozone.OzoneTable
 
 abstract class Migration {
     // internal var isDryRun = false
-    internal lateinit var filename: String
     internal lateinit var adapter: DbAdapter
+    internal lateinit var givenName: String
+    open val name: String? = null
 
     fun <E : Ozone<E>> createTable(
         table: OzoneTable<E>,

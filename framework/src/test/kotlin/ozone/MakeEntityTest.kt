@@ -104,7 +104,7 @@ class MakeEntityTest {
         assertEquals(1, files?.count())
 
         val migration = files?.first()!!
-        assertEquals(migrationStub, migration.readText())
+        assertEquals(migrationStub.replace("MIGRATION_NAME", migration.nameWithoutExtension), migration.readText())
     }
 
     private val entityStub = """
@@ -135,6 +135,8 @@ class MakeEntityTest {
         import dev.alpas.ozone.migration.Migration
 
         class CreateTestsTable : Migration() {
+            override var name = "MIGRATION_NAME"
+            
             override fun up() {
                 createTable(Tests)
             }
