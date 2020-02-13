@@ -27,21 +27,6 @@ class MakeEntityTest {
     }
 
     @Test
-    fun `can override the entity's table name`(@TempDir tempDir: Path) {
-        val tempPath = tempDir.toAbsolutePath().toString()
-        System.setProperty(SRC_DIR_KEY, tempPath)
-        MakeEntityCommand("dev.alpas.tests")
-            .main(arrayOf("Test", "--table=Nests", "--quiet"))
-
-        val directory = File(tempPath, "entities")
-        assertTrue(directory.exists())
-        val entity = File(directory, "Test.kt")
-        assertTrue(entity.exists())
-
-        assertEquals(entityStub.replace("Tests", "Nests").replace(""""tests"""", """"nests""""), entity.readText())
-    }
-
-    @Test
     fun `can create multiple entities`(@TempDir tempDir: Path) {
         val tempPath = tempDir.toAbsolutePath().toString()
         System.setProperty(SRC_DIR_KEY, tempPath)
