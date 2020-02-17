@@ -13,11 +13,8 @@ data class ColumnInfo(val col: Column<*>, internal var meta: ColumnMetadata?) {
 }
 
 internal data class ColumnKey(val type: String, val colNames: Set<String>, val name: String = "")
-data class ColumnReferenceConstraint(
-    val foreignKey: String,
-    val tableToRefer: String,
-    val columnToRefer: String = "id"
-) {
+
+data class ColumnReferenceConstraint(val foreignKey: String, val tableToRefer: String, val columnToRefer: String = "id") {
     var onDelete: String? = null
         private set
 

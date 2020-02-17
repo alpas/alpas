@@ -53,7 +53,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
 
     private fun columnConstraints(constraint: ColumnReferenceConstraint, tableName: String): String {
         val sql =
-            "CONSTRAINT `${tableName}_${constraint.foreignKey}_foreign` FOREIGN KEY (`${constraint.foreignKey}`) REFERENCES `${constraint.tableToRefer}` (`${constraint.columnToRefer}`)"
+                "CONSTRAINT `${tableName}_${constraint.foreignKey}_foreign` FOREIGN KEY (`${constraint.foreignKey}`) REFERENCES `${constraint.tableToRefer}` (`${constraint.columnToRefer}`)"
         return constraint.onDelete?.let {
             "$sql ON DELETE $it"
         } ?: sql

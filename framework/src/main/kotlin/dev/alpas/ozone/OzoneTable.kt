@@ -25,12 +25,14 @@ import kotlin.reflect.full.memberProperties
  * @param entityClass The entity class for this table.
  */
 abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null, entityClass: KClass<E>? = null) :
-    Table<E>(tableName, alias, entityClass) {
+        Table<E>(tableName, alias, entityClass) {
 
     /**
      * Column metadata for this table. The metadata is used during migration.
      */
     internal val metadataMap = hashMapOf<String, ColumnMetadata>()
+
+    internal var constraints = mutableSetOf<ColumnReferenceConstraint>()
 
     /**
      * The name of the columns that will be bound automatically to their corresponding entity
@@ -154,6 +156,18 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
     }
 
     /**
+     * Add a reference constraint on the given column for this table.
+     */
+    fun <T : Any> ColumnRegistration<T>.addReferenceConstraint(columnToRefer: String = "id", block: ColumnReferenceConstraint.() -> Unit = {}): ColumnRegistration<T> {
+        val column = getColumn()
+        val referenceTable = column.referenceTable ?: throw IllegalStateException("Reference constraint can only be added to a column that references a foreign table")
+        ColumnReferenceConstraint(columnName, referenceTable.tableName, columnToRefer).also {
+            constraints.add(it)
+        }.also(block)
+        return this
+    }
+
+    /**
      * Set the precision of a double/float/decimal column type.
      *
      * @param total The total precision metadata for the column.
@@ -208,9 +222,9 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
      * Define a created_at column typed of [InstantSqlType].
      */
     fun createdAt(
-        name: String = "created_at",
-        nullable: Boolean = true,
-        useCurrent: Boolean = true
+            name: String = "created_at",
+            nullable: Boolean = true,
+            useCurrent: Boolean = true
     ): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
             if (nullable) {
@@ -226,9 +240,9 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
      * Define a updated_at column typed of [InstantSqlType].
      */
     fun updatedAt(
-        name: String = "updated_at",
-        nullable: Boolean = true,
-        useCurrent: Boolean = true
+            name: String = "updated_at",
+            nullable: Boolean = true,
+            useCurrent: Boolean = true
     ): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
             if (nullable) {
@@ -269,8 +283,8 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
      * Bind this column to the reference table basically setting the belongsTo relationship.
      */
     inline fun <C : Any, R : Ozone<R>> ColumnRegistration<C>.belongsTo(
-        referenceTable: Table<R>,
-        selector: (E) -> R?
+            referenceTable: Table<R>,
+            selector: (E) -> R?
     ) = apply { references(referenceTable, selector) }
 
     /**
@@ -305,8 +319,8 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
      */
     @Suppress("UNCHECKED_CAST")
     fun findOrCreate(
-        whereAttributes: Map<String, Any?>,
-        assignmentBlock: AssignmentsBuilder.(OzoneTable<E>) -> Unit
+            whereAttributes: Map<String, Any?>,
+            assignmentBlock: AssignmentsBuilder.(OzoneTable<E>) -> Unit
     ): E {
         return findOne(whereAttributes) ?: create(whereAttributes, assignmentBlock)
     }
@@ -386,8 +400,8 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
  * @return A new entity.
  */
 fun <E : Ozone<E>, T : OzoneTable<E>> T.create(
-    attributes: Map<String, Any?> = emptyMap(),
-    block: AssignmentsBuilder.(T) -> Unit
+        attributes: Map<String, Any?> = emptyMap(),
+        block: AssignmentsBuilder.(T) -> Unit
 ): E {
     val combinedAttributes = attributes.toMutableMap()
     val assignments = ArrayList<ColumnAssignmentExpression<*>>()

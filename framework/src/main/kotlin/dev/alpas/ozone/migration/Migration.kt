@@ -20,7 +20,7 @@ abstract class Migration {
         block: (TableBuilder.() -> Unit)? = null
     ) {
         val cols = table.columns
-        adapter.createTable(table.tableName, ifNotExists) {
+        adapter.createTable(table, ifNotExists) {
             cols.forEach {
                 addColumn(it, table)
             }
