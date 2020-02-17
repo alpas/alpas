@@ -5,12 +5,8 @@ package dev.alpas.ozone
 import dev.alpas.orAbort
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.DialectFeatureNotSupportedException
-import me.liuwj.ktorm.dsl.AssignmentsBuilder
-import me.liuwj.ktorm.dsl.Query
-import me.liuwj.ktorm.dsl.insertAndGenerateKey
-import me.liuwj.ktorm.dsl.limit
-import me.liuwj.ktorm.entity.findById
-import me.liuwj.ktorm.entity.findOne
+import me.liuwj.ktorm.dsl.*
+import me.liuwj.ktorm.entity.*
 import me.liuwj.ktorm.expression.SelectExpression
 import me.liuwj.ktorm.expression.UnionExpression
 import me.liuwj.ktorm.schema.BaseTable
@@ -59,10 +55,11 @@ fun <E : Any> BaseTable<E>.findOrFail(
     return this.findById(id).orAbort(message ?: "Record with id $id doesn't exist.", statusCode)
 }
 
-fun <S : Any, T : BaseTable<S>> T.create(block: AssignmentsBuilder.(T) -> Unit): S {
+fun <E : Ozone<E>, T : OzoneTable<E>> T.create(block: AssignmentsBuilder.(T) -> Unit): E {
     val id = this.insertAndGenerateKey(block)
     return this.findOrFail(id)
 }
+
 
 /**
  * Obtain a entity object matching the given [predicate], auto left joining all the reference tables.
@@ -96,4 +93,36 @@ internal fun Query.forUpdate(): Query {
     }
 
     return this.copy(expression = exprForUpdate)
+}
+
+inline fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.latest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
+    return sorted { listOf(selector(it).desc()) }
+}
+
+fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.latest(column: String = "created_at"): EntitySequence<E, T> {
+    return sorted { listOf(it[column].desc()) }
+}
+
+inline fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.oldest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
+    return sorted { listOf(selector(it).asc()) }
+}
+
+fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.oldest(column: String = "created_at"): EntitySequence<E, T> {
+    return sorted { listOf(it[column].asc()) }
+}
+
+inline fun <E : Any, T : BaseTable<E>> T.latest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
+    return asSequence().sorted { listOf(selector(it).desc()) }
+}
+
+fun <E : Any, T : BaseTable<E>> T.latest(column: String = "created_at"): EntitySequence<E, T> {
+    return asSequence().sorted { listOf(it[column].desc()) }
+}
+
+inline fun <E : Any, T : BaseTable<E>> T.oldest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
+    return asSequence().sorted { listOf(selector(it).asc()) }
+}
+
+fun <E : Any, T : BaseTable<E>> T.oldest(column: String = "created_at"): EntitySequence<E, T> {
+    return asSequence().sorted { listOf(it[column].asc()) }
 }
