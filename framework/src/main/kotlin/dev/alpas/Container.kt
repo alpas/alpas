@@ -169,7 +169,7 @@ inline fun <reified T : Any> Container.make(default: T): T {
 
 /**
  * Resolve an instance of type [T] from the container.
- * If it is not registered, this method throws a [NullPointerException].
+ * If it is not registered, this method throws a [IllegalStateException].
  *
  */
 inline fun <reified T : Any> Container.make(): T {
@@ -178,7 +178,7 @@ inline fun <reified T : Any> Container.make(): T {
 
 /**
  * Resolve an instance of type [T] from the container and invoked the given [block] on it.
- * If it is not registered, this method throws a [NullPointerException].
+ * If it is not registered, this method throws a [IllegalStateException].
  *
  */
 inline fun <reified T : Any> Container.make(block: T.() -> Unit): T {
@@ -187,7 +187,7 @@ inline fun <reified T : Any> Container.make(block: T.() -> Unit): T {
 
 /**
  * Resolve many instances of type [T] from the container.
- * If no bindings are registered, this method throws a [NullPointerException].
+ * If no bindings are registered, this method throws a [IllegalStateException].
  *
  */
 inline fun <reified T : Any> Container.makeMany(): List<T> {
@@ -240,6 +240,8 @@ class DefaultContainer(override val picoContainer: MutablePicoContainer = Defaul
     Container
 
 class ChildContainer(val parent: Container) : Container, AutoCloseable {
+    // Even though we have closed a child container, it still has a reference to the parent container and thus will be
+    // able to resolve parent's bindings but not its own bindings. I think this is a bug in PicoContainer itself.
     override fun close() {
         picoContainer.components.forEach {
             picoContainer.removeComponentByInstance(it)
