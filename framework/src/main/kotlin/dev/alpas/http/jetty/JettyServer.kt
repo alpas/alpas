@@ -18,7 +18,7 @@ import java.nio.channels.ServerSocketChannel
 internal class JettyServer {
     internal fun start(app: Application, servlet: AlpasServlet): Server? {
         val config = app.config<AppConfig>()
-        val host = if (config.enableNetworkShare) "0.0.0.0" else "localhost"
+        val host = if (config.enableNetworkShare) null else "localhost"
         var port = config.appPort
 
         if (app.env.isDev && !isTcpPortAvailable(host, port)) {
@@ -60,7 +60,7 @@ internal class JettyServer {
         }
     }
 
-    private fun getFreePort(host: String, startPort: Int): Int {
+    private fun getFreePort(host: String?, startPort: Int): Int {
         var freePort = startPort
         if (!isTcpPortAvailable(host, freePort)) {
             do {
@@ -70,10 +70,10 @@ internal class JettyServer {
         return freePort
     }
 
-    private fun isTcpPortAvailable(host: String, port: Int): Boolean {
+    private fun isTcpPortAvailable(host: String?, port: Int): Boolean {
         return ServerSocketChannel.open().use {
             try {
-                val bindAddress = InetSocketAddress(host, port)
+                val bindAddress = InetSocketAddress(host ?: "localhost", port)
                 it.socket().reuseAddress = true
                 it.socket().bind(bindAddress)
                 true
