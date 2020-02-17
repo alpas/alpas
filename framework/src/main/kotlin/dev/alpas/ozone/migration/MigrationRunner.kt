@@ -1,6 +1,7 @@
 package dev.alpas.ozone.migration
 
 import com.github.ajalt.clikt.output.TermUi.echo
+import com.github.ajalt.mordant.TermColors
 import dev.alpas.*
 import dev.alpas.extensions.toPascalCase
 import java.io.File
@@ -10,7 +11,7 @@ internal class MigrationRunner(
     private val isDryRun: Boolean,
     private val packageClassLoader: PackageClassLoader,
     private val migrateByNames: Boolean,
-    quiet: Boolean
+    private val quiet: Boolean
 ) {
     private val adapter by lazy { DbAdapter.make(isDryRun, quiet) }
     private val migrationRepo by lazy { MigrationRepo(adapter) }
@@ -18,28 +19,38 @@ internal class MigrationRunner(
         (migrationDirectory.listFiles() ?: emptyArray()).map { it.nameWithoutExtension }
     }
 
-    private val shouldTalk = !(quiet || isDryRun)
-
     fun migrate() {
         val migrations = migrationsToRun().sortedBy { it.name }
-        if (shouldTalk && migrations.isEmpty()) {
-            "✓ Everything is already migrated!".printAsInfo()
+        if (migrations.isEmpty()) {
+            notify {
+                echo(terminalColors.blue("✓ Everything is already migrated!"))
+            }
             return
         }
-        migrations.forEach {
-            if (shouldTalk) {
-                terminalColors.apply {
-                    echo("${yellow("Migrating")} ${brightYellow(it.givenName)}")
-                }
+
+        for (migration in migrations) {
+            val givenName = migration.givenName
+            val batch = migrationRepo.nextBatch
+
+
+            notify {
+                echo("${yellow("Migrating")} ${brightYellow(givenName)}")
             }
-            it.up()
+
+            // we'll still "mark" the migration being done so that it won't try to run the migration again
+            if (migration.shouldSkipBatch(batch)) {
+                notify {
+                    deleteLastLine()
+                    echo("${brightYellow("▸| Skipped for batch $batch:")} ${brightRed(givenName)}")
+                }
+            } else {
+                migration.up()
+            }
             if (!isDryRun) {
-                migrationRepo.saveMigration(it.givenName)
-                if (shouldTalk) {
-                    terminalColors.apply {
-                        deleteLastLine()
-                        echo("${brightGreen("✓ Migrated")} ${brightYellow(it.givenName)}")
-                    }
+                migrationRepo.saveMigration(givenName)
+                notify {
+                    deleteLastLine()
+                    echo("${brightGreen("✓ Migrated")} ${brightYellow(givenName)}")
                 }
             }
         }
@@ -47,23 +58,21 @@ internal class MigrationRunner(
 
     fun rollback() {
         val (migrations, batch) = migrationsToRollback()
-        if (shouldTalk && migrations.isEmpty()) {
-            println()
-            "Nothing to rollback!".printAsInfo()
+        if (migrations.isEmpty()) {
+            notify {
+                println()
+                "Nothing to rollback!".printAsInfo()
+            }
             return
         }
         migrations.forEach {
-            if (shouldTalk) {
-                terminalColors.apply {
-                    echo("${yellow("Rolling back")} ${brightYellow(it.givenName)}")
-                }
+            notify {
+                echo("${yellow("Rolling back")} ${brightYellow(it.givenName)}")
             }
             it.down()
-            if (shouldTalk) {
-                terminalColors.apply {
-                    deleteLastLine()
-                    echo("${brightGreen("✓ Rolled back")} ${brightYellow(it.givenName)}")
-                }
+            notify {
+                deleteLastLine()
+                echo("${brightGreen("✓ Rolled back")} ${brightYellow(it.givenName)}")
             }
         }
         if (!isDryRun && batch >= 1) {
@@ -162,6 +171,12 @@ internal class MigrationRunner(
             }
         }
         return migrations
+    }
+
+    private fun notify(tc: TermColors.() -> Unit) {
+        if (!(quiet || isDryRun)) {
+            tc(terminalColors)
+        }
     }
 }
 

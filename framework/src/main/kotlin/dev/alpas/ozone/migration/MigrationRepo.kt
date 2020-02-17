@@ -28,14 +28,14 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
         }
     }
 
-    private val nextBatch by lazy { (migrations.lastOrNull()?.batch ?: 0) + 1 }
+    internal val nextBatch by lazy { (migrations.lastOrNull()?.batch ?: 0) + 1 }
 
     fun isMigrated(migration: String): Boolean {
         return migrations.firstOrNull { it.name == migration } != null
     }
 
     fun saveMigration(migration: String) {
-        Migration {
+        MigrationEntity {
             name = migration
             batch = nextBatch
         }.also {
@@ -43,7 +43,7 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
         }
     }
 
-    fun latestMigrationBatch(): Pair<List<Migration>, Int?> {
+    fun latestMigrationBatch(): Pair<List<MigrationEntity>, Int?> {
         // get the max batch number
         val batch = Migrations.asSequenceWithoutReferences().aggregateColumns {
             max(
@@ -61,15 +61,15 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
         Migrations.delete { Migrations.batch eq batch }
     }
 
-    internal interface Migration : Ozone<Migration> {
+    internal interface MigrationEntity : Ozone<MigrationEntity> {
         val id: Int
         var name: String
         var batch: Int
 
-        companion object : Ozone.Of<Migration>()
+        companion object : Ozone.Of<MigrationEntity>()
     }
 
-    internal object Migrations : OzoneTable<Migration>(MIGRATION_TABLE) {
+    internal object Migrations : OzoneTable<MigrationEntity>(MIGRATION_TABLE) {
         val id by increments()
         val migration by varchar(NAME_COLUMN).bindTo { it.name }
         val batch by int(BATCH_COLUMN).bindTo { it.batch }

@@ -34,9 +34,15 @@ abstract class Migration {
         }
     }
 
+    fun <E : Ozone<E>> modifyTable(table: OzoneTable<E>, block: TableModifier<E>.() -> Unit) {
+        adapter.modifyTable(TableModifier(table).also(block))
+    }
+
     fun <E : Ozone<E>> dropTable(table: OzoneTable<E>) {
         adapter.dropTable(table.tableName)
     }
+
+    open fun shouldSkipBatch(batch: Int) = false
 
     open fun up() {}
     open fun down() {}

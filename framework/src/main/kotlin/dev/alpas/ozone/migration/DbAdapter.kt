@@ -1,5 +1,6 @@
 package dev.alpas.ozone.migration
 
+import dev.alpas.ozone.Ozone
 import dev.alpas.ozone.isMySql
 import dev.alpas.ozone.isPostgreSQL
 import dev.alpas.ozone.isSqlite
@@ -44,6 +45,10 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
     }
 
     abstract fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean = false)
+
+    open fun <E : Ozone<E>> modifyTable(builder: TableModifier<E>) {
+        TODO("Not yet implemented")
+    }
 
     companion object {
         fun make(isDryRun: Boolean, quiet: Boolean): DbAdapter {

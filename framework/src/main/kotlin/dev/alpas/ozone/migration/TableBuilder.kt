@@ -2,21 +2,17 @@ package dev.alpas.ozone.migration
 
 import dev.alpas.isOneOf
 import dev.alpas.ozone.*
-import dev.alpas.ozone.ColumnInfo
-import dev.alpas.ozone.ColumnKey
-import dev.alpas.ozone.ColumnMetadata
-import dev.alpas.ozone.isVarChar
 import me.liuwj.ktorm.schema.Column
 import java.sql.Types
 
-class TableBuilder(val tableName: String) {
-    internal val columns = mutableListOf<ColumnInfo>()
+open class TableBuilder(val tableName: String) {
+    internal val columnsToAdd = mutableListOf<ColumnInfo>()
     internal var keys = mutableSetOf<ColumnKey>()
     internal var constraints = mutableSetOf<ColumnReferenceConstraint>()
 
-    internal fun <E : Ozone<E>> addColumn(col: Column<*>, table: OzoneTable<E>) {
+    open fun <E : Ozone<E>> addColumn(col: Column<*>, table: OzoneTable<E>) {
         val meta = table.metadataMap[col.name]
-        columns.add(ColumnInfo(col, meta))
+        columnsToAdd.add(ColumnInfo(col, meta))
     }
 
     fun primaryKey(columnName: String) {
@@ -48,7 +44,7 @@ class TableBuilder(val tableName: String) {
     }
 
     internal fun normalize() {
-        columns.forEach {
+        columnsToAdd.forEach {
             if (it.meta == null) {
                 it.meta = ColumnMetadata()
             }
@@ -98,7 +94,8 @@ class TableBuilder(val tableName: String) {
             val foreignColName = foreignColumn.name
             val referredColName = columnToRefer?.name ?: "id"
 
-            val foreignKeyColumnIsUnsigned = columns.first { it.col.name == foreignColName }.meta?.unsigned ?: false
+            val foreignKeyColumnIsUnsigned =
+                columnsToAdd.first { it.col.name == foreignColName }.meta?.unsigned ?: false
             val referredColumnIsUnsigned = tableToRefer.metadataMap[referredColName]?.unsigned == true
 
             check(referredColumnIsUnsigned == foreignKeyColumnIsUnsigned) {
@@ -110,3 +107,17 @@ class TableBuilder(val tableName: String) {
     }
 }
 
+open class TableModifier<E : Ozone<E>>(val table: OzoneTable<E>) : TableBuilder(table.tableName) {
+    internal val columnsToDrop = mutableListOf<String>()
+    fun addColumn(column: Column<*>): ColumnInfo {
+        val meta = table.metadataMap[column.name]
+        return ColumnInfo(column, meta).also {
+            columnsToAdd.add(it)
+        }
+    }
+
+    fun dropColumn(name: String, vararg names: String) {
+        columnsToDrop.add(name)
+        columnsToDrop.addAll(names)
+    }
+}

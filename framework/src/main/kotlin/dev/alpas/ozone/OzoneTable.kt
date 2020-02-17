@@ -1,11 +1,14 @@
 package dev.alpas.ozone
 
 import dev.alpas.extensions.toCamelCase
+import me.liuwj.ktorm.dsl.AssignmentsBuilder
 import me.liuwj.ktorm.dsl.combineConditions
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.dsl.isNull
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.entity.findOne
+import me.liuwj.ktorm.expression.ArgumentExpression
+import me.liuwj.ktorm.expression.ColumnAssignmentExpression
 import me.liuwj.ktorm.schema.*
 import java.time.Instant
 import java.time.temporal.Temporal
@@ -238,6 +241,19 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
     }
 }
 
+fun <E : Ozone<E>, T : OzoneTable<E>> T.create(
+    attributes: Map<String, Any?> = emptyMap(),
+    block: AssignmentsBuilder.(T) -> Unit
+): E {
+    val combinedAttributes = attributes.toMutableMap()
+    val assignments = ArrayList<ColumnAssignmentExpression<*>>()
+    AssignmentsBuilder(assignments).block(this)
+    assignments.map {
+        combinedAttributes[it.column.name] = (it.expression as ArgumentExpression).value
+    }
+    return create(combinedAttributes)
+}
+
 /**
  * A map of an entity's column name to the actual corresponding column name in the table.
  */
@@ -253,7 +269,7 @@ fun <T : Entity<T>> Table<T>.propertyNamesToColumnNames(): Map<String, String> {
     }.toMap()
 }
 
-internal data class ColumnMetadata(
+data class ColumnMetadata(
     val size: Int? = null,
     val defaultValue: Any? = null,
     val unsigned: Boolean = false,
@@ -262,7 +278,8 @@ internal data class ColumnMetadata(
     val unique: Boolean = false,
     val index: Boolean = true,
     val precision: Precision? = null,
-    val useCurrentTimestamp: Boolean = false
+    val useCurrentTimestamp: Boolean = false,
+    internal val after: String? = null
 )
 
-internal data class Precision(val total: Int = 8, val places: Int = 2)
+data class Precision(val total: Int = 8, val places: Int = 2)

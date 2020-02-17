@@ -10,7 +10,7 @@ internal class SqliteAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDr
         val notExists = if (ifNotExists) " IF NOT EXISTS " else " "
         val sb = StringBuilder("CREATE TABLE$notExists${tableBuilder.tableName}")
         sb.appendln(" (")
-        val colDef = tableBuilder.columns.joinToString(",\n") {
+        val colDef = tableBuilder.columnsToAdd.joinToString(",\n") {
             columnDefinition(it)
         }
         sb.appendln(colDef)

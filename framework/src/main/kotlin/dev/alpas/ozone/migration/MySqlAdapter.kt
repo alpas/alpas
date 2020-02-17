@@ -2,10 +2,7 @@ package dev.alpas.ozone.migration
 
 import com.github.ajalt.clikt.output.TermUi.echo
 import dev.alpas.deleteLastLine
-import dev.alpas.ozone.ColumnInfo
-import dev.alpas.ozone.ColumnKey
-import dev.alpas.ozone.ColumnMetadata
-import dev.alpas.ozone.ColumnReferenceConstraint
+import dev.alpas.ozone.*
 import dev.alpas.terminalColors
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.useConnection
@@ -16,7 +13,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
         val notExists = if (ifNotExists) " IF NOT EXISTS " else " "
         val sb = StringBuilder("CREATE TABLE$notExists${tableBuilder.tableName}")
         sb.appendln(" (")
-        val colDef = tableBuilder.columns.joinToString(",\n") {
+        val colDef = tableBuilder.columnsToAdd.joinToString(",\n") {
             columnDefinition(it)
         }
         sb.appendln(colDef)
@@ -90,6 +87,9 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
         if (autoIncrement) {
             sb.append(" AUTO_INCREMENT")
         }
+        after?.let {
+            sb.append(" after $it")
+        }
         return sb.toString()
     }
 
@@ -128,5 +128,50 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
         } finally {
             execute("SET FOREIGN_KEY_CHECKS = 1")
         }
+    }
+
+    override fun <E : Ozone<E>> modifyTable(builder: TableModifier<E>) {
+        val sb = StringBuilder("ALTER TABLE `${builder.tableName}`")
+        addNewColumns(sb, builder)
+        dropColumns(sb, builder)
+        sb.append(";")
+        execute(sb.toString())
+    }
+
+    private fun <E : Ozone<E>> addNewColumns(sb: StringBuilder, builder: TableModifier<E>) {
+        if (builder.columnsToAdd.isEmpty()) {
+            return
+        }
+        val colDef = builder.columnsToAdd.joinToString(",\n", prefix = "\n") {
+            "ADD COLUMN ${columnDefinition(it)}"
+        }
+        sb.appendln(colDef)
+
+        val keysDef = builder.keys.joinToString(",\n") {
+            columnKeysDefinition(it)
+        }
+        if (keysDef.isNotEmpty()) {
+            sb.append(",")
+            sb.appendln(keysDef)
+        }
+
+        val constraintsDef = builder.constraints.joinToString(",\n") {
+            columnConstraints(it, builder.tableName)
+        }
+        if (constraintsDef.isNotEmpty()) {
+            sb.append(",")
+            sb.appendln(constraintsDef)
+        }
+    }
+
+    private fun <E : Ozone<E>> dropColumns(sb: StringBuilder, builder: TableModifier<E>) {
+        if (builder.columnsToDrop.isEmpty()) {
+            return
+        }
+
+        val dropColumnsDef = builder.columnsToDrop.joinToString(",\n", prefix = "\n") {
+            "DROP COLUMN $it"
+        }
+        sb.appendln(dropColumnsDef)
     }
 }
