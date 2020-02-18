@@ -15,36 +15,16 @@ interface RequestParamsBagContract {
         return params?.get(key)?.firstOrNull()
     }
 
-    @Deprecated("Deprecated", ReplaceWith("stringParam(key)"))
-    fun paramAsString(key: String): String? {
-        return stringParam(key)
-    }
-
     fun stringParam(key: String): String? {
         return params?.get(key)?.firstOrNull()?.toString()
-    }
-
-    @Deprecated("Deprecated", ReplaceWith("intParam(key)"))
-    fun paramAsInt(key: String): Int? {
-        return intParam(key)
     }
 
     fun intParam(key: String): Int? {
         return params?.get(key)?.firstOrNull()?.toString()?.toInt()
     }
 
-    @Deprecated("Deprecated", ReplaceWith("longParam(key)"))
-    fun paramAsLong(key: String): Long? {
-        return longParam(key)
-    }
-
     fun longParam(key: String): Long? {
         return params?.get(key)?.firstOrNull()?.toString()?.toLong()
-    }
-
-    @Deprecated("Deprecated", ReplaceWith("boolParam(key)"))
-    fun paramAsBool(key: String): Boolean? {
-        return boolParam(key)
     }
 
     fun boolParam(key: String): Boolean? {
