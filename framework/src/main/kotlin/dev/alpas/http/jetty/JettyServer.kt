@@ -73,7 +73,7 @@ internal class JettyServer {
     private fun isTcpPortAvailable(host: String?, port: Int): Boolean {
         return ServerSocketChannel.open().use {
             try {
-                val bindAddress = InetSocketAddress(host ?: "localhost", port)
+                val bindAddress = InetSocketAddress(host ?: "0.0.0.0", port)
                 it.socket().reuseAddress = true
                 it.socket().bind(bindAddress)
                 true
