@@ -1,6 +1,7 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.ozone.MigratingTable
+import dev.alpas.ozone.OzoneEntity
+import dev.alpas.ozone.OzoneTable
 import dev.alpas.ozone.increments
 import me.liuwj.ktorm.dsl.delete
 import me.liuwj.ktorm.dsl.eq
@@ -10,7 +11,6 @@ import me.liuwj.ktorm.schema.int
 import me.liuwj.ktorm.schema.varchar
 
 private const val MIGRATION_TABLE = "migrations"
-private const val ID_COLUMN = "id"
 private const val NAME_COLUMN = "name"
 private const val BATCH_COLUMN = "batch"
 
@@ -28,14 +28,14 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
         }
     }
 
-    private val nextBatch by lazy { (migrations.lastOrNull()?.batch ?: 0) + 1 }
+    internal val nextBatch by lazy { (migrations.lastOrNull()?.batch ?: 0) + 1 }
 
     fun isMigrated(migration: String): Boolean {
         return migrations.firstOrNull { it.name == migration } != null
     }
 
     fun saveMigration(migration: String) {
-        Migration {
+        MigrationEntity {
             name = migration
             batch = nextBatch
         }.also {
@@ -43,7 +43,7 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
         }
     }
 
-    fun latestMigrationBatch(): Pair<List<Migration>, Int?> {
+    fun latestMigrationBatch(): Pair<List<MigrationEntity>, Int?> {
         // get the max batch number
         val batch = Migrations.asSequenceWithoutReferences().aggregateColumns {
             max(
@@ -61,16 +61,16 @@ internal class MigrationRepo(private val dbAdapter: DbAdapter) {
         Migrations.delete { Migrations.batch eq batch }
     }
 
-    internal interface Migration : Entity<Migration> {
+    internal interface MigrationEntity : OzoneEntity<MigrationEntity> {
         val id: Int
         var name: String
         var batch: Int
 
-        companion object : Entity.Factory<Migration>()
+        companion object : OzoneEntity.Of<MigrationEntity>()
     }
 
-    internal object Migrations : MigratingTable<Migration>(MIGRATION_TABLE) {
-        val id by increments(ID_COLUMN).bindTo { it.id }
+    internal object Migrations : OzoneTable<MigrationEntity>(MIGRATION_TABLE) {
+        val id by increments()
         val migration by varchar(NAME_COLUMN).bindTo { it.name }
         val batch by int(BATCH_COLUMN).bindTo { it.batch }
     }

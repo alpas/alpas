@@ -15,23 +15,27 @@ interface RequestParamsBagContract {
         return params?.get(key)?.firstOrNull()
     }
 
-    fun paramAsString(key: String): String? {
+    fun stringParam(key: String): String? {
         return params?.get(key)?.firstOrNull()?.toString()
     }
 
-    fun paramAsInt(key: String): Int? {
+    fun intParam(key: String): Int? {
         return params?.get(key)?.firstOrNull()?.toString()?.toInt()
     }
 
-    fun paramAsLong(key: String): Long? {
+    fun longParam(key: String): Long? {
         return params?.get(key)?.firstOrNull()?.toString()?.toLong()
     }
 
-    fun paramAsBool(key: String): Boolean? {
+    fun boolParam(key: String): Boolean? {
         return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
     }
 
     fun params(key: String): List<Any>? {
+        return paramList(key)
+    }
+
+    fun paramList(key: String): List<Any>? {
         return params?.get(key)
     }
 
@@ -51,7 +55,7 @@ interface RequestParamsBagContract {
         return queryParams?.get(key)
     }
 
-    fun onlyParams(key: String, vararg keys: String): Map<String, Any?> {
+    fun params(key: String, vararg keys: String): Map<String, Any?> {
         return params
             ?.filterKeys { it.isOneOf(key, *keys) }
             ?.filterNotNullValues() // remove nulls

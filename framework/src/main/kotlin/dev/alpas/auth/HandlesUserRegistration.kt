@@ -35,8 +35,9 @@ interface HandlesUserRegistration {
         val now = call.nowInCurrentTimezone().toInstant()
         val id = UsersTable.insertAndGenerateKey {
             it.name to call.param("name")
-            it.password to call.make<Hasher>().hash(call.paramAsString("password").orAbort())
+            it.password to call.make<Hasher>().hash(call.stringParam("password").orAbort())
             it.email to call.param("email")
+            // todo: check if these columns exist. If they don't, skip.
             it.createdAt to now
             it.updatedAt to now
         }

@@ -3,7 +3,9 @@ package dev.alpas.console
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.output.HelpFormatter
+import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.mordant.TermColors
+import dev.alpas.terminalColors
 
 class AlpasCommand(private val commandAliases: Map<String, List<String>> = emptyMap()) :
     Command(
@@ -29,10 +31,18 @@ class AlpasCommand(private val commandAliases: Map<String, List<String>> = empty
 
     init {
         context { helpFormatter = ColorHelpFormatter }
+
+        val version = System.getenv("ALPAS_VERSION")
+        if (version != null) {
+            versionOption(version = version, names = setOf("version", "--version", "-v")) {
+                println()
+                terminalColors.brightGreen(it)
+            }
+        }
     }
 }
 
-private object ColorHelpFormatter : CliktHelpFormatter() {
+private object ColorHelpFormatter : CliktHelpFormatter(width = 120, requiredOptionMarker = "*") {
     private val tc = TermColors(TermColors.Level.ANSI256)
 
     override fun renderTag(tag: String, value: String) = tc.green(super.renderTag(tag, value))

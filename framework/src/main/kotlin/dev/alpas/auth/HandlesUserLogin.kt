@@ -46,8 +46,8 @@ interface HandlesUserLogin {
 
     fun attemptLogin(call: HttpCall): Boolean {
         return call.authChannel.attempt(
-            call.paramAsString(username()).orAbort(),
-            call.paramAsString("password").orAbort()
+            call.stringParam(username()).orAbort(),
+            call.stringParam("password").orAbort()
         )
     }
 

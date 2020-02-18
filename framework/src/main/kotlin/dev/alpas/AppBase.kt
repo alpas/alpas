@@ -3,6 +3,7 @@ package dev.alpas
 import dev.alpas.console.ConsoleKernel
 import dev.alpas.http.HttpCallHook
 import dev.alpas.http.HttpKernel
+import dev.alpas.routing.BaseRouteLoader
 import dev.alpas.routing.Router
 import mu.KLogger
 import mu.KotlinLogging
@@ -53,6 +54,14 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
 
     fun routes(block: Router.() -> Unit): Application {
         make<Router>().block()
+        return this
+    }
+
+    fun routes(routeLoader: BaseRouteLoader): Application {
+        routeLoader.load(make())
+        if (env.isDev) {
+            bind(BaseRouteLoader::class.java, routeLoader)
+        }
         return this
     }
 

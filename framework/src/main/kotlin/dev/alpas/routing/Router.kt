@@ -39,38 +39,29 @@ class Router(
         if (::router.isInitialized) {
             return
         }
-        buildRouter(routes, packageClassLoader)
+        buildRouter(packageClassLoader)
     }
 
-    private fun buildRouter(routes: List<Route>, packageClassLoader: PackageClassLoader) {
-        router = BaseRouter.builder<Route>().apply {
-            optionalTrailingSlash(true)
-            routes.forEach {
-                it.build(packageClassLoader)
-                route(it.method.name, it.path, it)
+    internal fun forceCompile(packageClassLoader: PackageClassLoader) {
+        buildRouter(packageClassLoader)
+    }
+
+    private fun buildRouter(packageClassLoader: PackageClassLoader) {
+        router = BaseRouter.builder<Route>().also { baseRouter ->
+            baseRouter.optionalTrailingSlash(true)
+            routes.forEach { route ->
+                route.build(packageClassLoader)
+                baseRouter.route(route.method.name, route.path, route)
             }
         }.build()
-    }
-
-    override fun toString(): String {
-        val header = """
-            | Method 	| URI 	| Name 	| Handler 	|
-            |--------	|-----	|------	|--------	|
-        """.trimIndent()
-        val sb = StringBuilder(header).appendln()
-        routes.forEach {
-            sb.appendln("| ${it.method} | ${it.path} | ${it.name}| ${it.handler}")
-        }
-        return sb.toString()
     }
 
     fun findNamedRoute(name: String): Route? {
         return namedRoutes[name]
     }
 
-    fun print(): Router {
-        println(this)
-        return this
+    internal fun clear() {
+        routes.clear()
     }
 }
 
@@ -85,3 +76,13 @@ fun Router.mount(prefix: String, other: Router): Router {
 fun Router.mount(other: Router): Router {
     return mount("/", other)
 }
+
+abstract class BaseRouteLoader {
+    fun load(router: Router) {
+        router.clear()
+        add(router)
+    }
+
+    protected abstract fun add(router: Router)
+}
+

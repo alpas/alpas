@@ -3,7 +3,6 @@ package dev.alpas.tests.ozone
 import dev.alpas.ozone.*
 import dev.alpas.tests.BaseTest
 import me.liuwj.ktorm.database.Database
-import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.entity.findAll
 import me.liuwj.ktorm.entity.findById
 import me.liuwj.ktorm.support.sqlite.SQLiteDialect
@@ -42,7 +41,7 @@ class EntityFactoryTest : BaseTest() {
             assertEquals("Default Email", email)
         }
 
-        TestObjectFactory.build(mapOf("firstName" to "New Name")).apply {
+        TestObjectFactory.build(mapOf("first_name" to "New Name")).apply {
             assertEquals("New Name", firstName)
             assertEquals("Default Email", email)
         }
@@ -78,7 +77,21 @@ class EntityFactoryTest : BaseTest() {
     fun `can override persistent entity's properties`() {
         execSqlScript(TestTable.createSql)
 
-        val entity = from(TestObjectFactory, "firstName" to "Test Name")
+        val entity = from(TestObjectFactory, "first_name" to "Test Name")
+        val all = TestTable().findAll()
+        assertEquals(1, all.size)
+        val dbEntity = TestTable().findById(entity.id)
+        assertNotNull(dbEntity)
+        assertEquals("Test Name", dbEntity?.firstName)
+    }
+
+    @Test
+    fun `can override persistent entity's properties with an assignment builder`() {
+        execSqlScript(TestTable.createSql)
+
+        val entity = from(TestObjectFactory) {
+            it.firstName to "Test Name"
+        }
         val all = TestTable().findAll()
         assertEquals(1, all.size)
         val dbEntity = TestTable().findById(entity.id)
@@ -90,7 +103,7 @@ class EntityFactoryTest : BaseTest() {
     fun `extra properties will be ignored`() {
         execSqlScript(TestTable.createSql)
 
-        val entity = from(TestObjectFactory, "firstName" to "Test Name", "address" to "Random Street")
+        val entity = from(TestObjectFactory, "first_name" to "Test Name", "address" to "Random Street")
         val all = TestTable().findAll()
         assertEquals(1, all.size)
         val dbEntity = TestTable().findById(entity.id)
@@ -104,6 +117,23 @@ class EntityFactoryTest : BaseTest() {
         execSqlScript(TestTable.createSql)
 
         val entity = TestObjectFactory.build()
+        TestTable().findAll().apply {
+            assertEquals(0, size)
+        }
+
+        TestObjectFactory.save(entity)
+        TestTable().findAll().apply {
+            assertEquals(1, size)
+        }
+    }
+
+    @Test
+    fun `extra properties is removed before persisting`() {
+        execSqlScript(TestTable.createSql)
+
+        val entity = TestObjectFactory.build(mapOf("extra_prop" to "extraaaa"))
+        assertEquals("extraaaa", entity.properties["extra_prop"])
+
         TestTable().findAll().apply {
             assertEquals(0, size)
         }
@@ -134,7 +164,7 @@ class EntityFactoryTest : BaseTest() {
     fun `entity can create persist in the database`() {
         execSqlScript(TestTable.createSql)
 
-        from(TestObjectFactory, 5, "firstName" to "Same Name")
+        from(TestObjectFactory, 5, "first_name" to "Same Name")
         val all = TestTable().findAll()
         assertEquals(5, all.size)
 
@@ -145,7 +175,7 @@ class EntityFactoryTest : BaseTest() {
     fun `creating many entities returns fresh copies`() {
         execSqlScript(TestTable.createSql)
 
-        val entities = from(TestObjectFactory, 10, "firstName" to "Same Name")
+        val entities = from(TestObjectFactory, 10, "first_name" to "Same Name")
         assertEquals(10, entities.size)
 
         assertNotNull(entities.random().id)
@@ -153,7 +183,7 @@ class EntityFactoryTest : BaseTest() {
     }
 }
 
-private object TestObjectFactory : EntityFactory<TestEntity>() {
+internal object TestObjectFactory : EntityFactory<TestEntity, TestTable>() {
     override val table = TestTable()
 
     override fun entity(): TestEntity {
@@ -164,7 +194,7 @@ private object TestObjectFactory : EntityFactory<TestEntity>() {
     }
 }
 
-private object TransformingTestObjectFactory : EntityFactory<TestEntity>() {
+private object TransformingTestObjectFactory : EntityFactory<TestEntity, TestTable>() {
     override val table = TestTable()
 
     override fun entity(): TestEntity {
@@ -175,7 +205,7 @@ private object TransformingTestObjectFactory : EntityFactory<TestEntity>() {
     }
 
     override fun transform(name: String, value: Any?): Any? {
-        return if(name == "firstName") {
+        return if (name == "firstName") {
             value?.toString()?.toUpperCase()
         } else {
             value
@@ -183,16 +213,16 @@ private object TransformingTestObjectFactory : EntityFactory<TestEntity>() {
     }
 }
 
-private interface TestEntity : Entity<TestEntity> {
+internal interface TestEntity : OzoneEntity<TestEntity> {
     val id: Long
     var firstName: String
     var email: String
 
-    companion object : Entity.Factory<TestEntity>()
+    companion object : OzoneEntity.Of<TestEntity>()
 }
 
-private class TestTable : MigratingTable<TestEntity>("test_table") {
-    val id by bigIncrements("id").bindTo { it.id }
+internal class TestTable : OzoneTable<TestEntity>("test_table") {
+    val id by bigIncrements()
     val firstName by string("first_name").bindTo { it.firstName }
     val email by string("email").bindTo { it.email }
 

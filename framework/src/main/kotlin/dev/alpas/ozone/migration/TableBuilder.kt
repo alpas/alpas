@@ -1,24 +1,19 @@
 package dev.alpas.ozone.migration
 
 import dev.alpas.isOneOf
-import dev.alpas.ozone.ColumnInfo
-import dev.alpas.ozone.ColumnKey
-import dev.alpas.ozone.ColumnMetadata
-import dev.alpas.ozone.ColumnReferenceConstraint
-import dev.alpas.ozone.MigratingTable
-import dev.alpas.ozone.isVarChar
-import me.liuwj.ktorm.entity.Entity
+import dev.alpas.ozone.*
 import me.liuwj.ktorm.schema.Column
 import java.sql.Types
 
-class TableBuilder(val tableName: String) {
-    internal val columns = mutableListOf<ColumnInfo>()
+open class TableBuilder(val tableName: String, tableConstraints: Set<ColumnReferenceConstraint> = emptySet()) {
+    private var builderConstraints = mutableSetOf<ColumnReferenceConstraint>()
+    internal val columnsToAdd = mutableListOf<ColumnInfo>()
     internal var keys = mutableSetOf<ColumnKey>()
-    internal var constraints = mutableSetOf<ColumnReferenceConstraint>()
+    internal val constraints by lazy { builderConstraints.plus(tableConstraints) }
 
-    internal fun <E : Entity<E>> addColumn(col: Column<*>, table: MigratingTable<E>) {
+    open fun <E : OzoneEntity<E>> addColumn(col: Column<*>, table: OzoneTable<E>) {
         val meta = table.metadataMap[col.name]
-        columns.add(ColumnInfo(col, meta))
+        columnsToAdd.add(ColumnInfo(col, meta))
     }
 
     fun primaryKey(columnName: String) {
@@ -27,11 +22,11 @@ class TableBuilder(val tableName: String) {
 
     fun uniqueKey(columnName: String, name: String? = null) {
         keys.add(
-            ColumnKey(
-                "UNIQUE KEY",
-                setOf(columnName),
-                name ?: "`${tableName}_${columnName}_unique`"
-            )
+                ColumnKey(
+                        "UNIQUE KEY",
+                        setOf(columnName),
+                        name ?: "`${tableName}_${columnName}_unique`"
+                )
         )
     }
 
@@ -41,16 +36,16 @@ class TableBuilder(val tableName: String) {
 
     fun addIndex(columnNames: Iterable<String>, name: String? = null) {
         keys.add(
-            ColumnKey(
-                "KEY",
-                columnNames.toSet(),
-                name ?: "`${tableName}_${columnNames.joinToString("_")}_index`"
-            )
+                ColumnKey(
+                        "KEY",
+                        columnNames.toSet(),
+                        name ?: "`${tableName}_${columnNames.joinToString("_")}_index`"
+                )
         )
     }
 
     internal fun normalize() {
-        columns.forEach {
+        columnsToAdd.forEach {
             if (it.meta == null) {
                 it.meta = ColumnMetadata()
             }
@@ -70,28 +65,28 @@ class TableBuilder(val tableName: String) {
     }
 
     fun addReference(
-        foreignKey: String,
-        tableToRefer: String,
-        columnToRefer: String? = null
+            foreignKey: String,
+            tableToRefer: String,
+            columnToRefer: String? = null
     ): ColumnReferenceConstraint {
         return ColumnReferenceConstraint(foreignKey, tableToRefer, columnToRefer ?: "id").also {
-            constraints.add(it)
+            builderConstraints.add(it)
         }
     }
 
-    fun <E : Entity<E>> addReference(
-        foreignColumn: Column<*>,
-        tableToRefer: MigratingTable<E>,
-        columnToRefer: Column<*>? = null
+    fun <E : OzoneEntity<E>> addReference(
+            tableToRefer: OzoneTable<E>,
+            foreignColumn: Column<*>,
+            columnToRefer: Column<*>? = null
     ): ColumnReferenceConstraint {
-        checkColumnsTypes(foreignColumn, tableToRefer, columnToRefer)
+        ensureReferenceIntegrity(foreignColumn, tableToRefer, columnToRefer)
         return addReference(foreignColumn.name, tableToRefer.tableName, columnToRefer?.name)
     }
 
-    private fun <E : Entity<E>> checkColumnsTypes(
-        foreignColumn: Column<*>,
-        tableToRefer: MigratingTable<E>,
-        columnToRefer: Column<*>?
+    private fun <E : OzoneEntity<E>> ensureReferenceIntegrity(
+            foreignColumn: Column<*>,
+            tableToRefer: OzoneTable<E>,
+            columnToRefer: Column<*>?
     ) {
         // If the referencing column is unsigned but the foreign key column isn't then adding constraint
         // fails with not so friendly error message. We'll check if that's the case here and throw an
@@ -100,7 +95,8 @@ class TableBuilder(val tableName: String) {
             val foreignColName = foreignColumn.name
             val referredColName = columnToRefer?.name ?: "id"
 
-            val foreignKeyColumnIsUnsigned = columns.first { it.col.name == foreignColName }.meta?.unsigned ?: false
+            val foreignKeyColumnIsUnsigned =
+                    columnsToAdd.first { it.col.name == foreignColName }.meta?.unsigned ?: false
             val referredColumnIsUnsigned = tableToRefer.metadataMap[referredColName]?.unsigned == true
 
             check(referredColumnIsUnsigned == foreignKeyColumnIsUnsigned) {
@@ -112,3 +108,17 @@ class TableBuilder(val tableName: String) {
     }
 }
 
+open class TableModifier<E : OzoneEntity<E>>(val table: OzoneTable<E>) : TableBuilder(table.tableName) {
+    internal val columnsToDrop = mutableListOf<String>()
+    fun addColumn(column: Column<*>): ColumnInfo {
+        val meta = table.metadataMap[column.name]
+        return ColumnInfo(column, meta).also {
+            columnsToAdd.add(it)
+        }
+    }
+
+    fun dropColumn(name: String, vararg names: String) {
+        columnsToDrop.add(name)
+        columnsToDrop.addAll(names)
+    }
+}

@@ -2,11 +2,8 @@ package dev.alpas.ozone.console
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
-import dev.alpas.Application
-import dev.alpas.PackageClassLoader
-import dev.alpas.asMagenta
+import dev.alpas.*
 import dev.alpas.console.Command
-import dev.alpas.load
 import dev.alpas.ozone.Seeder
 
 class DatabaseSeedCommand(private val app: Application) : Command(name = "db:seed", help = "Seed a database") {
@@ -20,9 +17,15 @@ class DatabaseSeedCommand(private val app: Application) : Command(name = "db:see
         if (classInfo == null) {
             error("Cannot find the seeder $seederName to run.")
         } else {
-            val seeder = classInfo.load<Seeder>()
-            seeder.run(app)
-            success("🙌 Successfully seeded the database using $seederName!")
+            withColors {
+                println()
+                echo(yellow("Seeding the database using $seederName"))
+            }
+            classInfo.load<Seeder>().run(app)
+            withColors {
+                deleteLastLine()
+                echo("${green("✓")} ${brightGreen("Seeded the database using $seederName")}")
+            }
         }
     }
 }

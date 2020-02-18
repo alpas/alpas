@@ -29,6 +29,11 @@ import kotlin.reflect.full.createInstance
 
 val terminalColors = TermColors(TermColors.Level.ANSI256)
 
+fun TermColors.deleteLastLine() {
+    print(String.format("\u001b[%dA", 1)) // Move up
+    print("\u001b[2K")
+}
+
 inline fun String?.ifNotBlank(defaultValue: (String) -> String): String =
     if (!isNullOrBlank()) defaultValue(this!!) else ""
 

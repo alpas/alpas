@@ -18,14 +18,19 @@ open class RouteServiceProvider : ServiceProvider {
     }
 
     override fun commands(app: Application): List<Command> {
-        return listOf(
-            MakeControllerCommand(app.srcPackage),
-            MakeAuthCommand(app.srcPackage),
-            MakeMiddlewareCommand(app.srcPackage),
-            RouteListCommand(app.make(), app.config { AuthConfig(app.make()) }),
-            MakeValidationGuardCommand(app.srcPackage),
-            MakeValidationRuleCommand(app.srcPackage)
-        )
+        val routeListCommand = RouteListCommand(app.make(), app.config { AuthConfig(app.make()) })
+        return if (app.env.isDev) {
+            return listOf(
+                MakeControllerCommand(app.srcPackage),
+                MakeAuthCommand(app.srcPackage),
+                MakeMiddlewareCommand(app.srcPackage),
+                routeListCommand,
+                MakeValidationGuardCommand(app.srcPackage),
+                MakeValidationRuleCommand(app.srcPackage)
+            )
+        } else {
+            listOf(routeListCommand)
+        }
     }
 
     override fun boot(app: Application, loader: PackageClassLoader) {

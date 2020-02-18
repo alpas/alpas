@@ -57,10 +57,10 @@ interface ResponsableCall {
 
     fun render(
         templateName: String,
-        vararg args: Pair<String, Any>,
+        arg: Pair<String, Any?>,
         statusCode: Int = HttpStatus.OK_200
     ): ViewResponse {
-        return this.render(templateName, args.toMap(), statusCode)
+        return this.render(templateName, mapOf(arg), statusCode)
     }
 
     fun render(
@@ -74,6 +74,7 @@ interface ResponsableCall {
 
     fun acknowledge(statusCode: Int = HttpStatus.NO_CONTENT_204): ResponsableCall {
         servletResponse.status = statusCode
+        response = StringResponse("")
         asJson()
         return this
     }

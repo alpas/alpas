@@ -1,11 +1,6 @@
 package dev.alpas.ozone
 
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.schema.BaseTable
-import me.liuwj.ktorm.schema.IntSqlType
-import me.liuwj.ktorm.schema.LongSqlType
-import me.liuwj.ktorm.schema.SqlType
-import me.liuwj.ktorm.schema.VarcharSqlType
+import me.liuwj.ktorm.schema.*
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Types
@@ -13,20 +8,20 @@ import java.sql.Types
 /**
  * Define a column typed of [LongSqlType] which is also an autoincrementing unsigned primary key.
  */
-fun <E : Entity<E>> MigratingTable<E>.bigIncrements(name: String): BaseTable<E>.ColumnRegistration<Long> {
+fun <E : OzoneEntity<E>> OzoneTable<E>.bigIncrements(name: String = "id"): BaseTable<E>.ColumnRegistration<Long> {
     return incrementsColumn(name, LongSqlType)
 }
 
 /**
  * Define a column typed of [IntSqlType] which is also an autoincrementing unsigned primary key.
  */
-fun <E : Entity<E>> MigratingTable<E>.increments(name: String): BaseTable<E>.ColumnRegistration<Int> {
+fun <E : OzoneEntity<E>> OzoneTable<E>.increments(name: String = "id"): BaseTable<E>.ColumnRegistration<Int> {
     return incrementsColumn(name, IntSqlType)
 }
 
-private fun <E : Entity<E>, C : Number> MigratingTable<E>.incrementsColumn(name: String, sqlType: SqlType<C>)
-    : BaseTable<E>.ColumnRegistration<C> {
-    return registerColumn(name, sqlType).also {
+private fun <E : OzoneEntity<E>, C : Number> OzoneTable<E>.incrementsColumn(name: String, sqlType: SqlType<C>)
+        : BaseTable<E>.ColumnRegistration<C> {
+    return registerAndBind(name, sqlType).also {
         it.primaryKey()
         it.unsigned()
         it.autoIncrement()
@@ -36,7 +31,7 @@ private fun <E : Entity<E>, C : Number> MigratingTable<E>.incrementsColumn(name:
 /**
  * Define a column typed of [VarcharSqlType] that accepts a size that is set to 255 by default.
  */
-fun <E : Entity<E>> MigratingTable<E>.string(name: String, size: Int = 255): BaseTable<E>.ColumnRegistration<String> {
+fun <E : OzoneEntity<E>> OzoneTable<E>.string(name: String, size: Int = 255): BaseTable<E>.ColumnRegistration<String> {
     return registerColumn(name, VarcharSqlType).apply {
         size(size)
     }
@@ -45,7 +40,7 @@ fun <E : Entity<E>> MigratingTable<E>.string(name: String, size: Int = 255): Bas
 /**
  * Define a column typed of [VarcharSqlType] that accepts a size. The size won't be set if it is null.
  */
-fun <E : Entity<E>> MigratingTable<E>.char(name: String, size: Int? = null): BaseTable<E>.ColumnRegistration<String> {
+fun <E : OzoneEntity<E>> OzoneTable<E>.char(name: String, size: Int? = null): BaseTable<E>.ColumnRegistration<String> {
     return registerColumn(name, CharSqlType).apply {
         if (size != null) {
             size(size)

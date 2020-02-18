@@ -15,7 +15,7 @@ interface HandlesPasswordReset {
 
     @Suppress("unused")
     fun showResetForm(call: HttpCall) {
-        call.render("auth.passwords.reset", call.onlyParams("email", "token"))
+        call.render("auth.passwords.reset", call.params("email", "token"))
     }
 
     @Suppress("unused")
@@ -34,7 +34,7 @@ interface HandlesPasswordReset {
     }
 
     fun resetPassword(call: HttpCall, user: Authenticatable) {
-        user.updatePassword(call.make<Hasher>().hash(call.paramAsString("password").orAbort()))
+        user.updatePassword(call.make<Hasher>().hash(call.stringParam("password").orAbort()))
         call.authChannel.login(user)
     }
 
@@ -62,7 +62,7 @@ interface HandlesPasswordReset {
             ?.plusSeconds(tokenExpirationMinutes * 60)
             ?.isBefore(call.nowInCurrentTimezone().toInstant())
             ?: true
-        return !hasExpired && call.make<Hasher>().verify(call.paramAsString("token"), resetToken)
+        return !hasExpired && call.make<Hasher>().verify(call.stringParam("token"), resetToken)
     }
 
     fun throwValidationError(requestError: RequestError): Nothing {

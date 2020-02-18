@@ -17,18 +17,23 @@ class OzoneServiceProvider : ServiceProvider {
 
     override fun commands(app: Application): List<Command> {
         val srcPackage = app.srcPackage
-        val coreOzoneCommands = listOf(
-            MakeEntityCommand(srcPackage),
-            MakeFactoryCommand(srcPackage),
-            MakeMigrationCommand(srcPackage),
-            MakeSeederCommand(srcPackage)
-        )
+        val coreOzoneCommands =
+            if (app.env.isDev) {
+                listOf(
+                    MakeEntityCommand(srcPackage),
+                    MakeFactoryCommand(srcPackage),
+                    MakeMigrationCommand(srcPackage),
+                    MakeSeederCommand(srcPackage)
+                )
+            } else {
+                emptyList()
+            }
         val config = app.make<DatabaseConfig>()
         return if (config.canConnect()) {
             listOf(
                 DatabaseCreateCommand(),
                 DatabaseMigrateCommand(srcPackage),
-                DatabaseRefreshCommand(srcPackage),
+                DatabaseRefreshCommand(app),
                 DatabaseRollbackCommand(srcPackage),
                 DatabaseSeedCommand(app)
             ).plus(coreOzoneCommands)

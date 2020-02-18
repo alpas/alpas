@@ -1,8 +1,6 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.ozone.isMySql
-import dev.alpas.ozone.isPostgreSQL
-import dev.alpas.ozone.isSqlite
+import dev.alpas.ozone.*
 import dev.alpas.printAsError
 import dev.alpas.printAsInfo
 import me.liuwj.ktorm.database.Database
@@ -11,8 +9,8 @@ import me.liuwj.ktorm.database.useConnection
 abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
     protected val shouldTalk = !(quiet || isDryRun)
 
-    fun createTable(tableName: String, ifNotExists: Boolean = false, block: TableBuilder.() -> Any) {
-        createTable(TableBuilder(tableName).apply {
+    fun <E : OzoneEntity<E>> createTable(table: OzoneTable<E>, ifNotExists: Boolean = false, block: TableBuilder.() -> Any) {
+        createTable(TableBuilder(table.tableName, table.constraints).apply {
             block()
             normalize()
         }, ifNotExists)
@@ -44,6 +42,10 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
     }
 
     abstract fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean = false)
+
+    open fun <E : OzoneEntity<E>> modifyTable(builder: TableModifier<E>) {
+        TODO("Not yet implemented")
+    }
 
     companion object {
         fun make(isDryRun: Boolean, quiet: Boolean): DbAdapter {

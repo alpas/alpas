@@ -10,6 +10,8 @@ internal class MigrationStubs {
                 import dev.alpas.ozone.migration.Migration
 
                 class StubClazzName : Migration() {
+                    override var name = "StubMigrationName"
+                    
                     override fun up() {
                         createTable(StubTableName)
                     }
@@ -25,15 +27,22 @@ internal class MigrationStubs {
             return """
                 package StubPackageName
 
+                import StubEntityPackageName.StubTableName
                 import dev.alpas.ozone.migration.Migration
 
                 class StubClazzName : Migration() {
+                    override var name = "StubMigrationName"
+                    
                     override fun up() {
-                        addVarcharColumn("StubTableName", "column_name")
+                        modifyTable(StubTableName) {
+                            // addColumn(StubTableName.newColumn).after(StubTableName.anotherColumn)
+                        }
                     }
                     
                     override fun down() {
-                        removeColumn("StubTableName", "column_name")
+                        modifyTable(StubTableName) {
+                            // dropColumn("oldColumn1", "oldColumn2")
+                        }
                     }
                 }
             """.trimIndent()

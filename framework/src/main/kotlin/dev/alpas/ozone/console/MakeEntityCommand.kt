@@ -17,16 +17,17 @@ class MakeEntityCommand(srcPackage: String) :
         help = "Create an entity class with a corresponding entity table"
     ) {
 
-    private val tableName by option("--table", help = "Name of the table. e.g. --table=users")
-    private val simple by option("--simple", help = "Create a simple data based entity.").flag()
-    private val migration by option("--migration", "-m", help = "Create a migration for the entity.").flag()
+    private val migration by option("--migration", "-m", help = "Create a migration for the entity").flag()
+    private val factory by option("--factory", "-k", help = "Create a factory for the entity").flag()
+    private val seeder by option("--seeder", "-s", help = "Create a seeder for the entity").flag()
+    override val docUrl = "https://alpas.dev/docs/ozone"
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
-        val table = tableName ?: English.plural(filename)
+        val table = English.plural(filename)
         return OutputFile()
             .target(File(sourceOutputPath("entities", *parentDirs), "${filename.toPascalCase()}.kt"))
             .packageName(makePackageName("entities", *parentDirs))
-            .stub(entityStub())
+            .stub(EntityStubs.stub())
             .replacements(
                 mapOf(
                     "StubTableClazzName" to table.toPascalCase(),
@@ -35,19 +36,17 @@ class MakeEntityCommand(srcPackage: String) :
             )
     }
 
-    private fun entityStub(): String {
-        return if (simple) EntityStubs.simpleStub() else EntityStubs.stub()
-    }
-
-    override fun onCompleted(outputFile: OutputFile) {
-        withColors {
-            echo(green("ENTITY CREATED 🙌"))
-            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
-            echo(yellow("https://alpas.dev/docs/ozone"))
-        }
+    override fun onCompleted(outputFiles: List<OutputFile>) {
+        super.onCompleted(outputFiles)
+        val tables = outputFiles.map { English.plural(it.target.nameWithoutExtension) }
         if (migration) {
-            val table = tableName ?: English.plural(outputFile.target.nameWithoutExtension)
-            MakeMigrationCommand(srcPackage).main(arrayOf("create_${table.toSnakeCase()}_table", "--create=${table}"))
+            tables.forEach { table ->
+                val migrationOptions = mutableListOf("create_${table.toSnakeCase()}_table", "--create=${table}")
+                if (quiet) {
+                    migrationOptions.add("--quiet")
+                }
+                MakeMigrationCommand(srcPackage).main(migrationOptions)
+            }
         }
     }
 }

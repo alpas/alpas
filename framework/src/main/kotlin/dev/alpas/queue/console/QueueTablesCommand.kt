@@ -17,6 +17,8 @@ class QueueTablesCommand(srcPackage: String) :
 
     override val names = listOf("create_queue_jobs_tables")
 
+    override val docUrl = "https://alpas.dev/docs/queues"
+
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         val packageName = makePackageName("database", "migrations", *parentDirs)
         val outputPath = sourceOutputPath("database", "migrations", *parentDirs)
@@ -28,13 +30,5 @@ class QueueTablesCommand(srcPackage: String) :
             .packageName(packageName)
             .className(filename)
             .stub(Stubs.queueTablesStub())
-    }
-
-    override fun onCompleted(outputFile: OutputFile) {
-        withColors {
-            echo(green("MIGRATIONS CREATED 🙌"))
-            echo("${brightGreen(outputFile.target.name)}: ${dim(outputFile.target.path)}")
-            echo(yellow("https://alpas.dev/docs/queues"))
-        }
     }
 }

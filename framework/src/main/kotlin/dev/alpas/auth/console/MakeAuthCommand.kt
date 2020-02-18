@@ -41,9 +41,9 @@ class MakeAuthCommand(srcPackage: String) :
             .stub(Stubs.stubFor(filesStubMap[actualname]))
     }
 
-    override fun onCompleted(outputFile: OutputFile) {
+    override fun onCompleted(outputFiles: List<OutputFile>) {
         withColors {
-            echo(green("AUTHENTICATION SCAFFOLDING GENERATED 🙌"))
+            echo("${green(" ✓")} ${brightGreen("Authentication Scaffolding Generated")}")
             echo("${yellow("Don't forget to call")} ${blue("authRoutes()")} ${yellow("from your routes file.")}")
             echo(yellow("https://alpas.dev/docs/authentication-scaffolding"))
         }
