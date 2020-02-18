@@ -1,10 +1,10 @@
 package dev.alpas.auth
 
 import dev.alpas.md5
-import dev.alpas.ozone.Ozone
+import dev.alpas.ozone.OzoneEntity
 import java.time.Instant
 
-interface BaseUser<E : BaseUser<E>> : Ozone<E>, Authenticatable {
+interface BaseUser<E : BaseUser<E>> : OzoneEntity<E>, Authenticatable {
     override var id: Long
     override var password: String
     override var email: String?

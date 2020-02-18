@@ -1,10 +1,7 @@
 package dev.alpas.ozone
 
 import dev.alpas.extensions.toCamelCase
-import me.liuwj.ktorm.dsl.AssignmentsBuilder
-import me.liuwj.ktorm.dsl.combineConditions
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.dsl.isNull
+import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.findList
 import me.liuwj.ktorm.entity.findOne
 import me.liuwj.ktorm.expression.ArgumentExpression
@@ -24,14 +21,17 @@ import kotlin.reflect.full.memberProperties
  * @param alias The alias of this table.
  * @param entityClass The entity class for this table.
  */
-abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null, entityClass: KClass<E>? = null) :
-        Table<E>(tableName, alias, entityClass) {
+abstract class OzoneTable<E : OzoneEntity<E>>(tableName: String, alias: String? = null, entityClass: KClass<E>? = null) :
+    Table<E>(tableName, alias, entityClass) {
 
     /**
      * Column metadata for this table. The metadata is used during migration.
      */
     internal val metadataMap = hashMapOf<String, ColumnMetadata>()
 
+    /**
+     * Constraints to be used during migration.
+     */
     internal var constraints = mutableSetOf<ColumnReferenceConstraint>()
 
     /**
@@ -158,10 +158,14 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
     /**
      * Add a reference constraint on the given column for this table.
      */
-    fun <T : Any> ColumnRegistration<T>.addReferenceConstraint(columnToRefer: String = "id", block: ColumnReferenceConstraint.() -> Unit = {}): ColumnRegistration<T> {
+    fun <T : Any> ColumnRegistration<T>.reference(
+        to: String = "id",
+        block: ColumnReferenceConstraint.() -> Unit = {}
+    ): ColumnRegistration<T> {
         val column = getColumn()
-        val referenceTable = column.referenceTable ?: throw IllegalStateException("Reference constraint can only be added to a column that references a foreign table")
-        ColumnReferenceConstraint(columnName, referenceTable.tableName, columnToRefer).also {
+        val referenceTable = column.referenceTable
+            ?: throw IllegalStateException("Reference constraint can only be added to a column that references a foreign table")
+        ColumnReferenceConstraint(columnName, referenceTable.tableName, to).also {
             constraints.add(it)
         }.also(block)
         return this
@@ -222,9 +226,9 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
      * Define a created_at column typed of [InstantSqlType].
      */
     fun createdAt(
-            name: String = "created_at",
-            nullable: Boolean = true,
-            useCurrent: Boolean = true
+        name: String = "created_at",
+        nullable: Boolean = true,
+        useCurrent: Boolean = true
     ): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
             if (nullable) {
@@ -240,9 +244,9 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
      * Define a updated_at column typed of [InstantSqlType].
      */
     fun updatedAt(
-            name: String = "updated_at",
-            nullable: Boolean = true,
-            useCurrent: Boolean = true
+        name: String = "updated_at",
+        nullable: Boolean = true,
+        useCurrent: Boolean = true
     ): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
             if (nullable) {
@@ -282,9 +286,9 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
     /**
      * Bind this column to the reference table basically setting the belongsTo relationship.
      */
-    inline fun <C : Any, R : Ozone<R>> ColumnRegistration<C>.belongsTo(
-            referenceTable: Table<R>,
-            selector: (E) -> R?
+    inline fun <C : Any, R : OzoneEntity<R>> ColumnRegistration<C>.belongsTo(
+        referenceTable: Table<R>,
+        selector: (E) -> R?
     ) = apply { references(referenceTable, selector) }
 
     /**
@@ -306,24 +310,6 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
         return findOne(whereAttributes) ?: create(whereAttributes.plus(attributes))
     }
 
-    /**
-     * Find an entity with the given [whereAttributes]. If the entity doesn't exist, create a
-     * new entity by combining both [whereAttributes] and the [assignmentBlock]. Any extra
-     * attributes will be skipped inserting into the database.
-     *
-     * @param whereAttributes The attributes to use for looking up an entity.
-     * @param assignmentBlock An assignment block for adding extra attributes while creating an entity.
-     *
-     * @return A existing or a new entity.
-     *
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun findOrCreate(
-            whereAttributes: Map<String, Any?>,
-            assignmentBlock: AssignmentsBuilder.(OzoneTable<E>) -> Unit
-    ): E {
-        return findOne(whereAttributes) ?: create(whereAttributes, assignmentBlock)
-    }
 
     /**
      * Find an entity with the given [whereAttributes].
@@ -399,9 +385,9 @@ abstract class OzoneTable<E : Ozone<E>>(tableName: String, alias: String? = null
  *
  * @return A new entity.
  */
-fun <E : Ozone<E>, T : OzoneTable<E>> T.create(
-        attributes: Map<String, Any?> = emptyMap(),
-        block: AssignmentsBuilder.(T) -> Unit
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.create(
+    attributes: Map<String, Any?> = emptyMap(),
+    block: AssignmentsBuilder.(T) -> Unit
 ): E {
     val combinedAttributes = attributes.toMutableMap()
     val assignments = ArrayList<ColumnAssignmentExpression<*>>()
@@ -412,10 +398,48 @@ fun <E : Ozone<E>, T : OzoneTable<E>> T.create(
     return create(combinedAttributes)
 }
 
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.update(
+    attributes: Map<String, Any?>,
+    block: (T) -> ColumnDeclaring<Boolean>
+): Int {
+    val combinedAttributes = attributes.toMutableMap()
+    val assignments = ArrayList<ColumnAssignmentExpression<*>>()
+    assignments.map {
+        combinedAttributes[it.column.name] to (it.expression as ArgumentExpression).value
+    }
+    return update {
+        for (attr in attributes) {
+            // todo: check if there is a column name wit the key
+            it[attr.key] to attr.value
+        }
+        block(it)
+    }
+}
+
+
+/**
+ * Find an entity with the given [whereAttributes]. If the entity doesn't exist, create a
+ * new entity by combining both [whereAttributes] and the [assignmentBlock]. Any extra
+ * attributes will be skipped inserting into the database.
+ *
+ * @param whereAttributes The attributes to use for looking up an entity.
+ * @param assignmentBlock An assignment block for adding extra attributes while creating an entity.
+ *
+ * @return A existing or a new entity.
+ *
+ */
+@Suppress("UNCHECKED_CAST")
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.findOrCreate(
+    whereAttributes: Map<String, Any?>,
+    assignmentBlock: AssignmentsBuilder.(T) -> Unit
+): E {
+    return findOne(whereAttributes) ?: create(whereAttributes, assignmentBlock)
+}
+
 /**
  * A map of an entity's column name to the actual corresponding column name in the table.
  */
-fun <T : Ozone<T>> OzoneTable<T>.propertyNamesToColumnNames(): Map<String, String> {
+fun <T : OzoneEntity<T>> OzoneTable<T>.propertyNamesToColumnNames(): Map<String, String> {
     return columns.map { col ->
         val colNameInTable = when (val binding = col.binding) {
             is NestedBinding -> {

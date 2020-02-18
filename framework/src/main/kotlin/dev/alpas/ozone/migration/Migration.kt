@@ -1,6 +1,6 @@
 package dev.alpas.ozone.migration
 
-import dev.alpas.ozone.Ozone
+import dev.alpas.ozone.OzoneEntity
 import dev.alpas.ozone.OzoneTable
 
 // todo: support adding composite keys
@@ -14,7 +14,7 @@ abstract class Migration {
     internal lateinit var givenName: String
     open val name: String? = null
 
-    fun <E : Ozone<E>> createTable(
+    fun <E : OzoneEntity<E>> createTable(
         table: OzoneTable<E>,
         ifNotExists: Boolean = false,
         block: (TableBuilder.() -> Unit)? = null
@@ -34,11 +34,11 @@ abstract class Migration {
         }
     }
 
-    fun <E : Ozone<E>> modifyTable(table: OzoneTable<E>, block: TableModifier<E>.() -> Unit) {
+    fun <E : OzoneEntity<E>> modifyTable(table: OzoneTable<E>, block: TableModifier<E>.() -> Unit) {
         adapter.modifyTable(TableModifier(table).also(block))
     }
 
-    fun <E : Ozone<E>> dropTable(table: OzoneTable<E>) {
+    fun <E : OzoneEntity<E>> dropTable(table: OzoneTable<E>) {
         adapter.dropTable(table.tableName)
     }
 

@@ -213,12 +213,12 @@ private object TransformingTestObjectFactory : EntityFactory<TestEntity, TestTab
     }
 }
 
-internal interface TestEntity : Ozone<TestEntity> {
+internal interface TestEntity : OzoneEntity<TestEntity> {
     val id: Long
     var firstName: String
     var email: String
 
-    companion object : Ozone.Of<TestEntity>()
+    companion object : OzoneEntity.Of<TestEntity>()
 }
 
 internal class TestTable : OzoneTable<TestEntity>("test_table") {

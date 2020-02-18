@@ -6,8 +6,8 @@ import me.liuwj.ktorm.schema.timestamp
 import me.liuwj.ktorm.schema.varchar
 import java.time.Instant
 
-interface JobRecord : Ozone<JobRecord> {
-    companion object : Ozone.Of<JobRecord>()
+interface JobRecord : OzoneEntity<JobRecord> {
+    companion object : OzoneEntity.Of<JobRecord>()
 
     var id: Long
     var queue: String
@@ -18,7 +18,7 @@ interface JobRecord : Ozone<JobRecord> {
     var createdAt: Long
 }
 
-interface FailedJobRecord : Ozone<FailedJobRecord> {
+interface FailedJobRecord : OzoneEntity<FailedJobRecord> {
     var id: Long
     var connection: String
     var queue: String

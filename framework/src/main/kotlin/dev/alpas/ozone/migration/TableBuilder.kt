@@ -11,7 +11,7 @@ open class TableBuilder(val tableName: String, tableConstraints: Set<ColumnRefer
     internal var keys = mutableSetOf<ColumnKey>()
     internal val constraints by lazy { builderConstraints.plus(tableConstraints) }
 
-    open fun <E : Ozone<E>> addColumn(col: Column<*>, table: OzoneTable<E>) {
+    open fun <E : OzoneEntity<E>> addColumn(col: Column<*>, table: OzoneTable<E>) {
         val meta = table.metadataMap[col.name]
         columnsToAdd.add(ColumnInfo(col, meta))
     }
@@ -74,7 +74,7 @@ open class TableBuilder(val tableName: String, tableConstraints: Set<ColumnRefer
         }
     }
 
-    fun <E : Ozone<E>> addReference(
+    fun <E : OzoneEntity<E>> addReference(
             tableToRefer: OzoneTable<E>,
             foreignColumn: Column<*>,
             columnToRefer: Column<*>? = null
@@ -83,7 +83,7 @@ open class TableBuilder(val tableName: String, tableConstraints: Set<ColumnRefer
         return addReference(foreignColumn.name, tableToRefer.tableName, columnToRefer?.name)
     }
 
-    private fun <E : Ozone<E>> ensureReferenceIntegrity(
+    private fun <E : OzoneEntity<E>> ensureReferenceIntegrity(
             foreignColumn: Column<*>,
             tableToRefer: OzoneTable<E>,
             columnToRefer: Column<*>?
@@ -108,7 +108,7 @@ open class TableBuilder(val tableName: String, tableConstraints: Set<ColumnRefer
     }
 }
 
-open class TableModifier<E : Ozone<E>>(val table: OzoneTable<E>) : TableBuilder(table.tableName) {
+open class TableModifier<E : OzoneEntity<E>>(val table: OzoneTable<E>) : TableBuilder(table.tableName) {
     internal val columnsToDrop = mutableListOf<String>()
     fun addColumn(column: Column<*>): ColumnInfo {
         val meta = table.metadataMap[column.name]

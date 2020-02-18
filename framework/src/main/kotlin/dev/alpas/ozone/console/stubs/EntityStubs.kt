@@ -13,12 +13,13 @@ internal class EntityStubs {
                 import dev.alpas.ozone.*
                 import java.time.Instant
 
-                interface StubClazzName : Ozone<StubClazzName> {
+                interface StubClazzName : OzoneEntity<StubClazzName> {
                     var id: Long
+                    var name: String?
                     var createdAt: Instant?
                     var updatedAt: Instant?
 
-                    companion object : Ozone.Of<StubClazzName>()
+                    companion object : OzoneEntity.Of<StubClazzName>()
                 }
             """
         }
@@ -26,7 +27,8 @@ internal class EntityStubs {
         private fun tableStub(): String {
             return """
                 object StubTableClazzName : OzoneTable<StubClazzName>("StubTableName") {
-                    val id by bigIncrements().bindTo { it.id }
+                    val id by bigIncrements()
+                    val name by string("name").size(150).nullable().bindTo { it.name }
                     val createdAt by createdAt()
                     val updatedAt by updatedAt()
                 }

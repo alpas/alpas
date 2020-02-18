@@ -130,7 +130,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
         }
     }
 
-    override fun <E : Ozone<E>> modifyTable(builder: TableModifier<E>) {
+    override fun <E : OzoneEntity<E>> modifyTable(builder: TableModifier<E>) {
         val sb = StringBuilder("ALTER TABLE `${builder.tableName}`")
         addNewColumns(sb, builder)
         dropColumns(sb, builder)
@@ -138,7 +138,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
         execute(sb.toString())
     }
 
-    private fun <E : Ozone<E>> addNewColumns(sb: StringBuilder, builder: TableModifier<E>) {
+    private fun <E : OzoneEntity<E>> addNewColumns(sb: StringBuilder, builder: TableModifier<E>) {
         if (builder.columnsToAdd.isEmpty()) {
             return
         }
@@ -164,7 +164,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
         }
     }
 
-    private fun <E : Ozone<E>> dropColumns(sb: StringBuilder, builder: TableModifier<E>) {
+    private fun <E : OzoneEntity<E>> dropColumns(sb: StringBuilder, builder: TableModifier<E>) {
         if (builder.columnsToDrop.isEmpty()) {
             return
         }

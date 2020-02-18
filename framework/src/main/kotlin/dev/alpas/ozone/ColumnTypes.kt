@@ -8,18 +8,18 @@ import java.sql.Types
 /**
  * Define a column typed of [LongSqlType] which is also an autoincrementing unsigned primary key.
  */
-fun <E : Ozone<E>> OzoneTable<E>.bigIncrements(name: String = "id"): BaseTable<E>.ColumnRegistration<Long> {
+fun <E : OzoneEntity<E>> OzoneTable<E>.bigIncrements(name: String = "id"): BaseTable<E>.ColumnRegistration<Long> {
     return incrementsColumn(name, LongSqlType)
 }
 
 /**
  * Define a column typed of [IntSqlType] which is also an autoincrementing unsigned primary key.
  */
-fun <E : Ozone<E>> OzoneTable<E>.increments(name: String = "id"): BaseTable<E>.ColumnRegistration<Int> {
+fun <E : OzoneEntity<E>> OzoneTable<E>.increments(name: String = "id"): BaseTable<E>.ColumnRegistration<Int> {
     return incrementsColumn(name, IntSqlType)
 }
 
-private fun <E : Ozone<E>, C : Number> OzoneTable<E>.incrementsColumn(name: String, sqlType: SqlType<C>)
+private fun <E : OzoneEntity<E>, C : Number> OzoneTable<E>.incrementsColumn(name: String, sqlType: SqlType<C>)
         : BaseTable<E>.ColumnRegistration<C> {
     return registerAndBind(name, sqlType).also {
         it.primaryKey()
@@ -31,7 +31,7 @@ private fun <E : Ozone<E>, C : Number> OzoneTable<E>.incrementsColumn(name: Stri
 /**
  * Define a column typed of [VarcharSqlType] that accepts a size that is set to 255 by default.
  */
-fun <E : Ozone<E>> OzoneTable<E>.string(name: String, size: Int = 255): BaseTable<E>.ColumnRegistration<String> {
+fun <E : OzoneEntity<E>> OzoneTable<E>.string(name: String, size: Int = 255): BaseTable<E>.ColumnRegistration<String> {
     return registerColumn(name, VarcharSqlType).apply {
         size(size)
     }
@@ -40,7 +40,7 @@ fun <E : Ozone<E>> OzoneTable<E>.string(name: String, size: Int = 255): BaseTabl
 /**
  * Define a column typed of [VarcharSqlType] that accepts a size. The size won't be set if it is null.
  */
-fun <E : Ozone<E>> OzoneTable<E>.char(name: String, size: Int? = null): BaseTable<E>.ColumnRegistration<String> {
+fun <E : OzoneEntity<E>> OzoneTable<E>.char(name: String, size: Int? = null): BaseTable<E>.ColumnRegistration<String> {
     return registerColumn(name, CharSqlType).apply {
         if (size != null) {
             size(size)

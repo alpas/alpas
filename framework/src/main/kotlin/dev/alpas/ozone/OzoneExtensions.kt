@@ -55,7 +55,7 @@ fun <E : Any> BaseTable<E>.findOrFail(
     return this.findById(id).orAbort(message ?: "Record with id $id doesn't exist.", statusCode)
 }
 
-fun <E : Ozone<E>, T : OzoneTable<E>> T.create(block: AssignmentsBuilder.(T) -> Unit): E {
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.create(block: AssignmentsBuilder.(T) -> Unit): E {
     val id = this.insertAndGenerateKey(block)
     return this.findOrFail(id)
 }

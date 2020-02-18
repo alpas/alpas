@@ -15,7 +15,7 @@ val faker by lazy(LazyThreadSafetyMode.NONE) { Faker() }
 /**
  * A factory for creating one or many instances of an Entity class.
  */
-abstract class EntityFactory<E : Ozone<E>, T : OzoneTable<E>> {
+abstract class EntityFactory<E : OzoneEntity<E>, T : OzoneTable<E>> {
 
     /**
      * The entity's table
@@ -148,7 +148,7 @@ abstract class EntityFactory<E : Ozone<E>, T : OzoneTable<E>> {
  * @param attrs A map of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E : Ozone<E>, T : OzoneTable<E>> from(
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> from(
     factory: EntityFactory<E, T>,
     attrs: Map<String, Any?> = emptyMap()
 ): E {
@@ -164,7 +164,7 @@ fun <E : Ozone<E>, T : OzoneTable<E>> from(
  * @param attrs Pairs of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E : Ozone<E>, T : OzoneTable<E>> from(
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> from(
     factory: EntityFactory<E, T>,
     attr: Pair<String, Any?>,
     vararg attrs: Pair<String, Any?>
@@ -183,7 +183,7 @@ fun <E : Ozone<E>, T : OzoneTable<E>> from(
  * @param attrs A map of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A list of fresh entities from the database.
  */
-fun <E : Ozone<E>, T : OzoneTable<E>> from(
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> from(
     factory: EntityFactory<E, T>,
     count: Int = 1,
     attrs: Map<String, Any?> = emptyMap()
@@ -203,7 +203,7 @@ fun <E : Ozone<E>, T : OzoneTable<E>> from(
  * @param attrs Pairs of attributes for overriding entity's properties. Non-existent keys will be ignored.
  * @return A fresh entity from the database.
  */
-fun <E : Ozone<E>, T : OzoneTable<E>> from(
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> from(
     factory: EntityFactory<E, T>,
     count: Int = 1,
     attr: Pair<String, Any?>,
@@ -220,7 +220,7 @@ fun <E : Ozone<E>, T : OzoneTable<E>> from(
  * @param block An assignment builder block for setting the entity's attributes.
  * @return A fresh entity from the database.
  */
-inline fun <reified E : Ozone<E>, reified T : OzoneTable<E>> from(
+inline fun <reified E : OzoneEntity<E>, reified T : OzoneTable<E>> from(
     factory: EntityFactory<E, T>,
     block: AssignmentsBuilder.(T) -> Unit
 ): E {
@@ -243,7 +243,7 @@ inline fun <reified E : Ozone<E>, reified T : OzoneTable<E>> from(
  * @param block An assignment builder block for setting the entity's attributes.
  * @return A list of fresh entities from the database.
  */
-inline fun <reified E : Ozone<E>, reified T : OzoneTable<E>> from(
+inline fun <reified E : OzoneEntity<E>, reified T : OzoneTable<E>> from(
     factory: EntityFactory<E, T>,
     count: Int = 1,
     block: AssignmentsBuilder.(T) -> Unit

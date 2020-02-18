@@ -9,7 +9,7 @@ import me.liuwj.ktorm.database.useConnection
 abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
     protected val shouldTalk = !(quiet || isDryRun)
 
-    fun <E : Ozone<E>> createTable(table: OzoneTable<E>, ifNotExists: Boolean = false, block: TableBuilder.() -> Any) {
+    fun <E : OzoneEntity<E>> createTable(table: OzoneTable<E>, ifNotExists: Boolean = false, block: TableBuilder.() -> Any) {
         createTable(TableBuilder(table.tableName, table.constraints).apply {
             block()
             normalize()
@@ -43,7 +43,7 @@ abstract class DbAdapter(val isDryRun: Boolean = false, quiet: Boolean) {
 
     abstract fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean = false)
 
-    open fun <E : Ozone<E>> modifyTable(builder: TableModifier<E>) {
+    open fun <E : OzoneEntity<E>> modifyTable(builder: TableModifier<E>) {
         TODO("Not yet implemented")
     }
 

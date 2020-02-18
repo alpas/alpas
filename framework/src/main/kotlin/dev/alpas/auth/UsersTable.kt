@@ -1,6 +1,6 @@
 package dev.alpas.auth
 
-import dev.alpas.ozone.Ozone
+import dev.alpas.ozone.OzoneEntity
 import dev.alpas.ozone.OzoneTable
 import dev.alpas.ozone.bigIncrements
 import me.liuwj.ktorm.dsl.eq
@@ -41,5 +41,5 @@ open class BaseUsersTable<E : BaseUser<E>> : OzoneTable<E>("users"), UserProvide
 internal object UsersTable : BaseUsersTable<User>() {}
 
 internal interface User : BaseUser<User> {
-    companion object : Ozone.Of<User>()
+    companion object : OzoneEntity.Of<User>()
 }

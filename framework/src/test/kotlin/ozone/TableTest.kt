@@ -1,5 +1,6 @@
 package dev.alpas.tests.ozone
 
+import dev.alpas.ozone.findOrCreate
 import dev.alpas.ozone.from
 import dev.alpas.tests.BaseTest
 import me.liuwj.ktorm.database.Database
@@ -83,5 +84,25 @@ class OzoneTableTest : BaseTest() {
         assertEquals(1, all.size)
 
         assertEquals("Default Name", oldEntity.firstName)
+    }
+
+    @Test
+    fun `can find using an assignment builder`() {
+        execSqlScript(TestTable.createSql)
+
+        from(TestObjectFactory)
+        val newEntity =
+            TestTable().findOrCreate(mapOf("first_name" to "Does Not Exist")) {
+                it.email to "test@example.com"
+            }
+        assertEquals(2, TestTable().findAll().size)
+
+        assertEquals("Does Not Exist", newEntity.firstName)
+        assertEquals("test@example.com", newEntity.email)
+
+        TestTable().findOrCreate(mapOf("email" to "test@example.com")) {
+            it.email to "test@example.com"
+        }
+        assertEquals(2, TestTable().findAll().size)
     }
 }
