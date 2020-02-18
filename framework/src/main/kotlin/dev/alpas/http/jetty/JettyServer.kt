@@ -23,7 +23,7 @@ internal class JettyServer {
 
         if (app.env.isDev && !isTcpPortAvailable(host, port)) {
             port = getFreePort(host, port)
-            app.logger.warn { "App port ${config.appPort} is not available. We'll use the port '$port' instead." }
+            app.logger.warn { "App port ${config.appPort} is not available. We'll use port '$port' instead." }
         }
 
         val sessionHandler = app.tryMake<SessionManager>()?.handler()
