@@ -5,6 +5,7 @@ import dev.alpas.tests.BaseTest
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.entity.findAll
 import me.liuwj.ktorm.entity.findById
+import me.liuwj.ktorm.schema.int
 import me.liuwj.ktorm.support.sqlite.SQLiteDialect
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
@@ -217,6 +218,8 @@ internal interface TestEntity : OzoneEntity<TestEntity> {
     val id: Long
     var firstName: String
     var email: String
+    var createdAt: Int
+    var updatedAt: Int
 
     companion object : OzoneEntity.Of<TestEntity>()
 }
@@ -225,13 +228,17 @@ internal class TestTable : OzoneTable<TestEntity>("test_table") {
     val id by bigIncrements()
     val firstName by string("first_name").bindTo { it.firstName }
     val email by string("email").bindTo { it.email }
+    val createdAt by int("created_at").bindTo { it.createdAt }
+    val updatedAt by int("updated_at").bindTo { it.updatedAt }
 
     companion object {
         val createSql = """
         create table test_table(
             id integer primary key autoincrement,
             first_name varchar(128) not null,
-            email varchar(128) not null
+            email varchar(128) not null,
+            created_at integer,
+            updated_at integer
         );
     """.trimIndent()
     }
