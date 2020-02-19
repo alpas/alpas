@@ -234,7 +234,10 @@ inline fun <reified E : OzoneEntity<E>, reified T : OzoneTable<E>> from(
 
 /**
  * A convenience proxy method for creating one or more instances of an entity using the given factory.
- * This method calls `create()` method of the factory, which means it will be persisted.
+ * This method calls `create()` method of the factory, which means it will be persisted in the database.
+ *
+ * The assignment builder block will be called for each entity thus allowing
+ * overriding the attributes of each entity individually.
  *
  * TODO: Optimize this after https://github.com/vincentlauvlwj/Ktorm/issues/87 is addressed.
  *
@@ -248,10 +251,13 @@ inline fun <reified E : OzoneEntity<E>, reified T : OzoneTable<E>> from(
     count: Int = 1,
     block: AssignmentsBuilder.(T) -> Unit
 ): List<E> {
-    val assignments = ArrayList<ColumnAssignmentExpression<*>>()
-    AssignmentsBuilder(assignments).block(factory.table)
-    val attrs = assignments.map {
-        it.column.name to (it.expression as ArgumentExpression).value
-    }.toMap()
-    return from(factory, count, attrs)
+    return (1..count).map {
+        val assignments = ArrayList<ColumnAssignmentExpression<*>>()
+        AssignmentsBuilder(assignments).block(factory.table)
+        val attrs = assignments.map {
+            it.column.name to (it.expression as ArgumentExpression).value
+        }.toMap()
+
+        from(factory, attrs)
+    }
 }
