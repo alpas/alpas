@@ -82,7 +82,7 @@ class RequestParamsBag(private val request: RequestableCall, private val route: 
     override val params by lazy {
         // merge both routeParams map and query routeParams
         val paramsMap = routeParams.toMutableMap()
-        val requestParams = request.jettyRequest.parameterMap.mapValues { it.value.toList() }
+        val requestParams = requestParams
 
         requestParams.forEach { (key, param) ->
             paramsMap[key] = paramsMap[key]?.plus(param) ?: param
@@ -99,6 +99,14 @@ class RequestParamsBag(private val request: RequestableCall, private val route: 
             }
         }
         paramsMap.toMap()
+    }
+
+    private val requestParams by lazy {
+        if (request.isMultipartFormData) {
+            request.multipartParams
+        } else {
+            request.jettyRequest.parameterMap.mapValues { it.value.toList() }
+        }
     }
 
     override val routeParams by lazy {
