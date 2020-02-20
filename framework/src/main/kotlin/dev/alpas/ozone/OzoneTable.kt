@@ -2,8 +2,7 @@ package dev.alpas.ozone
 
 import dev.alpas.extensions.toCamelCase
 import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.findList
-import me.liuwj.ktorm.entity.findOne
+import me.liuwj.ktorm.entity.*
 import me.liuwj.ktorm.expression.ArgumentExpression
 import me.liuwj.ktorm.expression.ColumnAssignmentExpression
 import me.liuwj.ktorm.schema.*
@@ -21,7 +20,11 @@ import kotlin.reflect.full.memberProperties
  * @param alias The alias of this table.
  * @param entityClass The entity class for this table.
  */
-abstract class OzoneTable<E : OzoneEntity<E>>(tableName: String, alias: String? = null, entityClass: KClass<E>? = null) :
+abstract class OzoneTable<E : OzoneEntity<E>>(
+    tableName: String,
+    alias: String? = null,
+    entityClass: KClass<E>? = null
+) :
     Table<E>(tableName, alias, entityClass) {
 
     /**

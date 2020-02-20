@@ -1,4 +1,4 @@
-@file:Suppress("UNCHECKED_CAST")
+@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 
 package dev.alpas.ozone
 
@@ -95,34 +95,100 @@ internal fun Query.forUpdate(): Query {
     return this.copy(expression = exprForUpdate)
 }
 
+/**
+ * Return the latest entities of an entity sequence as determined by sorting the
+ * sequence in a descending order using a column returned by the [selector].
+ *
+ * @param selector The column to be selected for sorting.
+ *
+ * @return The latest entities as an entity sequence.
+ */
 inline fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.latest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
     return sorted { listOf(selector(it).desc()) }
 }
 
-fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.latest(column: String = "created_at"): EntitySequence<E, T> {
+/**
+ * Return the latest entities of an entity sequence as determined by sorting the sequence in a descending order using,
+ * by default, the `created_at` column. Pass the name of a different column to sort by that column instead.
+ *
+ * @param column The name of the column to use for sorting. `created_at` by default.
+ *
+ * @return The latest entities as an entity sequence.
+ */
+inline fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.latest(column: String = "created_at"): EntitySequence<E, T> {
     return sorted { listOf(it[column].desc()) }
 }
 
+
+/**
+ * Return the oldest entities of an entity sequence as determined by sorting the
+ * sequence in an ascending order using a column returned by the [selector].
+ *
+ * @param selector The column to be selected for sorting.
+ *
+ * @return The oldest entities as an entity sequence.
+ */
 inline fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.oldest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
     return sorted { listOf(selector(it).asc()) }
 }
 
-fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.oldest(column: String = "created_at"): EntitySequence<E, T> {
+/**
+ * Return the oldest entities of an entity sequence as determined by sorting the sequence in an ascending order using,
+ * by default, the `created_at` column. Pass the name of a different column to sort by that column instead.
+ *
+ * @param column The name of the column to use for sorting. `created_at` by default.
+ *
+ * @return The oldest entities as an entity sequence.
+ */
+inline fun <E : Any, T : BaseTable<E>> EntitySequence<E, T>.oldest(column: String = "created_at"): EntitySequence<E, T> {
     return sorted { listOf(it[column].asc()) }
 }
 
-inline fun <E : Any, T : BaseTable<E>> T.latest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
+/**
+ * Return the latest entities of a table as determined by sorting the table in a
+ * descending order using a column returned by the [selector].
+ *
+ * @param selector The column to be selected for sorting.
+ *
+ * @return The latest entities as an entity sequence.
+ */
+
+inline fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.latest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
     return asSequence().sorted { listOf(selector(it).desc()) }
 }
 
-fun <E : Any, T : BaseTable<E>> T.latest(column: String = "created_at"): EntitySequence<E, T> {
+/**
+ * Return the latest entities of a table as determined by sorting the table in a descending order using, by
+ * default, the `created_at` column. Pass the name of a different column to sort by that column instead.
+ *
+ * @param column The name of the column to use for sorting. `created_at` by default.
+ *
+ * @return The latest entities as an entity sequence.
+ */
+inline fun <E : Any, T : BaseTable<E>> T.latest(column: String = "created_at"): EntitySequence<E, T> {
     return asSequence().sorted { listOf(it[column].desc()) }
 }
 
+/**
+ * Return the oldest entities of a table as determined by sorting the table in
+ * an ascending order using a column returned by the [selector].
+ *
+ * @param selector The column to be selected for sorting.
+ *
+ * @return The oldest entities as an entity sequence.
+ */
 inline fun <E : Any, T : BaseTable<E>> T.oldest(selector: (T) -> ColumnDeclaring<*>): EntitySequence<E, T> {
     return asSequence().sorted { listOf(selector(it).asc()) }
 }
 
-fun <E : Any, T : BaseTable<E>> T.oldest(column: String = "created_at"): EntitySequence<E, T> {
+/**
+ * Return the oldest entities of a table as determined by sorting the table in an ascending order using, by
+ * default, the `created_at` column. Pass the name of a different column to sort by that column instead.
+ *
+ * @param column The name of the column to use for sorting. `created_at` by default.
+ *
+ * @return The oldest entities as an entity sequence.
+ */
+inline fun <E : Any, T : BaseTable<E>> T.oldest(column: String = "created_at"): EntitySequence<E, T> {
     return asSequence().sorted { listOf(it[column].asc()) }
 }

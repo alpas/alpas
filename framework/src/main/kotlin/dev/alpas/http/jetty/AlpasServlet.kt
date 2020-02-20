@@ -37,7 +37,8 @@ class AlpasServlet(
             }
         }
 
-        val route = router.routeFor(methodName = req.method(), uri = req.requestURI)
+        val allowMethodSpoofing = app.config<AppConfig>().allowMethodSpoofing
+        val route = router.routeFor(methodName = req.method(allowMethodSpoofing), uri = req.requestURI)
         val callHooks = app.callHooks.map {
             it.createInstance()
         }
@@ -55,7 +56,7 @@ class AlpasServlet(
             call.logger.debug { "Booting ${callHooks.size} HttpCall hooks" }
             callHooks.forEach { it.boot(call) }
 
-            call.sendCallThroughServerEntryMiddleware().then { matchRoute(it, callHooks) }
+            call.sendCallThroughServerEntryMiddleware(app).then { matchRoute(app, it, callHooks) }
 
             call.logger.debug { "Clean closing ${callHooks.size} HttpCall hooks" }
             callHooks.forEach { it.beforeClose(call, true) }
@@ -67,9 +68,9 @@ class AlpasServlet(
         }
     }
 
-    private fun matchRoute(call: HttpCall, callHooks: List<HttpCallHook>) {
+    private fun matchRoute(app: Application, call: HttpCall, callHooks: List<HttpCallHook>) {
         when (call.route.status()) {
-            RouteMatchStatus.SUCCESS -> call.dispatchToRouteHandler(call.route.target(), callHooks)
+            RouteMatchStatus.SUCCESS -> call.dispatchToRouteHandler(app, call.route.target(), callHooks)
             RouteMatchStatus.METHOD_NOT_ALLOWED -> {
                 throw MethodNotAllowedException(
                     "Method ${call.method} is not allowed for this operation. Only ${call.route.allowedMethods()
@@ -82,12 +83,12 @@ class AlpasServlet(
         }
     }
 
-    private fun HttpCall.dispatchToRouteHandler(route: Route, callHooks: List<HttpCallHook>) {
+    private fun HttpCall.dispatchToRouteHandler(app: Application, route: Route, callHooks: List<HttpCallHook>) {
         val groupMiddleware = mutableListOf<Middleware<HttpCall>>()
         route.middlewareGroups.forEach {
-            groupMiddleware.addAll(makeMiddleware(routeEntryMiddlewareGroups[it]))
+            groupMiddleware.addAll(makeMiddleware(app, routeEntryMiddlewareGroups[it]))
         }
-        val middleware = groupMiddleware.plus(makeMiddleware(route.middleware))
+        val middleware = groupMiddleware.plus(makeMiddleware(app, route.middleware))
         Pipeline<HttpCall>().send(this).through(middleware).then { call ->
             logger.debug { "Calling before route handle hook for ${callHooks.size} hooks" }
             callHooks.forEach { it -> it.beforeRouteHandle(call, route) }
@@ -96,18 +97,21 @@ class AlpasServlet(
     }
 
     @Suppress("RemoveExplicitTypeArguments")
-    private fun makeMiddleware(middleware: Iterable<KClass<out Middleware<HttpCall>>>?): Iterable<Middleware<HttpCall>> {
+    private fun makeMiddleware(
+        app: Application,
+        middleware: Iterable<KClass<out Middleware<HttpCall>>>?
+    ): Iterable<Middleware<HttpCall>> {
         return middleware?.filter { app.shouldLoadMiddleware(it) }?.map { it.createInstance() } ?: emptyList()
     }
 
-    private fun HttpCall.sendCallThroughServerEntryMiddleware(): Pipeline<HttpCall> {
-        return Pipeline<HttpCall>().send(this).through(makeMiddleware(serverEntryMiddleware))
+    private fun HttpCall.sendCallThroughServerEntryMiddleware(app: Application): Pipeline<HttpCall> {
+        return Pipeline<HttpCall>().send(this).through(makeMiddleware(app, serverEntryMiddleware))
     }
 
-    private fun HttpServletRequest.method(): String {
+    private fun HttpServletRequest.method(allowMethodSpoofing: Boolean): String {
         // If method is not a POST method, no need to check it further. We just return the method as it is.
         // If method spoofing is not allowed we return the method name as it is.
-        if (method != Method.POST.name || !app.config<AppConfig>().allowMethodSpoofing) {
+        if (method != Method.POST.name || !allowMethodSpoofing) {
             return method
         }
         return parameterMap["_method"]?.firstOrNull()?.toUpperCase() ?: method
