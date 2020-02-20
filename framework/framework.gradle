@@ -4,7 +4,6 @@ buildscript {
 }
 
 dependencies {
-    implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
     implementation "org.eclipse.jetty:jetty-webapp:${jettyVersion}"
     implementation "com.github.danielnorberg:rut:v1.0"
     implementation "org.picocontainer:picocontainer:2.15"
@@ -19,6 +18,7 @@ dependencies {
     implementation "com.github.alpas:url-signer:0.1.7"
     implementation "com.github.freva:ascii-table:1.1.0"
 
+    compile "org.eclipse.jetty:jetty-server:${jettyVersion}"
     compile "com.zaxxer:HikariCP:3.4.1"
     compile "org.atteo:evo-inflector:1.2.2"
     compile "io.pebbletemplates:pebble:3.1.2"
