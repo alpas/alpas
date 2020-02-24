@@ -2,9 +2,12 @@ package dev.alpas.tests.ozone
 
 import dev.alpas.ozone.findOrCreate
 import dev.alpas.ozone.from
+import dev.alpas.ozone.update
 import dev.alpas.tests.BaseTest
 import me.liuwj.ktorm.database.Database
+import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.entity.findAll
+import me.liuwj.ktorm.entity.findList
 import me.liuwj.ktorm.support.sqlite.SQLiteDialect
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -104,5 +107,21 @@ class OzoneTableTest : BaseTest() {
             it.email to "test@example.com"
         }
         assertEquals(2, TestTable().findAll().size)
+    }
+
+    @Test
+    fun `can update using properties map`() {
+        execSqlScript(TestTable.createSql)
+
+        val entities = from(TestObjectFactory, 5)
+        TestTable().update(mapOf("email" to "newemail@example.com")) {
+            it.id eq entities.first().id
+        }
+
+        val defaultEmailEntities = TestTable().findMany(mapOf("email" to "Default Email"))
+        assertEquals(4, defaultEmailEntities.size)
+
+        val newEmailEntity = TestTable().findList { it.email eq "newemail@example.com" }
+        assertEquals(1, newEmailEntity.size)
     }
 }

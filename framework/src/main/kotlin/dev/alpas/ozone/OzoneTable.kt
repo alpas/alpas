@@ -412,10 +412,12 @@ fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.update(
     }
     return update {
         for (attr in attributes) {
-            // todo: check if there is a column name wit the key
+            // todo: check if there is a column name with the key
             it[attr.key] to attr.value
         }
-        block(it)
+        where {
+            block(it)
+        }
     }
 }
 
