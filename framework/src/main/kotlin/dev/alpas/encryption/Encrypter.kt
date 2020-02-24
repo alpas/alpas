@@ -1,12 +1,8 @@
 package dev.alpas.encryption
 
-import dev.alpas.JsonSerializer
-import dev.alpas.base64Decoded
-import dev.alpas.base64DecodedBytes
-import dev.alpas.base64Encoded
-import dev.alpas.secureByteArray
-import dev.alpas.secureRandomString
+import dev.alpas.*
 import se.simbio.encryption.Encryption
+import javax.crypto.BadPaddingException
 
 internal data class EncryptedData(val iv: String, val salt: String, val value: String?)
 
@@ -24,7 +20,11 @@ class Encrypter(private val key: String) {
             val iv = it.iv.base64DecodedBytes()
             val salt = it.salt
 
-            return Encryption.getDefault(key, salt, iv).decryptOrNull(it.value)
+            return try {
+                Encryption.getDefault(key, salt, iv).decrypt(it.value)
+            } catch (ex: BadPaddingException) {
+                null
+            }
         }
     }
 
