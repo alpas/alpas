@@ -1,5 +1,5 @@
 dependencies {
-    compile project(":framework")
+    compile project(":alpas")
     compile 'io.rest-assured:rest-assured:4.1.1'
     compile 'io.rest-assured:kotlin-extensions:4.1.1'
     compile 'org.junit.jupiter:junit-jupiter:5.5.2'
