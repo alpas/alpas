@@ -1,23 +1,25 @@
 package dev.alpas.tests.ozone
 
-import dev.alpas.ozone.findOrCreate
-import dev.alpas.ozone.from
-import dev.alpas.ozone.update
+import dev.alpas.exceptions.NotFoundHttpException
+import dev.alpas.http.HttpCall
+import dev.alpas.ozone.*
 import dev.alpas.tests.BaseTest
+import io.mockk.every
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.junit5.MockKExtension
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.entity.findAll
 import me.liuwj.ktorm.entity.findList
 import me.liuwj.ktorm.support.sqlite.SQLiteDialect
-import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.extension.ExtendWith
 import java.sql.Connection
 import java.sql.DriverManager
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockKExtension::class)
 class OzoneTableTest : BaseTest() {
     lateinit var connection: Connection
 
@@ -123,5 +125,48 @@ class OzoneTableTest : BaseTest() {
 
         val newEmailEntity = TestTable().findList { it.email eq "newemail@example.com" }
         assertEquals(1, newEmailEntity.size)
+    }
+
+    @Test
+    fun `retrieve an entity based on call param`(@RelaxedMockK call: HttpCall) {
+        execSqlScript(TestTable.createSql)
+        val entities = from(TestObjectFactory, 5)
+
+        every { call.param("id") } returns 2
+        val entity = call.entityParam(TestTable())
+
+        assertEquals(entity.firstName, entities[1].firstName)
+    }
+
+    @Test
+    fun `retrieve an entity based on call param with a custom key`(@RelaxedMockK call: HttpCall) {
+        execSqlScript(TestTable.createSql)
+        val entities = from(TestObjectFactory, 5) {
+            it.firstName to faker.name().firstName()
+        }
+
+        every { call.param("first_name") } returns entities[1].firstName
+        val entity = call.entityParam(TestTable(), "first_name")
+
+        assertEquals(entity.firstName, entities[1].firstName)
+    }
+
+    @Test
+    fun `throws an exception if an entity based on call param is not found`(@RelaxedMockK call: HttpCall) {
+        execSqlScript(TestTable.createSql)
+        from(TestObjectFactory, 5)
+        every { call.param("id") } returns 10
+        Assertions.assertThrows(NotFoundHttpException::class.java) {
+            call.entityParam(TestTable())
+        }
+    }
+
+    @Test
+    fun `throws an exception if param key is not found`(@RelaxedMockK call: HttpCall) {
+        execSqlScript(TestTable.createSql)
+        every { call.param("pid") } returns null
+        Assertions.assertThrows(NotFoundHttpException::class.java) {
+            call.entityParam(TestTable(), "pid")
+        }
     }
 }
