@@ -219,4 +219,10 @@ class HttpCall internal constructor(
     fun validateUsingJsonBody() {
         validateUsingJsonBody.set(true)
     }
+
+    fun saveReferrerAsIntendedUrl(default: String = "/"): String {
+        return (referrer ?: default).apply {
+            session.saveIntendedUrl(this)
+        }
+    }
 }
