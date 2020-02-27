@@ -8,4 +8,5 @@ interface HttpCallHook {
     fun beforeRouteHandle(call: HttpCall, route: Route){}
     fun beforeClose(call: HttpCall, cleanClose: Boolean){}
     fun beforeRender(renderContext: RenderContext){}
+    fun beforeErrorRender(renderContext: RenderContext){}
 }

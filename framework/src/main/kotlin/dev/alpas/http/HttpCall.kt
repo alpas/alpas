@@ -212,8 +212,13 @@ class HttpCall internal constructor(
     }
 
     fun onBeforeRender(context: RenderContext) {
-        logger.debug { "Calling beforeRender hook for ${callHooks.size} hooks" }
-        callHooks.forEach { it.beforeRender(context) }
+        if(isDropped) {
+            logger.debug { "Calling beforeErrorRender hook for ${callHooks.size} hooks" }
+            callHooks.forEach { it.beforeErrorRender(context) }
+        } else {
+            logger.debug { "Calling beforeRender hook for ${callHooks.size} hooks" }
+            callHooks.forEach { it.beforeRender(context) }
+        }
     }
 
     fun validateUsingJsonBody() {
