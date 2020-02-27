@@ -21,11 +21,11 @@ open class HttpException(
     }
 }
 
-internal fun Int.toHttpException(message: String? = null, headers: Map<String, String> = emptyMap()): HttpException {
-    return when (this) {
+fun httpExceptionFor(statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()): HttpException {
+    return when (statusCode) {
         HttpStatus.NOT_FOUND_404 -> NotFoundHttpException(message, headers)
         HttpStatus.METHOD_NOT_ALLOWED_405 -> MethodNotAllowedException(message, headers = headers)
         HttpStatus.INTERNAL_SERVER_ERROR_500 -> InternalServerException(message, headers = headers)
-        else -> HttpException(this, message ?: "", headers = headers)
+        else -> HttpException(statusCode, message ?: "", headers = headers)
     }
 }
