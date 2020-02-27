@@ -1,7 +1,7 @@
 package dev.alpas.http
 
 import dev.alpas.JsonSerializable
-import dev.alpas.exceptions.toHttpException
+import dev.alpas.exceptions.httpExceptionFor
 import dev.alpas.validation.ErrorBag
 import dev.alpas.validation.SharedDataBag
 import org.eclipse.jetty.http.HttpStatus
@@ -92,7 +92,7 @@ interface ResponsableCall {
     }
 
     fun abort(statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()): Nothing {
-        throw statusCode.toHttpException(message, headers)
+        throw httpExceptionFor(statusCode, message, headers)
     }
 
     fun abortUnless(
