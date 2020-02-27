@@ -6,12 +6,16 @@ import javax.servlet.http.HttpServletRequest
 const val CSRF_SESSION_KEY = "_csrf"
 const val VALIDATION_ERRORS_KEY = "_validation_errors"
 const val OLD_INPUTS_KEY = "_old_inputs"
+const val INTENDED_URL_KEY = "_intended_url"
+const val PREVIOUS_URL_KEY = "_previous_url"
+const val PREVIOUS_FLASH_BAG_KEY = "_previous_flash_bag"
+const val NEXT_FLASH_BAG_KEY = "_next_flash_bag"
 
 @Suppress("UNCHECKED_CAST", "unused")
 class Session(private val request: HttpServletRequest) {
     private val session = request.session
     operator fun <T> invoke(key: String): T? {
-        return get(key)
+        return get<T>(key)
     }
 
     operator fun <T> invoke(key: String, default: T): T {
@@ -30,6 +34,10 @@ class Session(private val request: HttpServletRequest) {
 
     operator fun <T> get(key: String): T? {
         return session.getAttribute(key) as? T
+    }
+
+    operator fun get(key: String): String? {
+        return session.getAttribute(key) as? String
     }
 
     operator fun <T> get(key: String, default: T): T {
@@ -58,17 +66,17 @@ class Session(private val request: HttpServletRequest) {
         session.setAttribute(key, value)
     }
 
-    fun <T: Any> pull(key: String): T? {
+    fun <T : Any> pull(key: String): T? {
         return this.invoke<T?>(key)?.also {
             forget(key)
         }
     }
 
-    fun <T: Any> pull(key: String, default: T): T {
+    fun <T : Any> pull(key: String, default: T): T {
         return this.pull(key) ?: default
     }
 
-    fun <T: Any> pull(key: String, default: () -> T): T {
+    fun <T : Any> pull(key: String, default: () -> T): T {
         return this.pull(key) ?: default()
     }
 
@@ -85,17 +93,17 @@ class Session(private val request: HttpServletRequest) {
     }
 
     internal fun nextFlashBag(): MutableMap<String, Any?> {
-        return getOrCreate("_next_flash_bag", mutableMapOf()) ?: mutableMapOf()
+        return getOrCreate(NEXT_FLASH_BAG_KEY, mutableMapOf()) ?: mutableMapOf()
     }
 
     private fun previousFlashBag(default: Map<String, Any?> = emptyMap()): Map<String, Any?> {
-        return getOrCreate("_previous_flash_bag") {
+        return getOrCreate(PREVIOUS_FLASH_BAG_KEY) {
             default
         } ?: emptyMap()
     }
 
     internal fun copyPreviousFlashBag() {
-        put("_previous_flash_bag", pull("_next_flash_bag"))
+        put(PREVIOUS_FLASH_BAG_KEY, pull(NEXT_FLASH_BAG_KEY))
     }
 
     fun flashBag(): Map<String, Any?> {
@@ -119,7 +127,7 @@ class Session(private val request: HttpServletRequest) {
     }
 
     internal fun clearPreviousFlashBag() {
-        forget("_previous_flash_bag")
+        forget(PREVIOUS_FLASH_BAG_KEY)
     }
 
     fun invalidate() {
@@ -135,7 +143,7 @@ class Session(private val request: HttpServletRequest) {
 
     fun <T> getOrCreate(key: String, default: () -> T?): T? {
         if (exists(key)) {
-            return get(key)
+            return get<T>(key)
         }
         return default().also {
             put(key, it)
@@ -144,7 +152,7 @@ class Session(private val request: HttpServletRequest) {
 
     fun <T> getOrCreate(key: String, default: T?): T? {
         if (exists(key)) {
-            return get(key)
+            return get<T>(key)
         }
         put(key, default)
         return default
@@ -155,11 +163,11 @@ class Session(private val request: HttpServletRequest) {
     }
 
     fun savePreviousUrl(url: String) {
-        this.put("_previous_url", url)
+        this.put(PREVIOUS_URL_KEY, url)
     }
 
     fun saveIntendedUrl(url: String) {
-        this.put("_intended_url", url)
+        this.put(INTENDED_URL_KEY, url)
     }
 
     fun old(): Map<String, List<Any>> {
@@ -170,5 +178,13 @@ class Session(private val request: HttpServletRequest) {
     fun errors(): Map<String, List<Any>> {
         val flash = flashBag()
         return flash[VALIDATION_ERRORS_KEY] as? Map<String, List<Any>> ?: emptyMap()
+    }
+
+    fun intended(): String? {
+        return get(INTENDED_URL_KEY)
+    }
+
+    fun previousUrl(): String? {
+        return get(PREVIOUS_URL_KEY)
     }
 }
