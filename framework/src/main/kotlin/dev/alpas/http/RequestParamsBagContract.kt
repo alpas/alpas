@@ -31,10 +31,6 @@ interface RequestParamsBagContract {
         return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
     }
 
-    fun params(key: String): List<Any>? {
-        return paramList(key)
-    }
-
     fun paramList(key: String): List<Any>? {
         return params?.get(key)
     }
@@ -55,18 +51,18 @@ interface RequestParamsBagContract {
         return queryParams?.get(key)
     }
 
-    fun params(key: String, vararg keys: String): Map<String, Any?> {
+    fun params(vararg keys: String): Map<String, Any?> {
         return params
-            ?.filterKeys { it.isOneOf(key, *keys) }
+            ?.filterKeys { it in keys }
             ?.filterNotNullValues() // remove nulls
             ?.map { it.key to it.value.firstOrNull() } // only return the first value from the list
             ?.toMap()
             ?: emptyMap()
     }
 
-    fun paramsExcept(key: String, vararg keys: String): Map<String, Any?> {
+    fun paramsExcept(vararg keys: String): Map<String, Any?> {
         return params
-            ?.filterKeys { it.isOneOf(key, *keys) }
+            ?.filterKeys { it in keys }
             ?.filterNotNullValues() // remove nulls
             ?.map { it.key to it.value.firstOrNull() } // only return the first value from the list
             ?.toMap()

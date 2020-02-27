@@ -21,7 +21,7 @@ abstract class Rule {
         return if (checkInJson) {
             check(attribute, call.jsonBody?.get(attribute))
         } else {
-            check(attribute, call.params(attribute))
+            check(attribute, call.paramList(attribute))
         }
     }
 
