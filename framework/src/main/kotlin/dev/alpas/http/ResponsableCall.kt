@@ -78,6 +78,25 @@ interface ResponsableCall {
         return this
     }
 
+    fun render(
+        templateName: String,
+        args: MutableMap<String, Any?>? = null,
+        statusCode: Int = 200,
+        block: ArgsBuilder.() -> Unit
+    ): ViewResponse {
+        val builder = ArgsBuilder(args ?: mutableMapOf()).also(block)
+        return render(templateName, builder.map(), statusCode)
+    }
+
+    fun json(
+        args: MutableMap<String, Any?>? = null,
+        statusCode: Int = 200,
+        block: ArgsBuilder.() -> Unit
+    ): ResponsableCall {
+        val builder = ArgsBuilder(args ?: mutableMapOf()).also(block)
+        return replyAsJson(builder.map(), statusCode)
+    }
+
     fun contentType(type: String) {
         servletResponse.contentType = type
     }
@@ -142,5 +161,15 @@ private fun makeCookie(
         domain?.let { cookie.domain = it }
         cookie.secure = secure
         cookie.isHttpOnly = httpOnly
+    }
+}
+
+class ArgsBuilder(private val assignments: MutableMap<String, Any?> = mutableMapOf()) {
+    infix fun String.to(argument: Any) {
+        assignments[this] = argument
+    }
+
+    internal fun map(): Map<String, Any?> {
+        return assignments
     }
 }
