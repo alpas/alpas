@@ -16,7 +16,7 @@ class SessionAuthChannel(private val call: HttpCall, override val userProvider: 
         if (isLoggedIn()) {
             return true
         }
-        val id: Any? = call.session[sessionKey]
+        val id = call.session.get<Any>(sessionKey)
         if (id != null) {
             userProvider.findByPrimaryKey(id)?.also {
                 user = it
