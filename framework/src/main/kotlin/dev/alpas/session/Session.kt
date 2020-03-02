@@ -37,7 +37,7 @@ class Session(private val request: HttpServletRequest) {
     }
 
     operator fun get(key: String): String? {
-        return session.getAttribute(key) as? String
+        return session.getAttribute(key)?.toString()
     }
 
     operator fun <T> get(key: String, default: T): T {
