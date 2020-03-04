@@ -57,3 +57,9 @@ internal class CustomNode(
         visitor.visit(this)
     }
 }
+
+fun EvaluationContextImpl.allScopedArgs(): Map<String, Any?> {
+    return scopeChain.globalScopes.map { scope ->
+        scope.keys.map { it to scope.get(it) }.toMap()
+    }.reduce { acc, map -> acc + map }
+}
