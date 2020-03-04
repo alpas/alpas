@@ -48,6 +48,16 @@ class Route(
         return middleware.contains(GuestOnlyMiddleware::class)
     }
 
+    @ExperimentalStdlibApi
+    fun methods(): List<Method> {
+        return buildList(2) {
+            if (method == Method.GET) {
+                add(Method.HEAD)
+            }
+            add(method)
+        }
+    }
+
     internal fun build(loader: PackageClassLoader) {
         path = path.mustStartWith("/")
         name(combineNames(groupName, name))
