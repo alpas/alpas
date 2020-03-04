@@ -13,11 +13,19 @@ internal val EvaluationContext.httpCall: HttpCall
     }
 
 data class TagContext(val call: HttpCall, val lineNumber: Int, val templateName: String, val context: EvaluationContext)
+data class FunctionContext(
+    val call: HttpCall,
+    val args: Map<String, Any>?,
+    val context: EvaluationContext,
+    val lineNumber: Int,
+    val templateName: String
+)
 
 @Suppress("unused")
 open class ViewServiceProvider : ServiceProvider {
     private lateinit var conditionalTags: ConditionalTags
     private lateinit var customTags: CustomTags
+    private lateinit var customFunctions: CustomFunctions
 
     override fun register(app: Application, loader: PackageClassLoader) {
         val viewConfig = app.config { ViewConfig(app.env) }
@@ -29,12 +37,14 @@ open class ViewServiceProvider : ServiceProvider {
         val viewRenderer = viewRenderer(app)
         conditionalTags = ConditionalTagsImpl(viewRenderer)
         customTags = CustomTagsImpl(viewRenderer)
+        customFunctions = CustomFunctionsImpl(viewRenderer)
 
-        registerPebbleExtensions(app, loader, conditionalTags, customTags)
+        registerPebbleExtensions(app, loader, conditionalTags, customTags, customFunctions)
 
         app.apply {
             singleton(conditionalTags)
             singleton(customTags)
+            singleton(customFunctions)
             singleton(Mix(this))
             singleton(viewRenderer)
         }
@@ -44,7 +54,8 @@ open class ViewServiceProvider : ServiceProvider {
         app: Application,
         loader: PackageClassLoader,
         conditionalTags: ConditionalTags,
-        customTags: CustomTags
+        customTags: CustomTags,
+        customFunctions: CustomFunctions
     ) {
         loader.classesImplementing(PebbleExtension::class) {
             app.logger.debug { "Discovered Pebble Extension: ${it.name}" }
@@ -54,7 +65,9 @@ open class ViewServiceProvider : ServiceProvider {
 
         app.makeMany<PebbleExtension>().forEach {
             app.logger.debug { "Registering Pebble Extension: ${it.javaClass.name}" }
-            it.register(app, conditionalTags, customTags)
+            it.register(app, conditionalTags)
+            it.register(app, customTags)
+            it.register(app, customFunctions)
         }
     }
 
