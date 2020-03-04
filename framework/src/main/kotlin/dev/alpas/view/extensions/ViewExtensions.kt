@@ -7,6 +7,7 @@ import dev.alpas.config
 import dev.alpas.make
 import dev.alpas.session.CSRF_SESSION_KEY
 import dev.alpas.view.ConditionalTags
+import dev.alpas.view.CustomFunctions
 import dev.alpas.view.CustomTags
 import dev.alpas.view.ViewConfig
 import kotlin.reflect.KProperty1
@@ -27,6 +28,14 @@ internal class PebbleExtensions : PebbleExtension {
         customTags.add("csrf") {
             val csrf = this.context.getVariable(CSRF_SESSION_KEY)
             """<input type="hidden" name="$CSRF_SESSION_KEY" value="$csrf">"""
+        }
+    }
+
+    override fun register(app: Application, customFunctions: CustomFunctions) {
+        customFunctions.add("spoof", listOf("method")) {
+            val method = args?.get("method")
+                ?: throw Exception("spoof() function requires the name of the method to spoof - either PUT, PATCh, or DELETE. Called from (${this.templateName} line no. $lineNumber)")
+            """<input type="hidden" name="_method" value="${method.toString().toLowerCase()}">"""
         }
     }
 
