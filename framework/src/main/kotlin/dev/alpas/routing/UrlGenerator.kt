@@ -10,7 +10,7 @@ import java.net.URL
 import java.time.Duration
 import java.time.ZonedDateTime
 
-class UrlGenerator(private val serverURI: URI, private val router: Router, private val appConfig: AppConfig) {
+class UrlGenerator(private val root: String, private val router: Router, private val appConfig: AppConfig) {
     private val paramMatchRegex by lazy { """<([^>]*)>""".toRegex() }
 
     fun route(
@@ -33,7 +33,7 @@ class UrlGenerator(private val serverURI: URI, private val router: Router, priva
             value.toString()
         }
 
-        val uri = buildUri(serverURI)
+        val uri = buildUri(root)
             .encodedPath(basePath)
             .addQueryParams(*mutableParamsMap.map { it.key to it.value.toString() }.toTypedArray())
             .build()
@@ -41,20 +41,21 @@ class UrlGenerator(private val serverURI: URI, private val router: Router, priva
         return (if (absolute) {
             uri
         } else {
-            serverURI.relativize(uri)
+            URI(root).relativize(uri)
         }).toString()
     }
 
-    fun url(url: String, params: Map<String, Any> = emptyMap(), absolute: Boolean = true): String {
-        val uri = buildUri(url)
+    fun url(
+        path: String,
+        params: Map<String, Any> = emptyMap(),
+        forceSecure: Boolean = false
+    ): URI {
+        val builder = buildUri("$root$path")
             .addQueryParams(*params.map { it.key to it.value.toString() }.toTypedArray())
-            .build()
-            .toURI()
-        return (if (absolute) {
-            uri
-        } else {
-            serverURI.relativize(uri)
-        }).toString()
+        if (forceSecure) {
+            builder.scheme("https://")
+        }
+        return builder.build().toURI()
     }
 
     fun signedRoute(name: String, params: Map<String, Any>? = null, expiration: Duration): URL? {

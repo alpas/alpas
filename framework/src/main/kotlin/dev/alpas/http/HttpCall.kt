@@ -15,7 +15,7 @@ import dev.alpas.validation.Rule
 import dev.alpas.validation.ValidationGuard
 import mu.KotlinLogging
 import org.eclipse.jetty.http.HttpStatus
-import uy.klutter.core.uri.buildUri
+import java.net.URI
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.concurrent.atomic.AtomicBoolean
@@ -61,7 +61,7 @@ class HttpCall internal constructor(
         private set
 
     init {
-        singleton(UrlGenerator(buildUri(requestableCall.rootUrl).toURI(), make(), make()))
+        singleton(UrlGenerator(requestableCall.rootUrl, make(), make()))
     }
 
     fun charset() = servletResponse.charset()
@@ -212,7 +212,7 @@ class HttpCall internal constructor(
     }
 
     fun onBeforeRender(context: RenderContext) {
-        if(isDropped) {
+        if (isDropped) {
             logger.debug { "Calling beforeErrorRender hook for ${callHooks.size} hooks" }
             callHooks.forEach { it.beforeErrorRender(context) }
         } else {
@@ -229,5 +229,21 @@ class HttpCall internal constructor(
         return (referrer ?: default).apply {
             session.saveIntendedUrl(this)
         }
+    }
+
+    fun url(
+        path: String,
+        params: Map<String, Any> = emptyMap(),
+        forceSecure: Boolean = false
+    ): String {
+        return uri(path, params, forceSecure).toString()
+    }
+
+    fun uri(
+        path: String,
+        params: Map<String, Any> = emptyMap(),
+        forceSecure: Boolean = false
+    ): URI {
+        return urlGenerator.url(path, params, forceSecure)
     }
 }
