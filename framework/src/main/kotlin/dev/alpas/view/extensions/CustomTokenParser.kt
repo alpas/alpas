@@ -14,7 +14,6 @@ import dev.alpas.view.ViewRenderer
 import dev.alpas.view.httpCall
 import java.io.Writer
 
-
 internal class CustomTokenParser(
     private val tagName: String,
     private val callback: TagContext.() -> String,
@@ -40,17 +39,8 @@ internal class CustomNode(
 ) : AbstractRenderableNode(lineNumber) {
     override fun render(self: PebbleTemplateImpl, writer: Writer, context: EvaluationContextImpl) {
         val call = context.httpCall
-        val text = callback(TagContext(call, lineNumber, self.name, context))
-        writer.write(viewRenderer.renderTemplate(text, SharedDataBag(), currentArgs(context)))
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    // FIXME: This is just a temporary hack until this is resolved: https://github.com/PebbleTemplates/pebble/issues/291
-    private fun currentArgs(context: EvaluationContextImpl): Map<String, Any?> {
-        return context.scopeChain.globalScopes.map {
-            val stack = it.javaClass.getDeclaredField("backingMap").apply { isAccessible = true }
-            stack.get(it) as Map<String, Any?>
-        }.reduce { acc, map -> acc + map }
+        val text = callback(TagContext(call, context, lineNumber, self.name))
+        writer.write(viewRenderer.renderTemplate(text, SharedDataBag(), context.allScopedArgs()))
     }
 
     override fun accept(visitor: NodeVisitor) {

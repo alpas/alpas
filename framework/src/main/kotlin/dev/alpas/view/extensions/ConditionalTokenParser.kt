@@ -80,7 +80,7 @@ internal class ConditionalNode(
     AbstractRenderableNode(lineNumber) {
 
     override fun render(self: PebbleTemplateImpl, writer: Writer, context: EvaluationContextImpl) {
-        val tagContext = TagContext(context.httpCall, lineNumber, self.name, context)
+        val tagContext = TagContext(context.httpCall, context, lineNumber, self.name)
 
         if (condition(tagContext)) {
             trueBody.render(self, writer, context)

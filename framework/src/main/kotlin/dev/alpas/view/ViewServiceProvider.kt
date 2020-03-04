@@ -12,7 +12,7 @@ internal val EvaluationContext.httpCall: HttpCall
         return getVariable("call") as HttpCall
     }
 
-data class TagContext(val call: HttpCall, val lineNumber: Int, val templateName: String, val context: EvaluationContext)
+data class TagContext(val call: HttpCall, val context: EvaluationContext, val lineNumber: Int, val templateName: String)
 data class FunctionContext(
     val call: HttpCall,
     val args: Map<String, Any>?,
