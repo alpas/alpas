@@ -24,12 +24,28 @@ abstract class LinkResourcesCommand(
             val link = toPath()
             val targetRelativePath = env.storagePath().relativize(dest)
             val target = env.rootPath(targetRelativePath).toPath()
-            Files.createSymbolicLink(link, target)
 
-            withColors {
-                echo(green("LINK CREATED 🙌"))
-                echo("${dim(env.rootPath().relativize(link.toAbsolutePath()))} ↝ ${dim(env.rootPath().relativize(target.toAbsolutePath()))}")
-                echo(yellow(docsUrl))
+            if (Files.exists(link)) {
+                withColors {
+                    echo(yellow("LINK ALREADY EXISTS. NO NEED TO RUN THIS COMMAND."))
+                    echo("${dim(env.rootPath().relativize(link.toAbsolutePath()))}")
+                    echo(yellow(docsUrl))
+                }
+            } else {
+
+                Files.createSymbolicLink(link, target)
+
+                withColors {
+                    echo(green("LINK CREATED 🙌"))
+                    echo(
+                        "${dim(env.rootPath().relativize(link.toAbsolutePath()))} ↝ ${dim(
+                            env.rootPath().relativize(
+                                target.toAbsolutePath()
+                            )
+                        )}"
+                    )
+                    echo(yellow(docsUrl))
+                }
             }
         }
     }
