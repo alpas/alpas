@@ -45,17 +45,9 @@ class UrlGenerator(private val root: String, private val router: Router, private
         }).toString()
     }
 
-    fun url(
-        path: String,
-        params: Map<String, Any> = emptyMap(),
-        forceSecure: Boolean = false
-    ): URI {
-        val builder = buildUri("$root$path")
-            .addQueryParams(*params.map { it.key to it.value.toString() }.toTypedArray())
-        if (forceSecure) {
-            builder.scheme("https://")
-        }
-        return builder.build().toURI()
+
+    fun url(path: String, params: Map<String, Any> = emptyMap(), forceSecure: Boolean = false): URI {
+        return url(root, path, params, forceSecure)
     }
 
     fun signedRoute(name: String, params: Map<String, Any>? = null, expiration: Duration): URL? {
@@ -82,4 +74,13 @@ class UrlGenerator(private val root: String, private val router: Router, private
     fun hasRoute(name: String): Boolean {
         return router.findNamedRoute(name) != null
     }
+}
+
+fun url(root: String, path: String, params: Map<String, Any> = emptyMap(), forceSecure: Boolean = false): URI {
+    val builder = buildUri("$root$path")
+        .addQueryParams(*params.map { it.key to it.value.toString() }.toTypedArray())
+    if (forceSecure) {
+        builder.scheme("https://")
+    }
+    return builder.build().toURI()
 }

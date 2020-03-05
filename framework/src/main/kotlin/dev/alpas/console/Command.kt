@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.TermColors
 import dev.alpas.*
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 
 abstract class Command(
@@ -80,6 +81,14 @@ abstract class Command(
                 output()
             }
         }
+    }
+
+    fun relativeToSrc(path: Path): String {
+        return srcDir.relativize(path)
+    }
+
+    fun relativeToSrc(path: String): String {
+        return srcDir.relativize(path)
     }
 }
 
