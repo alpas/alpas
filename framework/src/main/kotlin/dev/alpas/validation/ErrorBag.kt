@@ -1,9 +1,10 @@
 package dev.alpas.validation
 
+import dev.alpas.JsonSerializable
 import dev.alpas.JsonSerializer
 import dev.alpas.http.RequestError
 
-class ErrorBag(vararg errors: RequestError) {
+class ErrorBag(vararg errors: RequestError) : JsonSerializable {
     private val errors = mutableListOf(*errors)
     fun add(requestError: RequestError) {
         errors.add(requestError)
@@ -25,7 +26,7 @@ class ErrorBag(vararg errors: RequestError) {
         return map
     }
 
-    fun asJson(): String {
+    override fun toJson(): String {
         return JsonSerializer.serialize(asMap())
     }
 }
