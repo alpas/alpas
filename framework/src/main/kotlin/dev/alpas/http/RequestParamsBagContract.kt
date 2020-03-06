@@ -66,7 +66,7 @@ interface RequestParamsBagContract {
 
     fun paramsExcept(key: String, vararg keys: String): Map<String, Any?> {
         return params
-            ?.filterKeys { it.isOneOf(key, *keys) }
+            ?.filterKeys { !it.isOneOf(key, *keys) }
             ?.filterNotNullValues() // remove nulls
             ?.map { it.key to it.value.firstOrNull() } // only return the first value from the list
             ?.toMap()
