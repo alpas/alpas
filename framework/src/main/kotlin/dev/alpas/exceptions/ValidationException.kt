@@ -24,7 +24,13 @@ class ValidationException(
                 flash(VALIDATION_ERRORS_KEY, errorBag.asMap())
                 flash(
                     OLD_INPUTS_KEY,
-                    call.paramsExcept("password", "password_confirm", "confirm_password", CSRF_SESSION_KEY)
+                    call.paramsExcept(
+                        "password",
+                        "password_confirm",
+                        "confirm_password",
+                        CSRF_SESSION_KEY,
+                        firstValueOnly = false
+                    )
                 )
             }
             call.redirect().back()

@@ -55,22 +55,30 @@ interface RequestParamsBagContract {
         return queryParams?.get(key)
     }
 
-    fun params(key: String, vararg keys: String): Map<String, Any?> {
+    fun params(key: String, vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
         return params
             ?.filterKeys { it.isOneOf(key, *keys) }
             ?.filterNotNullValues() // remove nulls
-            ?.map { it.key to it.value.firstOrNull() } // only return the first value from the list
-            ?.toMap()
-            ?: emptyMap()
+            ?.let { filteredParams ->
+                if (firstValueOnly) {
+                    filteredParams.map { it.key to it.value.firstOrNull() }.toMap()
+                } else {
+                    filteredParams
+                }
+            } ?: emptyMap()
     }
 
-    fun paramsExcept(key: String, vararg keys: String): Map<String, Any?> {
+    fun paramsExcept(key: String, vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
         return params
             ?.filterKeys { !it.isOneOf(key, *keys) }
             ?.filterNotNullValues() // remove nulls
-            ?.map { it.key to it.value.firstOrNull() } // only return the first value from the list
-            ?.toMap()
-            ?: emptyMap()
+            ?.let { filteredParams ->
+                if (firstValueOnly) {
+                    filteredParams.map { it.key to it.value.firstOrNull() }.toMap()
+                } else {
+                    filteredParams
+                }
+            } ?: emptyMap()
     }
 
     fun combineJsonBodyWithParams()
