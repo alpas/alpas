@@ -165,7 +165,7 @@ private fun makeCookie(
 }
 
 class ArgsBuilder(private val assignments: MutableMap<String, Any?> = mutableMapOf()) {
-    infix fun String.to(argument: Any) {
+    infix fun String.to(argument: Any?) {
         assignments[this] = argument
     }
 
