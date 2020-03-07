@@ -25,7 +25,7 @@ class Responsable internal constructor(override val servletResponse: HttpServlet
     override fun finalize(call: HttpCall) {
         saveCookies(call)
         copyHeaders()
-        copyContent(call)
+        reply(call)
     }
 
     private fun saveCookies(call: HttpCall) {
@@ -34,16 +34,13 @@ class Responsable internal constructor(override val servletResponse: HttpServlet
         }
     }
 
-    private fun copyContent(call: HttpCall) {
-        renderView(call)
-    }
-
-    private fun renderView(call: HttpCall) {
+    private fun reply(call: HttpCall) {
         val context = RenderContext(call, sharedData).also {
             call.onBeforeRender(it)
         }
         try {
             response.render(context) { copyTo(servletResponse.outputStream) }
+            response.finalize(servletResponse)
         } catch (e: Exception) {
             response.renderException(e, context) { copyTo(servletResponse.outputStream) }
         }
@@ -61,5 +58,24 @@ class Responsable internal constructor(override val servletResponse: HttpServlet
 
     override fun shared(key: String): Any? {
         return sharedData[key]
+    }
+
+    override fun status(code: Int): ResponsableCall {
+        if (::response.isInitialized) {
+            response.statusCode = code
+            return this
+        } else {
+            throw IllegalStateException("Status Code can't be set before the response. Make sure to set a response first.")
+        }
+    }
+
+
+    override fun contentType(type: String): ResponsableCall {
+        if (::response.isInitialized) {
+            response.contentType = type
+            return this
+        } else {
+            throw IllegalStateException("Content type can't be set before the response. Make sure to set a response first.")
+        }
     }
 }

@@ -22,36 +22,26 @@ interface ResponsableCall {
     fun addHeader(key: String, value: String): ResponsableCall
 
     fun <T> reply(payload: T? = null, statusCode: Int = HttpStatus.OK_200): ResponsableCall {
-        response = StringResponse(payload?.toString())
-        servletResponse.status = statusCode
-        asHtml()
+        response = StringResponse(payload?.toString(), statusCode)
         return this
     }
 
     fun <T : Map<*, *>> replyAsJson(payload: T, statusCode: Int = HttpStatus.OK_200): ResponsableCall {
-        response = JsonResponse(payload)
-        status(statusCode)
-        asJson()
+        response = JsonResponse(payload, statusCode)
         return this
     }
 
     fun replyAsJson(payload: JsonSerializable, statusCode: Int = HttpStatus.OK_200): ResponsableCall {
-        response = JsonResponse(payload)
-        status(statusCode)
-        asJson()
+        response = JsonResponse(payload, statusCode)
         return this
     }
 
-    fun render(response: JsonResponse, statusCode: Int = HttpStatus.OK_200) {
+    fun render(response: JsonResponse) {
         this.response = response
-        status(statusCode)
-        asJson()
     }
 
-    fun render(response: Response, statusCode: Int = HttpStatus.OK_200) {
+    fun render(response: Response) {
         this.response = response
-        status(statusCode)
-        asHtml()
     }
 
     fun render(
@@ -59,7 +49,7 @@ interface ResponsableCall {
         arg: Pair<String, Any?>,
         statusCode: Int = HttpStatus.OK_200
     ): ViewResponse {
-        return this.render(templateName, mapOf(arg), statusCode)
+        return render(templateName, mapOf(arg), statusCode)
     }
 
     fun render(
@@ -67,14 +57,12 @@ interface ResponsableCall {
         args: Map<String, Any?>? = null,
         statusCode: Int = HttpStatus.OK_200
     ): ViewResponse {
-        return ViewResponse(templateName.replace(".", "/"), args)
-            .also { render(it, statusCode) }
+        return ViewResponse(templateName.replace(".", "/"), args, statusCode)
+            .also { this.response = it }
     }
 
     fun acknowledge(statusCode: Int = HttpStatus.NO_CONTENT_204): ResponsableCall {
-        servletResponse.status = statusCode
-        response = StringResponse("")
-        asJson()
+        response = AcknowledgementResponse(statusCode)
         return this
     }
 
@@ -97,17 +85,9 @@ interface ResponsableCall {
         return replyAsJson(builder.map(), statusCode)
     }
 
-    fun contentType(type: String) {
-        servletResponse.contentType = type
-    }
-
-    fun asHtml() {
-        contentType("text/html; charset=UTF-8")
-    }
-
-    fun asJson() {
-        contentType("application/json; charset=UTF-8")
-    }
+    fun contentType(type: String): ResponsableCall
+    fun asHtml() = contentType(HTML_CONTENT_TYPE)
+    fun asJson() = contentType(JSON_CONTENT_TYPE)
 
     fun abort(statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()): Nothing {
         throw httpExceptionFor(statusCode, message, headers)
@@ -137,13 +117,8 @@ interface ResponsableCall {
 
     fun shared(key: String): Any?
     fun share(pair: Pair<String, Any?>, vararg pairs: Pair<String, Any>)
-
     fun finalize(call: HttpCall)
-
-    fun status(code: Int): ResponsableCall {
-        servletResponse.status = code
-        return this
-    }
+    fun status(code: Int): ResponsableCall
 }
 
 private fun makeCookie(
