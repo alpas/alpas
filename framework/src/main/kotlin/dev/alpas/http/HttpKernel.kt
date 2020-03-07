@@ -7,6 +7,7 @@ import dev.alpas.ServiceProvider
 import dev.alpas.cookie.EncryptCookies
 import dev.alpas.encryption.EncryptionServiceProvider
 import dev.alpas.hashing.HashServiceProvider
+import dev.alpas.http.jetty.HttpEngine
 import dev.alpas.http.middleware.SessionStart
 import dev.alpas.http.middleware.VerifyCsrfToken
 import dev.alpas.logging.LoggerServiceProvider
@@ -17,9 +18,12 @@ import dev.alpas.session.SessionServiceProvider
 import dev.alpas.view.ViewServiceProvider
 import kotlin.reflect.KClass
 
-open class HttpKernel : AlpasServer(), Kernel {
+open class HttpKernel : Kernel {
+    protected open val server by lazy(LazyThreadSafetyMode.NONE) { HttpServer() }
+
     private val pushedMiddleware = mutableListOf<KClass<out Middleware<HttpCall>>>()
-    private val routeEntryMiddlewareGroups: Map<String, List<KClass<out Middleware<HttpCall>>>> by lazy {
+    private val routeEntryMiddlewareGroups: Map<String, List<KClass<out Middleware<HttpCall>>>> by
+    lazy(LazyThreadSafetyMode.NONE) {
         val groups: HashMap<String, List<KClass<out Middleware<HttpCall>>>> = hashMapOf()
         groups["web"] = webMiddlewareGroup()
         registerRouteMiddlewareGroups(groups)
@@ -27,25 +31,24 @@ open class HttpKernel : AlpasServer(), Kernel {
     }
 
     override fun boot(app: Application) {
-        super<AlpasServer>.boot(app)
+        server.boot(app, routeEntryMiddlewareGroups(app), serverEntryMiddleware(app))
+        app.logger.info { "${app.env("APP_NAME")} is available at ${server}" }
     }
 
-    override fun routeEntryMiddlewareGroups(app: Application): Map<String, List<KClass<out Middleware<HttpCall>>>> {
+    fun routeEntryMiddlewareGroups(app: Application): RouteEntryMiddlewareGroups {
         return routeEntryMiddlewareGroups
     }
 
-    protected open fun registerRouteMiddlewareGroups(groups: HashMap<String, List<KClass<out Middleware<HttpCall>>>>) {
-    }
+    protected open fun registerRouteMiddlewareGroups(groups: HashMap<String, List<KClass<out Middleware<HttpCall>>>>) {}
 
-    override fun serverEntryMiddleware(app: Application): Iterable<KClass<out Middleware<HttpCall>>> {
+    fun serverEntryMiddleware(app: Application): Iterable<KClass<out Middleware<HttpCall>>> {
         val middleware = mutableSetOf<KClass<out Middleware<HttpCall>>>()
         registerServerEntryMiddleware(middleware)
         middleware.addAll(pushedMiddleware)
         return middleware
     }
 
-    protected open fun registerServerEntryMiddleware(middleware: MutableSet<KClass<out Middleware<HttpCall>>>) {
-    }
+    protected open fun registerServerEntryMiddleware(middleware: MutableSet<KClass<out Middleware<HttpCall>>>) {}
 
     open fun webMiddlewareGroup(): List<KClass<out Middleware<HttpCall>>> {
         return listOf(SessionStart::class, VerifyCsrfToken::class, EncryptCookies::class)
@@ -53,7 +56,7 @@ open class HttpKernel : AlpasServer(), Kernel {
 
     override fun stop(app: Application) {
         app.logger.debug { "Stopping kernel $this" }
-        super<AlpasServer>.stop(app)
+        server.stop(app)
     }
 
     override fun serviceProviders(app: Application): Iterable<KClass<out ServiceProvider>> {
