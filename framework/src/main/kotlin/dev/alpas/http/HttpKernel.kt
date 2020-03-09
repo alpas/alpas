@@ -7,7 +7,6 @@ import dev.alpas.ServiceProvider
 import dev.alpas.cookie.EncryptCookies
 import dev.alpas.encryption.EncryptionServiceProvider
 import dev.alpas.hashing.HashServiceProvider
-import dev.alpas.http.jetty.HttpEngine
 import dev.alpas.http.middleware.SessionStart
 import dev.alpas.http.middleware.VerifyCsrfToken
 import dev.alpas.logging.LoggerServiceProvider
@@ -35,13 +34,13 @@ open class HttpKernel : Kernel {
         app.logger.info { "${app.env("APP_NAME")} is available at ${server}" }
     }
 
-    fun routeEntryMiddlewareGroups(app: Application): RouteEntryMiddlewareGroups {
+    open fun routeEntryMiddlewareGroups(app: Application): RouteEntryMiddlewareGroups {
         return routeEntryMiddlewareGroups
     }
 
     protected open fun registerRouteMiddlewareGroups(groups: HashMap<String, List<KClass<out Middleware<HttpCall>>>>) {}
 
-    fun serverEntryMiddleware(app: Application): Iterable<KClass<out Middleware<HttpCall>>> {
+    open fun serverEntryMiddleware(app: Application): Iterable<KClass<out Middleware<HttpCall>>> {
         val middleware = mutableSetOf<KClass<out Middleware<HttpCall>>>()
         registerServerEntryMiddleware(middleware)
         middleware.addAll(pushedMiddleware)
