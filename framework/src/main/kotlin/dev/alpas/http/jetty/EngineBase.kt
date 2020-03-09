@@ -24,7 +24,7 @@ abstract class EngineBase {
 
         if (isDev && !isTcpPortAvailable(host, port)) {
             port = getFreePort(host, port)
-            alpasLogger.warn { "App port ${config.appPort} is not available. We'll use port '$port' instead." }
+            println(">>> App port ${config.appPort} is not available. We'll use port '$port' instead. <<<")
         }
         return Pair(host, port)
     }

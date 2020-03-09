@@ -31,7 +31,6 @@ open class HttpKernel : Kernel {
 
     override fun boot(app: Application) {
         server.boot(app, routeEntryMiddlewareGroups(app), serverEntryMiddleware(app))
-        app.logger.info { "${app.env("APP_NAME")} is available at ${server}" }
     }
 
     open fun routeEntryMiddlewareGroups(app: Application): RouteEntryMiddlewareGroups {

@@ -11,8 +11,6 @@ import java.net.URI
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.reflect.KClass
 
-val alpasLogger = KotlinLogging.logger("alpas")
-
 abstract class AppBase(val args: Array<String>, override var entryClass: Class<*>) : Application {
     val basePath: URI by lazy(LazyThreadSafetyMode.NONE) { entryClass.protectionDomain.codeSource.location.toURI() }
     val rootDir: File by lazy(LazyThreadSafetyMode.NONE) {
@@ -24,7 +22,7 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
     }
     override val cwd: File by lazy(LazyThreadSafetyMode.NONE) { File("").absoluteFile }
     override val srcPackage: String by lazy(LazyThreadSafetyMode.NONE) { entryClass.`package`.name }
-    override val logger = alpasLogger
+    override val logger by lazy(LazyThreadSafetyMode.NONE) { KotlinLogging.logger("alpas") }
     override val env by lazy(LazyThreadSafetyMode.NONE) { make<Environment>() }
     override val configs by lazy(LazyThreadSafetyMode.NONE) { makeMany<Config>() }
     override val callHooks: CopyOnWriteArraySet<KClass<out HttpCallHook>> = CopyOnWriteArraySet()
