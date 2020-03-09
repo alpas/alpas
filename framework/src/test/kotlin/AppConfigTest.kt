@@ -27,7 +27,7 @@ class AppConfigTest {
             assertEquals(Duration.ofMinutes(1), connectionTimeOut)
             assertEquals(2, staticDirs.size)
             assertEquals("/web", staticDirs[0])
-            assertEquals("/test/storage/app/public", staticDirs[1])
+            assertEquals("/test/storage/app/web", staticDirs[1])
             assertNull(encryptionKey)
             assertEquals(200, maxThreads)
             assertEquals(8, minThreads)
@@ -63,7 +63,7 @@ class AppConfigTest {
             assertEquals(3, staticDirs.size)
             assertEquals("/test/storage/src/main/resources/web", staticDirs[0])
             assertEquals("/web", staticDirs[1])
-            assertEquals("/test/storage/app/public", staticDirs[2])
+            assertEquals("/test/storage/app/web", staticDirs[2])
         }
     }
 
@@ -74,7 +74,7 @@ class AppConfigTest {
         AppConfig(env).apply {
             assertEquals(2, staticDirs.size)
             assertEquals("/web", staticDirs[0])
-            assertEquals("/test/storage/app/public", staticDirs[1])
+            assertEquals("/test/storage/app/web", staticDirs[1])
         }
     }
 

@@ -7,9 +7,13 @@ import dev.alpas.cookie.CookieJar
 import dev.alpas.ifNotBlank
 import dev.alpas.isOneOf
 import dev.alpas.session.Session
+import org.eclipse.jetty.server.Request
 import java.nio.charset.Charset
+import javax.servlet.MultipartConfigElement
 import javax.servlet.http.HttpServletRequest
-import org.eclipse.jetty.server.Request as JettyRequest
+import javax.servlet.http.Part
+
+const val CONTENT_TYPE_KEY = "Content-Type"
 
 @Suppress("unused")
 interface RequestableCall {
@@ -20,19 +24,21 @@ interface RequestableCall {
     val url: String
     val fullUri: String
     val remoteAddr: String
-    val referrer: String?
+    val referrer get() = header("referer")
     val rootUrl: String
     val fullUrl: String
     val queryString: String
-    val isXmlHttpRequest: Boolean
-    val isAjax: Boolean
-    val isPjax: Boolean
-    val isJson: Boolean
-    val isPrefetch: Boolean
-    val expectsJson: Boolean
-    val wantsJson: Boolean
-    val acceptsHtml: Boolean
-    val acceptsAnyContentType: Boolean
+    val isXmlHttpRequest get() = header("X-Requested-With") == "XMLHttpRequest"
+    val isAjax get() = isXmlHttpRequest
+    val isPjax get() = header("X-PJAX") == "true"
+    val isJson get() = contentTypeIs("application/json")
+    val isMultipartFormData get() = contentTypeIs("multipart/form-data")
+    val isPrefetch get() = header("X-Purpose") == "preview" || header("X-moz") == "prefetch"
+    val expectsJson get() = (isAjax && !isPjax && acceptsAnyContentType) || wantsJson
+    val wantsJson get() = acceptableContentTypes.contains("application/json")
+    val acceptsHtml get() = accepts("text/html", "application/xhtml+xml")
+    val acceptsAnyContentType
+        get() = acceptableContentTypes.isEmpty() || acceptableContentTypes.firstOrNull().isOneOf("*/*", "*")
     val isGet get() = methodIs(Method.GET)
     val isPost get() = methodIs(Method.POST)
     val isPut get() = methodIs(Method.PUT)
@@ -40,9 +46,13 @@ interface RequestableCall {
     val isDelete get() = methodIs(Method.DELETE)
     val isReading get() = this.method.isReading()
     val cookie: CookieJar
-    val jettyRequest: JettyRequest
+    val jettyRequest: Request
     val body: String
     val jsonBody: Map<String, Any>?
+    val multiparts: Iterable<Part>
+    val multipartFiles: Iterable<Part>
+    val multipartFields: Iterable<Part>
+    val multipartParams: Map<String, List<String>>
 
     fun header(name: String): String?
     fun headers(name: String): List<String>?
@@ -59,43 +69,53 @@ interface RequestableCall {
     }
 
     fun methodIs(method: Method) = this.method == method
+
+    fun contentTypeIs(key: String): Boolean {
+        return header(CONTENT_TYPE_KEY)?.split(";")?.contains(key) ?: false
+    }
 }
 
 class Requestable(private val servletRequest: HttpServletRequest) : RequestableCall {
-    override val jettyRequest by lazy { servletRequest.getAttribute("jetty-request") as JettyRequest }
+    override val jettyRequest by lazy { servletRequest.getAttribute("jetty-request") as Request }
     override val cookie: CookieJar by lazy { CookieJar(servletRequest.cookies ?: emptyArray()) }
     override fun header(name: String): String? = servletRequest.getHeader(name)
     override fun headers(name: String): List<String>? = servletRequest.getHeaders(name).toList()
     override val method by lazy { Method.valueOf(servletRequest.method.toUpperCase()) }
     override val remoteAddr: String get() = servletRequest.remoteAddr
-    override val referrer: String? get() = header("referer")
     override val queryString get() = servletRequest.queryString.ifNotBlank { query -> "?$query" }
     override val uri: String get() = servletRequest.requestURI
     override val fullUri get() = "$uri$queryString"
     override val url get() = servletRequest.requestURL.toString()
     override val fullUrl get() = servletRequest.requestURL.append(queryString).toString()
     override val rootUrl get() = jettyRequest.rootURL.toString()
-    override val isXmlHttpRequest get() = header("X-Requested-With") == "XMLHttpRequest"
-    override val isAjax get() = isXmlHttpRequest
-    override val isPjax get() = header("X-PJAX") == "true"
-    override val isPrefetch get() = header("X-Purpose") == "preview" || header("X-moz") == "prefetch"
-    override val isJson get() = servletRequest.isJson
-    override val expectsJson get() = (isAjax && !isPjax && acceptsAnyContentType) || wantsJson
-    override val wantsJson get() = acceptableContentTypes.contains("application/json")
-    override val acceptsHtml get() = accepts("text/html", "application/xhtml+xml")
-    override val acceptsAnyContentType
-        get() = acceptableContentTypes.isEmpty() || acceptableContentTypes.firstOrNull().isOneOf("*/*", "*")
-
     override val session by lazy { Session(servletRequest) }
+    override val multiparts by lazy { servletRequest.parts }
+    override val multipartFiles by lazy {
+        prepareForMultipart()
+        multiparts.filter { it.isFile }
+    }
 
-    override val acceptableContentTypes: List<String> by lazy {
+    override val multipartFields by lazy {
+        prepareForMultipart()
+        multiparts.filter { it.isFormField }
+    }
+
+
+    override val multipartParams by lazy {
+        prepareForMultipart()
+        multipartFields.associate { part -> part.name to formFieldValues(part.name) }
+    }
+
+    override val acceptableContentTypes by lazy {
         header("Accept")?.split(',')?.map { it.trim() } ?: emptyList()
     }
 
     override val body: String by lazy {
-        servletRequest.inputStream.readBytes().toString(Charset.forName(servletRequest.characterEncoding ?: "UTF-8"))
+        servletRequest.inputStream.readBytes()
+            .toString(Charset.forName(servletRequest.characterEncoding ?: Charsets.UTF_8.name()))
     }
 
+    @Suppress("RemoveExplicitTypeArguments")
     override val jsonBody by lazy {
         if (body.isBlank()) {
             mapOf<String, Any>()
@@ -109,9 +129,20 @@ class Requestable(private val servletRequest: HttpServletRequest) : RequestableC
             }
         }
     }
+
+    private fun formFieldValues(name: String): List<String> {
+        return multipartFields.filter { it.name == name }.map { part ->
+            String(part.inputStream.readBytes(), Charsets.UTF_8)
+        }
+    }
+
+    private fun prepareForMultipart() {
+        jettyRequest.setAttribute(
+            "org.eclipse.jetty.multipartConfig",
+            MultipartConfigElement(System.getProperty("java.io.tmpdir"))
+        )
+    }
 }
 
-internal val HttpServletRequest.isJson: Boolean
-    get() {
-        return getHeader("Content-Type")?.split(";")?.contains("application/json") ?: false
-    }
+private val Part.isFormField get() = submittedFileName == null
+private val Part.isFile get() = !isFormField

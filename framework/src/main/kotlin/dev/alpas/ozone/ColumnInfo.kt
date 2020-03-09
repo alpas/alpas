@@ -22,7 +22,7 @@ data class ColumnReferenceConstraint(val foreignKey: String, val tableToRefer: S
         onDelete("cascade")
     }
 
-    fun onDelete(whatToDo: String) {
+    fun onDelete(whatToDo: String?) {
         onDelete = whatToDo
     }
 }

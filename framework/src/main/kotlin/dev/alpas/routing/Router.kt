@@ -15,7 +15,7 @@ class Router(
 ) : RoutableBase(middleware, middlewareGroups) {
 
     private lateinit var router: BaseRouter<Route>
-    private val namedRoutes: Map<String, Route> by lazy {
+    val namedRoutes: Map<String, Route> by lazy {
         routes.filter { it.name.isNotBlank() }.map { Pair(it.name, it) }.toMap()
     }
 

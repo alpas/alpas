@@ -2,7 +2,8 @@ package dev.alpas.ozone
 
 import dev.alpas.extensions.toCamelCase
 import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.*
+import me.liuwj.ktorm.entity.findList
+import me.liuwj.ktorm.entity.findOne
 import me.liuwj.ktorm.expression.ArgumentExpression
 import me.liuwj.ktorm.expression.ColumnAssignmentExpression
 import me.liuwj.ktorm.schema.*
@@ -231,7 +232,7 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
     fun createdAt(
         name: String = "created_at",
         nullable: Boolean = true,
-        useCurrent: Boolean = true
+        useCurrent: Boolean = false
     ): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
             if (nullable) {
@@ -249,7 +250,7 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
     fun updatedAt(
         name: String = "updated_at",
         nullable: Boolean = true,
-        useCurrent: Boolean = true
+        useCurrent: Boolean = false
     ): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
             if (nullable) {
@@ -454,4 +455,40 @@ fun <T : OzoneEntity<T>> OzoneTable<T>.propertyNamesToColumnNames(): Map<String,
         }
         Pair(colNameInTable, col.name)
     }.toMap()
+}
+
+fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.intReference(
+    localColumnName: String,
+    referenceTable: OzoneTable<R>,
+    to: String = "id",
+    unsigned: Boolean = true,
+    onDelete: String? = "cascade",
+    selector: (E) -> R?
+): BaseTable<E>.ColumnRegistration<Int> {
+    return int(localColumnName).apply {
+        if (unsigned) {
+            unsigned()
+        }
+        belongsTo(referenceTable, selector).reference(to) {
+            onDelete(onDelete)
+        }
+    }
+}
+
+fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.longReference(
+    localColumnName: String,
+    referenceTable: OzoneTable<R>,
+    to: String = "id",
+    unsigned: Boolean = true,
+    onDelete: String? = "cascade",
+    selector: (E) -> R?
+): BaseTable<E>.ColumnRegistration<Long> {
+    return long(localColumnName).apply {
+        if (unsigned) {
+            unsigned()
+        }
+        belongsTo(referenceTable, selector).reference(to) {
+            onDelete(onDelete)
+        }
+    }
 }

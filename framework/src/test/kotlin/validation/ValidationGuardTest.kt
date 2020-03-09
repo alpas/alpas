@@ -16,7 +16,7 @@ class ValidationGuardTest {
     @Test
     fun `check multiple rules for one attribute`(@RelaxedMockK call: HttpCall) {
         val errorBag = ErrorBag()
-        every { call.params("name") } returns listOf("janeexampledoe")
+        every { call.paramList("name") } returns listOf("janeexampledoe")
 
         val guard = ValidationGuard().apply {
             rule(Max(10))
@@ -38,8 +38,8 @@ class ValidationGuardTest {
     @Test
     fun `check multiple attributes`(@RelaxedMockK call: HttpCall) {
         val errorBag = ErrorBag()
-        every { call.params("name") } returns listOf("janeexampledoe")
-        every { call.params("email") } returns listOf("janedoe")
+        every { call.paramList("name") } returns listOf("janeexampledoe")
+        every { call.paramList("email") } returns listOf("janedoe")
 
         val guard = ValidationGuard().apply { this.call = call }
 
@@ -65,9 +65,9 @@ class ValidationGuardTest {
     @Test
     fun `check overriden rules`(@RelaxedMockK call: HttpCall) {
         val errorBag = ErrorBag()
-        every { call.params("name") } returns listOf("janeexampledoe")
-        every { call.params("lastname") } returns listOf("")
-        every { call.params("email") } returns listOf("janedoe")
+        every { call.paramList("name") } returns listOf("janeexampledoe")
+        every { call.paramList("lastname") } returns listOf("")
+        every { call.paramList("email") } returns listOf("janedoe")
 
         val guard = object : ValidationGuard() {
             val nameRules = listOf(Max(10), Min(5))
@@ -103,9 +103,9 @@ class ValidationGuardTest {
     @Test
     fun `failfast should return on the first error`(@RelaxedMockK call: HttpCall) {
         val errorBag = ErrorBag()
-        every { call.params("name") } returns listOf("janeexampledoe")
-        every { call.params("lastname") } returns listOf("")
-        every { call.params("email") } returns listOf("janedoe")
+        every { call.paramList("name") } returns listOf("janeexampledoe")
+        every { call.paramList("lastname") } returns listOf("")
+        every { call.paramList("email") } returns listOf("janedoe")
 
         val guard = object : ValidationGuard(true) {
             val nameRules = listOf(Max(10), Min(5))

@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.TermColors
 import dev.alpas.*
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 
 abstract class Command(
@@ -34,8 +35,8 @@ abstract class Command(
         System.getenv(SRC_DIR_KEY) ?: System.getProperty(SRC_DIR_KEY)
         ?: throw Exception("Source directory must be defined when running from a console.")
     }
-    internal val resourcesDir by lazy { File(Paths.get(File(srcDir).parentFile.absolutePath, "resources").toUri()) }
-    internal val templatesDir by lazy { File(resourcesDir, "templates") }
+    val resourcesDir by lazy { File(Paths.get(File(srcDir).parentFile.absolutePath, "resources").toUri()) }
+    val templatesDir by lazy { File(resourcesDir, "templates") }
     protected val quiet by option("--quiet", "-q", help = "Don't print any non-error messages").flag()
 
     override fun run() = Unit
@@ -80,6 +81,14 @@ abstract class Command(
                 output()
             }
         }
+    }
+
+    fun relativeToSrc(path: Path): String {
+        return srcDir.relativize(path)
+    }
+
+    fun relativeToSrc(path: String): String {
+        return srcDir.relativize(path)
     }
 }
 

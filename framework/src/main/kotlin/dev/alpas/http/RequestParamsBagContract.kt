@@ -1,7 +1,6 @@
 package dev.alpas.http
 
 import dev.alpas.filterNotNullValues
-import dev.alpas.isOneOf
 import dev.alpas.routing.RouteResult
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -31,10 +30,6 @@ interface RequestParamsBagContract {
         return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
     }
 
-    fun params(key: String): List<Any>? {
-        return paramList(key)
-    }
-
     fun paramList(key: String): List<Any>? {
         return params?.get(key)
     }
@@ -55,9 +50,9 @@ interface RequestParamsBagContract {
         return queryParams?.get(key)
     }
 
-    fun params(key: String, vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
+    fun params(vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
         return params
-            ?.filterKeys { it.isOneOf(key, *keys) }
+            ?.filterKeys { it in keys }
             ?.filterNotNullValues() // remove nulls
             ?.let { filteredParams ->
                 if (firstValueOnly) {
@@ -68,9 +63,9 @@ interface RequestParamsBagContract {
             } ?: emptyMap()
     }
 
-    fun paramsExcept(key: String, vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
+    fun paramsExcept(vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
         return params
-            ?.filterKeys { !it.isOneOf(key, *keys) }
+            ?.filterKeys { it !in keys }
             ?.filterNotNullValues() // remove nulls
             ?.let { filteredParams ->
                 if (firstValueOnly) {
@@ -90,7 +85,7 @@ class RequestParamsBag(private val request: RequestableCall, private val route: 
     override val params by lazy {
         // merge both routeParams map and query routeParams
         val paramsMap = routeParams.toMutableMap()
-        val requestParams = request.jettyRequest.parameterMap.mapValues { it.value.toList() }
+        val requestParams = requestParams
 
         requestParams.forEach { (key, param) ->
             paramsMap[key] = paramsMap[key]?.plus(param) ?: param
@@ -107,6 +102,14 @@ class RequestParamsBag(private val request: RequestableCall, private val route: 
             }
         }
         paramsMap.toMap()
+    }
+
+    private val requestParams by lazy {
+        if (request.isMultipartFormData) {
+            request.multipartParams
+        } else {
+            request.jettyRequest.parameterMap.mapValues { it.value.toList() }
+        }
     }
 
     override val routeParams by lazy {

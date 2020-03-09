@@ -10,7 +10,7 @@ open class AppConfig(private val env: Environment) : Config {
     open val connectionTimeOut: Duration = Duration.ofMinutes(1)
     open val staticDirs: Array<String>
         get() {
-            val dirs = arrayOf("/web", env.storagePath("app", "public")) +
+            val dirs = arrayOf("/web", env.storagePath("app", "web")) +
                     extraStaticDirs()
             return if (enableStorageWebDirectory) {
                 arrayOf(storageWebDirectory) + dirs

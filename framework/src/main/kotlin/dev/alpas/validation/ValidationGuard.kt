@@ -40,7 +40,7 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
                 it.inJsonBody()
             }
             if (!it.check(attribute, call)) {
-                errorBag.add(RequestError(attribute, call.params(attribute), it.error))
+                errorBag.add(RequestError(attribute, call.paramList(attribute), it.error))
                 if (shouldFailFast) {
                     return
                 }
