@@ -231,7 +231,7 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
     fun createdAt(
         name: String = "created_at",
         nullable: Boolean = true,
-        useCurrent: Boolean = true
+        useCurrent: Boolean = false
     ): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
             if (nullable) {
@@ -249,7 +249,7 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
     fun updatedAt(
         name: String = "updated_at",
         nullable: Boolean = true,
-        useCurrent: Boolean = true
+        useCurrent: Boolean = false
     ): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
             if (nullable) {
