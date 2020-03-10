@@ -1,6 +1,7 @@
 package dev.alpas.http
 
 import dev.alpas.make
+import dev.alpas.session.CSRF_SESSION_KEY
 import dev.alpas.session.OLD_INPUTS_KEY
 import dev.alpas.stackTraceString
 import dev.alpas.view.ViewRenderer
@@ -36,7 +37,7 @@ open class ViewResponse(
 
     private fun buildViewData(call: HttpCall, args: Map<String, Any?>?): Map<String, Any?> {
         val viewData = mutableMapOf(
-            "_csrf" to call.session.csrfToken(),
+            CSRF_SESSION_KEY to call.session.csrfToken(),
             "call" to call,
             OLD_INPUTS_KEY to call.session.old(),
             "errors" to call.session.errors()

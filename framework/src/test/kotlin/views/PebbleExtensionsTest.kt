@@ -95,7 +95,7 @@ class PebbleExtensionsTest {
         val context = mockk<EvaluationContext>()
         every { context.getVariable(CSRF_SESSION_KEY) } returns "test_code"
         val tag = callback(TagContext(mockk(), context, 1, ""))
-        assertEquals("""<input type="hidden" name="_csrf" value="test_code">""", tag)
+        assertEquals("""<input type="hidden" name="$CSRF_SESSION_KEY" value="test_code">""", tag)
     }
 
     @Test

@@ -180,7 +180,7 @@ class Session(private val request: HttpServletRequest) {
         return flash[VALIDATION_ERRORS_KEY] as? Map<String, List<Any>> ?: emptyMap()
     }
 
-    fun intended(): String? {
+    fun intendedUrl(): String? {
         return get(INTENDED_URL_KEY)
     }
 
