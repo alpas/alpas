@@ -236,6 +236,14 @@ class HttpCall internal constructor(
         return urlGenerator.url(path, params, forceSecure)
     }
 
+    fun intendedUrl(): String? {
+        return session.intendedUrl()
+    }
+
+    fun previousUrl(): String? {
+        return session.previousUrl()
+    }
+
     fun hold(future: CompletableFuture<*>): HttpCall {
         this.future = future
         return this
