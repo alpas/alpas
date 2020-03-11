@@ -270,8 +270,7 @@ class HttpCall internal constructor(
         }.thenAccept {
             val response = when (it) {
                 is Response -> it
-                is String -> StringResponse(it)
-                else -> throw java.lang.Exception("Not supported $response")
+                else -> StringResponse(it.toString())
             }
             render(response)
             syncClose()
