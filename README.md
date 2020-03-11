@@ -1,10 +1,10 @@
 ### Alpas - The Rapid and Delightful Kotlin Web Framework. Easy, elegant, and productive! 🚀
 
 Alpas is a batteries-included web framework for Kotlin with a strong focus on developers' productivity.
-The main goal of Alpas is to get you started quick and enable you to move faster while
+The main goal of Alpas is to get you started quickly and enable you to move faster while
 letting you enjoy doing what you are the best at — crafting a delightful web app.
 
-Alpas strives to be simple and elegant and wants to serve you whether you have written any JVM based web
+Alpas strives to be simple and elegant and wants to serve you whether you have written JVM based web
 apps before or not—there is no xml or properties files to configure, no scattered annotations
 to memorize—and yet, there is no huge learning curve to get started.
 
@@ -44,8 +44,10 @@ We want you to enjoy writing a web app in Alpas. If you are not, please let us k
 improving until it is just right for all of us. The best way to let us help you is by joining our 
 [official Slack][alpas-slack] and asking questions. [Please do!][alpas-slack].
 
+Sometimes, it's easiest to see the possibilities of a new framework by checking out what modules are available in the ecosystem and by looking at real-life examples. [Alpas Resources][alpas-resources] has a curated list of resources available to you so that you can get acquainted with all things Alpas. 
 
 [happy-kotlin]: https://medium.com/signal-v-noise/kotlin-makes-me-a-happier-better-programmer-1fc668724563
 [alpas-slack]: https://join.slack.com/t/alpasdev/shared_invite/enQtODcwMjE1MzMxODQ3LTJjZWMzOWE5MzBlYzIzMWQ2MTcxN2M2YjU3MTQ5ZDE4NjBmYjY1YTljOGIwYmJmYWFlYjc4YTcwMDFmZDIzNDE
 [alpas-docs]: https://alpas.dev/docs
+[alpas-resources]: https://github.com/alpas/resources
 
