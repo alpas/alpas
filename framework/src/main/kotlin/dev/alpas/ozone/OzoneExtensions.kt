@@ -2,6 +2,7 @@
 
 package dev.alpas.ozone
 
+import dev.alpas.http.HttpCall
 import dev.alpas.orAbort
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.DialectFeatureNotSupportedException
@@ -10,6 +11,7 @@ import me.liuwj.ktorm.entity.*
 import me.liuwj.ktorm.expression.SelectExpression
 import me.liuwj.ktorm.expression.UnionExpression
 import me.liuwj.ktorm.schema.BaseTable
+import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.ColumnDeclaring
 import me.liuwj.ktorm.schema.SqlType
 import org.eclipse.jetty.http.HttpStatus
@@ -191,4 +193,21 @@ inline fun <E : Any, T : BaseTable<E>> T.oldest(selector: (T) -> ColumnDeclaring
  */
 inline fun <E : Any, T : BaseTable<E>> T.oldest(column: String = "created_at"): EntitySequence<E, T> {
     return asSequence().sorted { listOf(it[column].asc()) }
+}
+
+/**
+ * A convenience method to find an entity in a [table] by matching its primary key to
+ * the [paramKey] parameter of an [HttpCall]. This aborts the call If the [paramKey]
+ * is not present in the call or an entity cannot be found in the table.
+ *
+ * @param table The table to find the entity in.
+ * @param paramKey The key to look in the call. Set to "id" by default.
+ *
+ * @return An entity instance or a [NotFoundHttpException].
+ */
+inline fun <E : OzoneEntity<E>, T : OzoneTable<E>> HttpCall.entityParam(table: T, paramKey: String = "id"): E {
+    val key = param(paramKey).orAbort()
+    return table.findOne {
+        (it[paramKey] as Column<Any>) eq key
+    }.orAbort()
 }

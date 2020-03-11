@@ -66,7 +66,8 @@ class PebbleExtensionsTest {
             }
         }
 
-        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+        PebbleExtensions().register(AlpasTest(), conditionalTags)
+        PebbleExtensions().register(AlpasTest(), customTags)
 
         assertEquals(1, customTagNames.size)
         assertTrue(customTagNames.contains("csrf"))
@@ -87,13 +88,14 @@ class PebbleExtensionsTest {
             override fun add(tagName: String, condition: (context: TagContext) -> Boolean) {}
         }
 
-        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+        PebbleExtensions().register(AlpasTest(), conditionalTags)
+        PebbleExtensions().register(AlpasTest(), customTags)
 
         val callback = customCallbacks.first()
         val context = mockk<EvaluationContext>()
         every { context.getVariable(CSRF_SESSION_KEY) } returns "test_code"
-        val tag = callback(TagContext(mockk(), 1, "", context))
-        assertEquals("""<input type="hidden" name="_csrf" value="test_code">""", tag)
+        val tag = callback(TagContext(mockk(), context, 1, ""))
+        assertEquals("""<input type="hidden" name="$CSRF_SESSION_KEY" value="test_code">""", tag)
     }
 
     @Test
@@ -108,13 +110,14 @@ class PebbleExtensionsTest {
             }
         }
 
-        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+        PebbleExtensions().register(AlpasTest(), conditionalTags)
+        PebbleExtensions().register(AlpasTest(), customTags)
 
         val callback = conditionalCallbacks.first()
         val call = mockk<HttpCall>()
         every { call.isAuthenticated } returns true
 
-        val condition = callback(TagContext(call, 1, "", mockk()))
+        val condition = callback(TagContext(call, mockk(), 1, ""))
         assertTrue(condition)
     }
 
@@ -130,13 +133,14 @@ class PebbleExtensionsTest {
             }
         }
 
-        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+        PebbleExtensions().register(AlpasTest(), conditionalTags)
+        PebbleExtensions().register(AlpasTest(), customTags)
 
         val callback = conditionalCallbacks.first()
         val call = mockk<HttpCall>()
         every { call.isAuthenticated } returns false
 
-        val condition = callback(TagContext(call, 1, "", mockk()))
+        val condition = callback(TagContext(call, mockk(), 1, ""))
         assertFalse(condition)
     }
 
@@ -152,13 +156,14 @@ class PebbleExtensionsTest {
             }
         }
 
-        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+        PebbleExtensions().register(AlpasTest(), conditionalTags)
+        PebbleExtensions().register(AlpasTest(), customTags)
 
         val callback = conditionalCallbacks.first()
         val call = mockk<HttpCall>()
         every { call.isAuthenticated } returns true
 
-        val condition = callback(TagContext(call, 1, "", mockk()))
+        val condition = callback(TagContext(call, mockk(), 1, ""))
         assertFalse(condition)
     }
 
@@ -174,13 +179,14 @@ class PebbleExtensionsTest {
             }
         }
 
-        PebbleExtensions().register(AlpasTest(), conditionalTags, customTags)
+        PebbleExtensions().register(AlpasTest(), conditionalTags)
+        PebbleExtensions().register(AlpasTest(), customTags)
 
         val callback = conditionalCallbacks.first()
         val call = mockk<HttpCall>()
         every { call.isAuthenticated } returns false
 
-        val condition = callback(TagContext(call, 1, "", mockk()))
+        val condition = callback(TagContext(call, mockk(), 1, ""))
         assertTrue(condition)
     }
 

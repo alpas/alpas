@@ -18,7 +18,7 @@ class ValidationException(
 
     override fun render(call: HttpCall) {
         if (call.wantsJson) {
-            call.reply(errorBag.asJson(), statusCode).asJson()
+            call.replyAsJson(errorBag, statusCode)
         } else {
             call.session.apply {
                 flash(VALIDATION_ERRORS_KEY, errorBag.asMap())

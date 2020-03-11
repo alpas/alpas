@@ -54,6 +54,7 @@ class AgoFilter : Filter {
         lineNumber: Int
     ): Any? {
         return when (input) {
+            // Instant always represents a time in UTC
             is Instant -> TimeAgo.using(input.toEpochMilli())
             // todo: extract zoneoffset from the context and use it here
             is LocalDateTime -> TimeAgo.using(input.toInstant(ZoneOffset.UTC).toEpochMilli())

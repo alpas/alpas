@@ -5,7 +5,6 @@ import dev.alpas.http.HttpCallHook
 import dev.alpas.http.HttpKernel
 import dev.alpas.routing.BaseRouteLoader
 import dev.alpas.routing.Router
-import mu.KLogger
 import mu.KotlinLogging
 import java.io.File
 import java.net.URI
@@ -23,7 +22,7 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
     }
     override val cwd: File by lazy(LazyThreadSafetyMode.NONE) { File("").absoluteFile }
     override val srcPackage: String by lazy(LazyThreadSafetyMode.NONE) { entryClass.`package`.name }
-    override val logger: KLogger by lazy(LazyThreadSafetyMode.NONE) { KotlinLogging.logger("alpas") }
+    override val logger by lazy(LazyThreadSafetyMode.NONE) { KotlinLogging.logger("alpas") }
     override val env by lazy(LazyThreadSafetyMode.NONE) { make<Environment>() }
     override val configs by lazy(LazyThreadSafetyMode.NONE) { makeMany<Config>() }
     override val callHooks: CopyOnWriteArraySet<KClass<out HttpCallHook>> = CopyOnWriteArraySet()

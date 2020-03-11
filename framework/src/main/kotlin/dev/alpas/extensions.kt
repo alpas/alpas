@@ -4,7 +4,7 @@ package dev.alpas
 
 import com.github.ajalt.clikt.output.TermUi.echo
 import com.github.ajalt.mordant.TermColors
-import dev.alpas.exceptions.toHttpException
+import dev.alpas.exceptions.httpExceptionFor
 import io.github.classgraph.ClassInfo
 import org.eclipse.jetty.http.HttpStatus
 import org.sagebionetworks.url.UrlData
@@ -190,7 +190,7 @@ inline fun <R> executeAndMeasureTimeMillis(block: () -> R): Pair<R, Long> {
 }
 
 fun <E> E?.orAbort(message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): E {
-    return this ?: throw statusCode.toHttpException(message)
+    return this ?: throw httpExceptionFor(statusCode, message)
 }
 
 inline fun <reified T : Any> ClassInfo.load(): T {

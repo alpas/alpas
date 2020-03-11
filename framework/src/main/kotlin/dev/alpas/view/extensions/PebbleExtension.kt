@@ -10,6 +10,7 @@ import com.mitchellbosecke.pebble.operator.UnaryOperator
 import com.mitchellbosecke.pebble.tokenParser.TokenParser
 import dev.alpas.Application
 import dev.alpas.view.ConditionalTags
+import dev.alpas.view.CustomFunctions
 import dev.alpas.view.CustomTags
 
 interface PebbleExtension {
@@ -20,6 +21,7 @@ interface PebbleExtension {
 
     fun register(app: Application, conditionalTags: ConditionalTags) {}
     fun register(app: Application, customTags: CustomTags) {}
+    fun register(app: Application, customFunctions: CustomFunctions) {}
 
     fun boot(app: Application) {}
 

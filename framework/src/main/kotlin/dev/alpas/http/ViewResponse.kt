@@ -1,13 +1,19 @@
 package dev.alpas.http
 
 import dev.alpas.make
+import dev.alpas.session.CSRF_SESSION_KEY
 import dev.alpas.session.OLD_INPUTS_KEY
 import dev.alpas.stackTraceString
 import dev.alpas.view.ViewRenderer
+import org.eclipse.jetty.http.HttpStatus
 import java.io.InputStream
 
-data class ViewResponse(val name: String, val args: Map<String, Any?>? = null) :
-    Response {
+open class ViewResponse(
+    val name: String,
+    val args: Map<String, Any?>? = null,
+    override var statusCode: Int = HttpStatus.OK_200,
+    override var contentType: String = HTML_CONTENT_TYPE
+) : Response {
     override fun render(context: RenderContext, callback: InputStream.() -> Unit) {
         val call = context.call
         val viewData = buildViewData(call, args)
@@ -31,7 +37,7 @@ data class ViewResponse(val name: String, val args: Map<String, Any?>? = null) :
 
     private fun buildViewData(call: HttpCall, args: Map<String, Any?>?): Map<String, Any?> {
         val viewData = mutableMapOf(
-            "_csrf" to call.session.csrfToken(),
+            CSRF_SESSION_KEY to call.session.csrfToken(),
             "call" to call,
             OLD_INPUTS_KEY to call.session.old(),
             "errors" to call.session.errors()
@@ -40,7 +46,9 @@ data class ViewResponse(val name: String, val args: Map<String, Any?>? = null) :
         if (!call.isDropped) {
             viewData["_route"] = call.route.target()
             viewData["_flash"] = call.session.userFlashBag()
-            viewData["auth"] = call.authChannel
+            if (call.env.supportsSession) {
+                viewData["auth"] = call.authChannel
+            }
         }
         if (args != null) {
             viewData.putAll(args)

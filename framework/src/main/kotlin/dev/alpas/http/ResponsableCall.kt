@@ -1,9 +1,8 @@
 package dev.alpas.http
 
 import dev.alpas.JsonSerializable
-import dev.alpas.exceptions.toHttpException
+import dev.alpas.exceptions.httpExceptionFor
 import dev.alpas.validation.ErrorBag
-import dev.alpas.validation.SharedDataBag
 import org.eclipse.jetty.http.HttpStatus
 import java.time.Duration
 import javax.servlet.http.Cookie
@@ -23,36 +22,26 @@ interface ResponsableCall {
     fun addHeader(key: String, value: String): ResponsableCall
 
     fun <T> reply(payload: T? = null, statusCode: Int = HttpStatus.OK_200): ResponsableCall {
-        response = StringResponse(payload?.toString())
-        servletResponse.status = statusCode
-        asHtml()
+        response = StringResponse(payload?.toString(), statusCode)
         return this
     }
 
     fun <T : Map<*, *>> replyAsJson(payload: T, statusCode: Int = HttpStatus.OK_200): ResponsableCall {
-        response = JsonResponse(payload)
-        status(statusCode)
-        asJson()
+        response = JsonResponse(payload, statusCode)
         return this
     }
 
     fun replyAsJson(payload: JsonSerializable, statusCode: Int = HttpStatus.OK_200): ResponsableCall {
-        response = JsonResponse(payload)
-        status(statusCode)
-        asJson()
+        response = JsonResponse(payload, statusCode)
         return this
     }
 
-    fun render(response: JsonResponse, statusCode: Int = HttpStatus.OK_200) {
+    fun render(response: JsonResponse) {
         this.response = response
-        status(statusCode)
-        asJson()
     }
 
-    fun render(response: Response, statusCode: Int = HttpStatus.OK_200) {
+    fun render(response: Response) {
         this.response = response
-        status(statusCode)
-        asHtml()
     }
 
     fun render(
@@ -60,7 +49,7 @@ interface ResponsableCall {
         arg: Pair<String, Any?>,
         statusCode: Int = HttpStatus.OK_200
     ): ViewResponse {
-        return this.render(templateName, mapOf(arg), statusCode)
+        return render(templateName, mapOf(arg), statusCode)
     }
 
     fun render(
@@ -68,31 +57,40 @@ interface ResponsableCall {
         args: Map<String, Any?>? = null,
         statusCode: Int = HttpStatus.OK_200
     ): ViewResponse {
-        return ViewResponse(templateName.replace(".", "/"), args)
-            .also { render(it, statusCode) }
+        return ViewResponse(templateName.replace(".", "/"), args, statusCode)
+            .also { this.response = it }
     }
 
     fun acknowledge(statusCode: Int = HttpStatus.NO_CONTENT_204): ResponsableCall {
-        servletResponse.status = statusCode
-        response = StringResponse("")
-        asJson()
+        response = AcknowledgementResponse(statusCode)
         return this
     }
 
-    fun contentType(type: String) {
-        servletResponse.contentType = type
+    fun render(
+        templateName: String,
+        args: MutableMap<String, Any?>? = null,
+        statusCode: Int = 200,
+        block: ArgsBuilder.() -> Unit
+    ): ViewResponse {
+        val builder = ArgsBuilder(args ?: mutableMapOf()).also(block)
+        return render(templateName, builder.map(), statusCode)
     }
 
-    fun asHtml() {
-        contentType("text/html; charset=UTF-8")
+    fun json(
+        args: MutableMap<String, Any?>? = null,
+        statusCode: Int = 200,
+        block: ArgsBuilder.() -> Unit
+    ): ResponsableCall {
+        val builder = ArgsBuilder(args ?: mutableMapOf()).also(block)
+        return replyAsJson(builder.map(), statusCode)
     }
 
-    fun asJson() {
-        contentType("application/json; charset=UTF-8")
-    }
+    fun contentType(type: String): ResponsableCall
+    fun asHtml() = contentType(HTML_CONTENT_TYPE)
+    fun asJson() = contentType(JSON_CONTENT_TYPE)
 
     fun abort(statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()): Nothing {
-        throw statusCode.toHttpException(message, headers)
+        throw httpExceptionFor(statusCode, message, headers)
     }
 
     fun abortUnless(
@@ -119,72 +117,8 @@ interface ResponsableCall {
 
     fun shared(key: String): Any?
     fun share(pair: Pair<String, Any?>, vararg pairs: Pair<String, Any>)
-
     fun finalize(call: HttpCall)
-
-    fun status(code: Int): ResponsableCall {
-        servletResponse.status = code
-        return this
-    }
-}
-
-class Responsable internal constructor(override val servletResponse: HttpServletResponse) : ResponsableCall {
-    private var headers = mutableMapOf<String, String>()
-    override val errorBag: ErrorBag by lazy { ErrorBag() }
-    override lateinit var response: Response
-
-    private val sharedData by lazy { SharedDataBag() }
-
-    override fun addHeaders(headers: Map<String, String>): ResponsableCall {
-        this.headers.putAll(headers)
-        return this
-    }
-
-    override fun addHeader(key: String, value: String): ResponsableCall {
-        this.headers[key] = value
-        return this
-    }
-
-    override fun finalize(call: HttpCall) {
-        saveCookies(call)
-        copyHeaders()
-        copyContent(call)
-    }
-
-    private fun saveCookies(call: HttpCall) {
-        call.cookie.outgoingCookies.forEach {
-            servletResponse.addCookie(it)
-        }
-    }
-
-    private fun copyContent(call: HttpCall) {
-        renderView(call)
-    }
-
-    private fun renderView(call: HttpCall) {
-        val context = RenderContext(call, sharedData).also {
-            call.onBeforeRender(it)
-        }
-        try {
-            response.render(context) { copyTo(servletResponse.outputStream) }
-        } catch (e: Exception) {
-            response.renderException(e, context) { copyTo(servletResponse.outputStream) }
-        }
-    }
-
-    private fun copyHeaders() {
-        headers.forEach { (key, value) ->
-            servletResponse.addHeader(key, value)
-        }
-    }
-
-    override fun share(pair: Pair<String, Any?>, vararg pairs: Pair<String, Any>) {
-        sharedData.add(pair, *pairs)
-    }
-
-    override fun shared(key: String): Any? {
-        return sharedData[key]
-    }
+    fun status(code: Int): ResponsableCall
 }
 
 private fun makeCookie(
@@ -202,5 +136,15 @@ private fun makeCookie(
         domain?.let { cookie.domain = it }
         cookie.secure = secure
         cookie.isHttpOnly = httpOnly
+    }
+}
+
+class ArgsBuilder(private val assignments: MutableMap<String, Any?> = mutableMapOf()) {
+    infix fun String.to(argument: Any?) {
+        assignments[this] = argument
+    }
+
+    internal fun map(): Map<String, Any?> {
+        return assignments
     }
 }

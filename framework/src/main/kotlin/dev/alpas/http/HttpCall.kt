@@ -15,9 +15,11 @@ import dev.alpas.validation.Rule
 import dev.alpas.validation.ValidationGuard
 import mu.KotlinLogging
 import org.eclipse.jetty.http.HttpStatus
-import uy.klutter.core.uri.buildUri
+import java.net.URI
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -44,6 +46,7 @@ class HttpCall internal constructor(
         callHooks: List<HttpCallHook>
     ) : this(container, Requestable(request), Responsable(response), route, callHooks)
 
+    private var future: CompletableFuture<*>? = null
     val logger by lazy { KotlinLogging.logger {} }
     var isDropped = false
         private set
@@ -61,7 +64,7 @@ class HttpCall internal constructor(
         private set
 
     init {
-        singleton(UrlGenerator(buildUri(requestableCall.rootUrl).toURI(), make(), make()))
+        singleton(UrlGenerator(requestableCall.rootUrl, make(), make()))
     }
 
     fun charset() = servletResponse.charset()
@@ -78,20 +81,6 @@ class HttpCall internal constructor(
     @Suppress("UNCHECKED_CAST")
     fun <T : Authenticatable> callerId(): Long {
         return caller<T>().id
-    }
-
-    fun close() {
-        if (!jettyRequest.isHandled) {
-            responsableCall.finalize(this)
-        }
-
-        // By this time we have sent a response back to the client and now we need to clear the
-        // previous flash messages to avoid showing these messages again in the next request.
-        if (sessionIsValid()) {
-            session.clearPreviousFlashBag()
-        }
-
-        jettyRequest.isHandled = true
     }
 
     fun applyRules(
@@ -212,11 +201,94 @@ class HttpCall internal constructor(
     }
 
     fun onBeforeRender(context: RenderContext) {
-        logger.debug { "Calling beforeRender hook for ${callHooks.size} hooks" }
-        callHooks.forEach { it.beforeRender(context) }
+        if (isDropped) {
+            logger.debug { "Calling beforeErrorRender hook for ${callHooks.size} hooks" }
+            callHooks.forEach { it.beforeErrorRender(context) }
+        } else {
+            logger.debug { "Calling beforeRender hook for ${callHooks.size} hooks" }
+            callHooks.forEach { it.beforeRender(context) }
+        }
     }
 
     fun validateUsingJsonBody() {
         validateUsingJsonBody.set(true)
+    }
+
+    fun saveReferrerAsIntendedUrl(default: String = "/"): String {
+        return (referrer ?: default).apply {
+            session.saveIntendedUrl(this)
+        }
+    }
+
+    fun url(
+        path: String,
+        params: Map<String, Any> = emptyMap(),
+        forceSecure: Boolean = false
+    ): String {
+        return uri(path, params, forceSecure).toString()
+    }
+
+    fun uri(
+        path: String,
+        params: Map<String, Any> = emptyMap(),
+        forceSecure: Boolean = false
+    ): URI {
+        return urlGenerator.url(path, params, forceSecure)
+    }
+
+    fun intendedUrl(): String? {
+        return session.intendedUrl()
+    }
+
+    fun previousUrl(): String? {
+        return session.previousUrl()
+    }
+
+    fun hold(future: CompletableFuture<*>): HttpCall {
+        this.future = future
+        return this
+    }
+
+    fun close() {
+        if (jettyRequest.isHandled) {
+            clearFlash()
+            return
+        }
+
+        if (future == null) syncClose() else asyncClose()
+    }
+
+    private fun asyncClose() {
+        val asyncContext = jettyRequest.startAsync()
+        future!!.exceptionally { throwable ->
+            if (throwable is CompletionException && throwable.cause is Exception) {
+                handleException(throwable.cause as Exception)
+            } else if (throwable is Exception) {
+                handleException(throwable)
+            }
+            null
+        }.thenAccept {
+            val response = when (it) {
+                is Response -> it
+                else -> StringResponse(it.toString())
+            }
+            render(response)
+            syncClose()
+            asyncContext.complete()
+        }
+    }
+
+    private fun syncClose() {
+        finalize(this)
+        clearFlash()
+        jettyRequest.isHandled = true
+    }
+
+    private fun clearFlash() {
+        // By this time we have sent a response back to the client and now we need to clear the
+        // previous flash messages to avoid showing these messages again in the next request.
+        if (sessionIsValid()) {
+            session.clearPreviousFlashBag()
+        }
     }
 }

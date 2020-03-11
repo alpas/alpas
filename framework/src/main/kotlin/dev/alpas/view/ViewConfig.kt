@@ -1,7 +1,6 @@
 package dev.alpas.view
 
 import dev.alpas.*
-import uy.klutter.core.common.mustStartWith
 import java.io.File
 import java.nio.file.Paths
 
@@ -26,8 +25,10 @@ open class ViewConfig(env: Environment) : Config {
     open fun configsAvailableForView(): Map<String, String?> = emptyMap()
 
     open val mixManifestPath: String by lazy {
-        if (storageWebDirectory != null) {
-            env.storagePath(*RESOURCES_DIRS, "web", mixManifestFilename)
+        // If storageWebDirectory is set and that a mix file exists in that location, let's load that file
+        val symlinkedMixFile = env.storagePath(*RESOURCES_DIRS, "web", mixManifestFilename)
+        if (storageWebDirectory != null && File(symlinkedMixFile).exists()) {
+            symlinkedMixFile
         } else {
             // Even on Windows, resource loader requires the path to be UNIX style path
             val separator = "/"
