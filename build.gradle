@@ -64,7 +64,7 @@ subprojects { project ->
                 version project.version
 
                 pom {
-                    name = project.name
+                    name = project.name == 'alpas' ? 'framework' : project.name
                     description = "A web framework for Kotlin."
                     url = "https://github.com/ashokgelal/alpas"
                     licenses {
