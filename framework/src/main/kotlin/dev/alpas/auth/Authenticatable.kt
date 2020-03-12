@@ -6,6 +6,7 @@ interface Authenticatable : Notifiable {
     val id: Long
     val password: String
     val email: String?
+    var rememberToken: String?
     val properties: Map<String, Any?>
     val mustVerifyEmail get() = true
 
@@ -16,4 +17,6 @@ interface Authenticatable : Notifiable {
 interface UserProvider {
     fun findByUsername(username: Any): Authenticatable?
     fun findByPrimaryKey(id: Any): Authenticatable?
+    fun updateRememberToken(authenticatable: Authenticatable, token: String)
+    fun findByToken(rememberCookieToken: RememberCookieToken): Authenticatable?
 }

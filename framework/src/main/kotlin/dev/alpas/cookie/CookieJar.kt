@@ -18,6 +18,17 @@ class CookieJar(internal val incomingCookies: Array<Cookie> = emptyArray()) {
         add(name, value)
     }
 
+    fun immortal(
+        name: String,
+        value: String?,
+        path: String? = null,
+        domain: String? = null,
+        secure: Boolean = false,
+        httpOnly: Boolean = true
+    ): Cookie {
+        return makeCookie(name, value, Duration.ofDays(2190 /*5 years*/), path, domain, secure, httpOnly)
+    }
+
     fun add(
         name: String,
         value: String?,

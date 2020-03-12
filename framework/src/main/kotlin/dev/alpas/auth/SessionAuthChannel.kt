@@ -4,14 +4,15 @@ import dev.alpas.config
 import dev.alpas.hashing.Hasher
 import dev.alpas.http.HttpCall
 import dev.alpas.make
+import dev.alpas.secureRandomString
 import dev.alpas.session.SessionConfig
+import dev.alpas.sha1
 
 @Suppress("unused")
-class SessionAuthChannel(private val call: HttpCall, override val userProvider: UserProvider) : AuthChannel {
-    private val config = call.config { AuthConfig(call.make()) }
-    private val sessionKey = config.authSessionKey
-    override var user: Authenticatable? = null
+open class SessionAuthChannel(private val call: HttpCall, override val userProvider: UserProvider) : AuthChannel {
+    private val sessionKey = call.config { AuthConfig(call.make()) }.authSessionKey
 
+    override var user: Authenticatable? = null
     override fun tryLogin(): Boolean {
         if (isLoggedIn()) {
             return true
@@ -22,38 +23,33 @@ class SessionAuthChannel(private val call: HttpCall, override val userProvider: 
                 user = it
             }
         }
+        if (!isLoggedIn()) {
+            // If the user is still not logged in, let's try to login using the "Remember Token"
+            tryLoginUsingRememberToken()
+        }
         return isLoggedIn()
     }
 
-    override fun attempt(id: String, password: String): Boolean {
-        val user = validate(id, password)
-        if (user != null) {
-            login(user)
-        }
-        return user != null
+    override fun attempt(id: String, password: String, remember: Boolean): Boolean {
+        return validate(id, password)?.let {
+            login(it, remember)
+            true
+        } ?: false
     }
 
-    private fun validate(id: Any, password: String): Authenticatable? {
-        val user = userProvider.findByUsername(id)?.let { authenticatable ->
-            val hasher = call.make<Hasher>()
-            if (hasher.verify(password, authenticatable.password)) {
-                authenticatable
-            } else {
-                // todo: throw exception if password is invalid
-                null
-            }
-        }
-        // todo: throw exception if user is null
-        return user
-    }
-
-    override fun login(user: Authenticatable): Authenticatable {
-        // todo: set remember token
-        // todo: invalidate current session
+    override fun login(user: Authenticatable, remember: Boolean) {
         // todo: invalidate cookie session
-        call.session[sessionKey] = user.id
+        if (remember) {
+            refreshRememberToken(user)
+            setRememberTokenCookie(user)
+        }
+        setSession(user)
         this.user = user
-        return user
+    }
+
+    protected open fun rememberTokenCookieName(): String {
+        val hash = this.javaClass.simpleName.sha1()
+        return "remember_me_session_${hash}"
     }
 
     override fun loginUsingId(id: Any): Authenticatable? {
@@ -63,10 +59,62 @@ class SessionAuthChannel(private val call: HttpCall, override val userProvider: 
     }
 
     override fun logout() {
-        // todo: clear remember me cookie
+        user?.let {
+            // If user had a "Remember Token" set previously, we'll just refresh it to invalidate the
+            // token altogether so that the token on the other devices are invalidated as well.
+            if (it.rememberToken != null) {
+                refreshRememberToken(it)
+            }
+        }
+        forgetRememberCookie()
         user = null
-        val config = call.config<SessionConfig>()
-        call.cookie.forget(config.cookieName, path = config.path, domain = config.domain)
+        val sessionConfig = call.config<SessionConfig>()
+        call.cookie.forget(sessionConfig.cookieName, path = sessionConfig.path, domain = sessionConfig.domain)
         call.session.invalidate()
+    }
+
+    private fun tryLoginUsingRememberToken() {
+        call.cookie[rememberTokenCookieName()]?.let { cookie ->
+            val rememberToken = RememberCookieToken(cookie)
+            user = userProvider.findByToken(rememberToken)?.also {
+                setSession(it)
+            }
+        }
+    }
+
+    private fun validate(id: Any, password: String): Authenticatable? {
+        val user = userProvider.findByUsername(id)?.let { authenticatable ->
+            val hasher = call.make<Hasher>()
+            if (hasher.verify(password, authenticatable.password)) {
+                authenticatable
+            } else {
+                // todo: throw exception if password is invalid?
+                null
+            }
+        }
+        // todo: throw exception if user is null?
+        return user
+    }
+
+    private fun refreshRememberToken(user: Authenticatable) {
+        if (user.rememberToken.isNullOrEmpty()) {
+            val token = secureRandomString(60)
+            userProvider.updateRememberToken(user, token)
+        }
+    }
+
+    private fun setRememberTokenCookie(user: Authenticatable) {
+        val name = rememberTokenCookieName()
+        val value = RememberCookieToken(user)
+        val cookie = call.cookie.immortal(name, value)
+        call.cookie.add(cookie)
+    }
+
+    private fun forgetRememberCookie() {
+        call.cookie.forget(rememberTokenCookieName())
+    }
+
+    private fun setSession(user: Authenticatable) {
+        call.session[sessionKey] = user.id
     }
 }

@@ -9,9 +9,10 @@ interface BaseUser<E : BaseUser<E>> : OzoneEntity<E>, Authenticatable {
     override var password: String
     override var email: String?
     var name: String?
+    override var rememberToken: String?
+    val emailVerifiedAt: Instant?
     var createdAt: Instant?
     var updatedAt: Instant?
-    val emailVerifiedAt: Instant?
 
     @ExperimentalUnsignedTypes
     fun gravatarUrl(): String {

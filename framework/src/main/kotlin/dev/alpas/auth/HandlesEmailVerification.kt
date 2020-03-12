@@ -7,6 +7,7 @@ import dev.alpas.notifications.NotificationDispatcher
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.dsl.update
 import me.liuwj.ktorm.schema.InstantSqlType
+import java.time.Instant
 
 interface HandlesEmailVerification {
     fun ifVerifiedRedirectTo(call: HttpCall) = "/home"
@@ -57,7 +58,7 @@ interface HandlesEmailVerification {
 
 private fun Authenticatable.verifyEmail(call: HttpCall) {
     UsersTable.update {
-        it.bind("email_verified_at", InstantSqlType) to call.nowInCurrentTimezone().toInstant()
+        it.emailVerifiedAt to Instant.now()
         where { it.id eq id }
     }
 }
