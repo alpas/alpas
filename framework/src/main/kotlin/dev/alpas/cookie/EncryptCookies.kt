@@ -1,8 +1,11 @@
 package dev.alpas.cookie
 
-import dev.alpas.*
+import dev.alpas.Handler
+import dev.alpas.Middleware
 import dev.alpas.encryption.Encrypter
 import dev.alpas.http.HttpCall
+import dev.alpas.make
+import dev.alpas.makeElse
 import dev.alpas.session.SessionConfig
 import javax.servlet.http.Cookie
 
@@ -34,8 +37,8 @@ class EncryptCookies : Middleware<HttpCall>() {
 
     private fun cookiesToEncrypt(call: HttpCall, cookies: Array<Cookie>): Iterable<Cookie> {
         val config = call.makeElse { SessionConfig(call.env) }
-        return cookies.filterNot {
-            it.name.isOneOf(
+        return cookies.filter {
+            it.name !in listOf(
                 config.cookieName,
                 "JSESSIONID",
                 "X-CSRF-TOKEN",

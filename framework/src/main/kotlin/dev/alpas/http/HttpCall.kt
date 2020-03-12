@@ -250,6 +250,9 @@ class HttpCall internal constructor(
     }
 
     fun close() {
+        if (isBeingRedirected()) {
+            redirector.commitRedirect()
+        }
         if (jettyRequest.isHandled) {
             clearFlash()
             return

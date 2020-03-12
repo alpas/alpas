@@ -61,7 +61,7 @@ class Redirector(
     override fun isBeingRedirected() = ::redirect.isInitialized
 
     override fun to(to: String, status: Int, headers: Map<String, String>) {
-        commit(Redirect(to, status, headers, request.cookie))
+        redirect = Redirect(to, status, headers, request.cookie)
     }
 
     override fun back(status: Int, headers: Map<String, String>, default: String) {
@@ -91,14 +91,13 @@ class Redirector(
         redirectFilters.add(filter)
     }
 
-    private fun commit(redirectObj: Redirect) {
-        copyHeaders(redirectObj.headers)
-        saveCookies(redirectObj.cookie)
-        sendRedirect(redirectObj)
+    fun commitRedirect() {
+        copyHeaders(redirect.headers)
+        saveCookies(redirect.cookie)
+        sendRedirect(redirect)
     }
 
     private fun sendRedirect(redirectObj: Redirect) {
-        redirect = redirectObj
         Pipeline<Redirect>().send(redirectObj).through(redirectFilters).then { finalRedirect ->
             (response.servletResponse as? Response)?.sendRedirect(finalRedirect.status, finalRedirect.location)
             request.jettyRequest.isHandled = true

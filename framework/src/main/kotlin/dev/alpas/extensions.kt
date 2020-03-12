@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "EXPERIMENTAL_API_USAGE")
 
 package dev.alpas
 
@@ -128,9 +128,16 @@ val Throwable.stackTraceString: String
         }
     }
 
-@ExperimentalUnsignedTypes
 fun String.md5(): String {
-    return MessageDigest.getInstance("MD5").let {
+    return this.hash("MD5")
+}
+
+fun String.sha1(): String {
+    return this.hash("SHA-1")
+}
+
+fun String.hash(algorithm: String): String {
+    return MessageDigest.getInstance(algorithm).let {
         it.update(this.toByteArray())
         it.digest()
     }.toHexString()
@@ -144,7 +151,6 @@ fun Any.toJson(wrapItWith: String? = null): String {
     }
 }
 
-@ExperimentalUnsignedTypes
 fun ByteArray.toHexString() = asUByteArray().joinToString("") { it.toString(16).padStart(2, '0') }
 
 @ExperimentalUnsignedTypes
@@ -195,4 +201,8 @@ fun <E> E?.orAbort(message: String? = null, statusCode: Int = HttpStatus.NOT_FOU
 
 inline fun <reified T : Any> ClassInfo.load(): T {
     return loadClass().kotlin.let { it.objectInstance ?: it.createInstance() } as T
+}
+
+fun hashEquals(strA: String, strB: String): Boolean {
+    return MessageDigest.isEqual(strA.toByteArray(), strB.toByteArray())
 }

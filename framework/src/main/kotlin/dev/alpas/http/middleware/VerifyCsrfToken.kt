@@ -3,10 +3,9 @@ package dev.alpas.http.middleware
 import dev.alpas.*
 import dev.alpas.encryption.Encrypter
 import dev.alpas.http.HttpCall
+import dev.alpas.session.CSRF_SESSION_KEY
 import dev.alpas.session.SessionConfig
 import dev.alpas.session.TokenMismatchException
-import dev.alpas.session.CSRF_SESSION_KEY
-import java.security.MessageDigest
 
 open class VerifyCsrfToken : Middleware<HttpCall>() {
     override fun invoke(passable: HttpCall, forward: Handler<HttpCall>) {
@@ -25,7 +24,7 @@ open class VerifyCsrfToken : Middleware<HttpCall>() {
 
         call.cookie.add(
             "XSRF-TOKEN",
-            call.make<Encrypter>().encrypt(call.session.csrfToken() ?: ""),
+            call.session.csrfToken() ?: "",
             lifetime = config.lifetime,
             path = config.path,
             domain = config.domain,
@@ -41,10 +40,6 @@ open class VerifyCsrfToken : Middleware<HttpCall>() {
             return hashEquals(callToken, sessionToken)
         }
         return false
-    }
-
-    private fun hashEquals(callToken: String, sessionToken: String): Boolean {
-        return MessageDigest.isEqual(callToken.toByteArray(), sessionToken.toByteArray())
     }
 
     private fun getCallToken(call: HttpCall): String? {

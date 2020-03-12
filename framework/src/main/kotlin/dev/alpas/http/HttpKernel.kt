@@ -49,7 +49,7 @@ open class HttpKernel : Kernel {
     protected open fun registerServerEntryMiddleware(middleware: MutableSet<KClass<out Middleware<HttpCall>>>) {}
 
     open fun webMiddlewareGroup(): List<KClass<out Middleware<HttpCall>>> {
-        return listOf(SessionStart::class, VerifyCsrfToken::class, EncryptCookies::class)
+        return listOf(EncryptCookies::class, SessionStart::class, VerifyCsrfToken::class)
     }
 
     override fun stop(app: Application) {
