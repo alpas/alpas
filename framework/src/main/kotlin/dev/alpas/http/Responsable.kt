@@ -39,8 +39,8 @@ class Responsable internal constructor(override val servletResponse: HttpServlet
             call.onBeforeRender(it)
         }
         try {
-            response.render(context) { copyTo(servletResponse.outputStream) }
             response.finalize(servletResponse)
+            response.render(context) { copyTo(servletResponse.outputStream) }
         } catch (e: Exception) {
             response.renderException(e, context) { copyTo(servletResponse.outputStream) }
         }
