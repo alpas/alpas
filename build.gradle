@@ -66,7 +66,7 @@ subprojects { project ->
                 pom {
                     name = project.name == 'alpas' ? 'framework' : project.name
                     description = "A web framework for Kotlin."
-                    url = "https://github.com/ashokgelal/alpas"
+                    url = "https://github.com/alpas/alpas"
                     licenses {
                         license {
                             name = "The Apache Software License, Version 2.0"
@@ -81,7 +81,7 @@ subprojects { project ->
                         }
                     }
                     scm {
-                        url = "https://github.com/ashokgelal/alpas.git"
+                        url = "https://github.com/alpas/alpas.git"
                     }
                 }
             }
@@ -92,12 +92,13 @@ subprojects { project ->
         key = System.getenv("BINTRAY_KEY")
         publications = ["bintray"]
         publish = true
+        override = true
 
         pkg {
             repo = "Alpas"
             name = project.name
             licenses = ["Apache-2.0"]
-            vcsUrl = "https://github.com/ashokgelal/alpas.git"
+            vcsUrl = "https://github.com/alpas/alpas.git"
             labels = ["Kotlin", "web framework"]
 
             version {
