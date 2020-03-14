@@ -6,7 +6,7 @@ import java.io.File
 
 class MakeServiceProviderCommand(srcPackage: String) :
     GeneratorCommand(srcPackage, name = "make:provider", help = "Create a new service provider class") {
-    override val docUrl = "https://alpas.dev/docs/serivce-providers"
+    override val docUrl = "https://alpas.dev/docs/service-providers"
 
     override fun populateOutputFile(filename: String, actualname: String, vararg parentDirs: String): OutputFile {
         return OutputFile()
