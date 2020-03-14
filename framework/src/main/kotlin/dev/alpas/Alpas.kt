@@ -5,6 +5,7 @@ import dev.alpas.console.Command
 import dev.alpas.console.ConsoleCommandsServiceProvider
 import dev.alpas.console.ConsoleKernel
 import dev.alpas.exceptions.ExceptionHandler
+import dev.alpas.http.HttpCall
 import dev.alpas.http.HttpKernel
 import dev.alpas.notifications.NotificationServiceProvider
 import kotlin.reflect.KClass
@@ -57,12 +58,12 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
 
     override fun takeOff() {
         ensureNotInFlight()
+        appState = AppState.INFLIGHT
         dispatchBufferedDebugLogs()
         logger.debug { "Running the app" }
         // todo: fix refactor
         serviceProviders.forEach { provider -> provider.boot(this, packageClassLoader) }
         packageClassLoader.close()
-        appState = AppState.INFLIGHT
     }
 
     override fun <T : ServiceProvider> registerProvider(provider: T) {
@@ -92,6 +93,11 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
         }
     }
 
+    override fun append(middleware: KClass<out Middleware<HttpCall>>, vararg others: KClass<out Middleware<HttpCall>>) {
+        ensureNotInFlight()
+        kernel.append(middleware, *others)
+    }
+
     private fun igniteCommands() {
         ensureNotInFlight()
         consoleCommands.sortBy { it.commandName }
@@ -104,7 +110,7 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
     }
 
     private fun ensureNotInFlight() {
-        check(appState != AppState.INFLIGHT) { "Cannot perform the operation once the app is already in fight." }
+        check(appState != AppState.INFLIGHT) { "Cannot perform the operation once the app is already in flight." }
     }
 
     private fun registerCoreServices(args: Array<String>) {

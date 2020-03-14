@@ -21,9 +21,7 @@ interface Application : Container {
     fun bufferDebugLog(log: String) {}
     fun <T : ServiceProvider> registerProvider(provider: T)
     fun recordLastCall(call: HttpCall) {}
-    fun append(middleware: KClass<out Middleware<HttpCall>>, vararg others: KClass<out Middleware<HttpCall>>) {
-        kernel.append(middleware, *others)
-    }
+    fun append(middleware: KClass<out Middleware<HttpCall>>, vararg others: KClass<out Middleware<HttpCall>>) {}
 
     fun shouldLoadMiddleware(middleware: KClass<out Middleware<HttpCall>>): Boolean {
         return true
