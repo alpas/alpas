@@ -1,5 +1,6 @@
 package dev.alpas.validation
 
+import dev.alpas.auth.Authenticatable
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
 
@@ -40,7 +41,7 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
                 it.inJsonBody()
             }
             if (!it.check(attribute, call)) {
-                errorBag.add(RequestError(attribute, call.paramList(attribute), it.error))
+                errorBag.add(RequestError(attribute, call.paramList(attribute), it.errorMessage(attribute)))
                 if (shouldFailFast) {
                     return
                 }
@@ -53,4 +54,12 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
     open fun handleError(errorBag: ErrorBag) = false
 
     open fun afterSuccessfulValidation() {}
+
+    fun params(vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
+        return call.params(*keys, firstValueOnly = firstValueOnly)
+    }
+
+    fun user(): Authenticatable? {
+        return if (call.isAuthenticated) call.user else null
+    }
 }

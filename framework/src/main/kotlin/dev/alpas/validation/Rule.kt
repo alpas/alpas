@@ -29,4 +29,12 @@ abstract class Rule {
         checkInJson = true
         return this
     }
+
+    fun errorMessage(attribute: String): String {
+        return if (::error.isInitialized) {
+            error
+        } else {
+            "$attribute has an error"
+        }
+    }
 }
