@@ -1,14 +1,27 @@
 package dev.alpas.http
 
 import org.eclipse.jetty.http.HttpStatus
-import java.io.InputStream
 
 open class StringResponse(
     val payload: String?,
-    override var statusCode: Int = HttpStatus.OK_200,
-    override var contentType: String = HTML_CONTENT_TYPE
+    var statusCode: Int = HttpStatus.OK_200,
+    var contentType: String = HTML_CONTENT_TYPE
 ) : Response {
-    override fun render(context: RenderContext, callback: InputStream.() -> Unit) {
-        (payload ?: "").byteInputStream(context.call.charset()).use(callback)
+    override fun render(context: RenderContext) {
+        val servletResponse = context.call.servletResponse
+        servletResponse.status = statusCode
+        servletResponse.contentType = contentType
+
+        (payload ?: "").byteInputStream(context.call.charset()).use {
+            it.copyTo(servletResponse.outputStream)
+        }
+    }
+
+    override fun contentType(type: String) {
+        contentType = type
+    }
+
+    override fun statusCode(code: Int) {
+        statusCode = code
     }
 }

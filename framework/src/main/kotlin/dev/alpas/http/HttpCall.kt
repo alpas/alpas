@@ -8,10 +8,12 @@ import dev.alpas.auth.UserProvider
 import dev.alpas.exceptions.ExceptionHandler
 import dev.alpas.exceptions.HttpException
 import dev.alpas.exceptions.ValidationException
+import dev.alpas.exceptions.httpExceptionFor
 import dev.alpas.routing.RouteResult
 import dev.alpas.routing.UrlGenerator
 import dev.alpas.validation.ErrorBag
 import dev.alpas.validation.Rule
+import dev.alpas.validation.SharedDataBag
 import dev.alpas.validation.ValidationGuard
 import mu.KotlinLogging
 import org.eclipse.jetty.http.HttpStatus
@@ -30,12 +32,11 @@ import kotlin.reflect.full.createInstance
 class HttpCall internal constructor(
     private val container: Container,
     private val requestableCall: RequestableCall,
-    private val responsableCall: ResponsableCall,
+    val servletResponse: HttpServletResponse,
     internal val route: RouteResult,
     private val callHooks: List<HttpCallHook>
 ) : Container by container,
     RequestableCall by requestableCall,
-    ResponsableCall by responsableCall,
     RequestParamsBagContract by RequestParamsBag(requestableCall, route) {
 
     internal constructor(
@@ -44,24 +45,31 @@ class HttpCall internal constructor(
         response: HttpServletResponse,
         route: RouteResult,
         callHooks: List<HttpCallHook>
-    ) : this(container, Requestable(request), Responsable(response), route, callHooks)
+    ) : this(container, Requestable(request), response, route, callHooks)
 
-    private var future: CompletableFuture<*>? = null
     val logger by lazy { KotlinLogging.logger {} }
+    val errorBag: ErrorBag by lazy { ErrorBag() }
     var isDropped = false
         private set
 
-    private val exceptionHandler by lazy { makeElse { ExceptionHandler() } }
+    internal val exceptionHandler by lazy { makeElse { ExceptionHandler() } }
     val authChannel: AuthChannel by lazy { config<AuthConfig>().channel(this, route.target().authChannel) }
     internal val userProvider: UserProvider? by lazy { authChannel.userProvider }
     val isAuthenticated by lazy { authChannel.isLoggedIn() }
     val isFromGuest by lazy { !isAuthenticated }
     val user: Authenticatable by lazy { authChannel.user.orAbort() }
     val env by lazy { make<Environment>() }
-    val redirector by lazy { Redirector(requestableCall, responsableCall, urlGenerator) }
+    private val redirector by lazy { Redirector(requestableCall, urlGenerator) }
     val urlGenerator: UrlGenerator by lazy { container.make<UrlGenerator>() }
     internal var validateUsingJsonBody: AtomicBoolean = AtomicBoolean(false)
         private set
+
+    private var headers = mutableMapOf<String, String>()
+    private var future: CompletableFuture<*>? = null
+    lateinit var response: Response
+        private set
+
+    private val sharedData by lazy { SharedDataBag() }
 
     init {
         singleton(UrlGenerator(requestableCall.rootUrl, make(), make()))
@@ -171,23 +179,6 @@ class HttpCall internal constructor(
         return redirect().isBeingRedirected()
     }
 
-    private fun handleException(e: Throwable) {
-        // Check if the top layer is an HTTP exception type since most of the times the exception is thrown from
-        // a controller, the controller will be wrapped in an InvocationTargetException object. Hence, we'd have to
-        // check the cause of this exception to see whether the cause is an actual HTTP exception or not.
-        if (HttpException::class.java.isAssignableFrom(e::class.java)) {
-            val exceptionHandler = exceptionHandler
-            exceptionHandler.handle(e as HttpException, this)
-            return
-        } else {
-            e.cause?.let {
-                return handleException(it)
-            }
-        }
-        exceptionHandler.handle(e, this)
-        return
-    }
-
     fun drop(e: Exception) {
         isDropped = true
         handleException(e)
@@ -200,7 +191,7 @@ class HttpCall internal constructor(
         return this.block()
     }
 
-    fun onBeforeRender(context: RenderContext) {
+    private fun onBeforeRender(context: RenderContext) {
         if (isDropped) {
             logger.debug { "Calling beforeErrorRender hook for ${callHooks.size} hooks" }
             callHooks.forEach { it.beforeErrorRender(context) }
@@ -249,42 +240,66 @@ class HttpCall internal constructor(
         return this
     }
 
-    fun close() {
-        if (isBeingRedirected()) {
-            redirector.commitRedirect()
-            return
-        }
-        if (jettyRequest.isHandled) {
-            clearFlash()
-            return
         }
 
+    fun close() {
         if (future == null) syncClose() else asyncClose()
+    }
+
+    private fun handleException(e: Throwable) {
+        val exceptionHandler = exceptionHandler
+        // Check if the top layer is an HTTP exception type since most of the times the exception is thrown from
+        // a controller, the controller will be wrapped in an InvocationTargetException object. Hence, we'd have to
+        // check the cause of this exception to see whether the cause is an actual HTTP exception or not.
+        if (HttpException::class.java.isAssignableFrom(e::class.java)) {
+            exceptionHandler.handle(e as HttpException, this)
+            return
+        } else {
+            e.cause?.let {
+                return handleException(it)
+            }
+        }
+        exceptionHandler.handle(e, this)
+        return
     }
 
     private fun asyncClose() {
         val asyncContext = jettyRequest.startAsync()
         future!!.exceptionally { throwable ->
+            future = null
             if (throwable is CompletionException && throwable.cause is Exception) {
-                handleException(throwable.cause as Exception)
+                drop(throwable.cause as Exception)
             } else if (throwable is Exception) {
-                handleException(throwable)
+                drop(throwable)
             }
             null
         }.thenAccept {
+            future = null
             val response = when (it) {
+                is ErrorResponse -> {
+                    drop(it.exception)
+                    null
+                }
                 is Response -> it
                 else -> StringResponse(it.toString())
             }
-            render(response)
-            syncClose()
+            response?.let {
+                reply(response)
+                syncClose()
+            }
             asyncContext.complete()
         }
     }
 
     private fun syncClose() {
-        finalize(this)
-        clearFlash()
+        if (isBeingRedirected()) {
+            sendResponseBack(redirector.redirectResponse)
+        } else {
+            saveCookies()
+            copyHeaders()
+            sendResponseBack(response)
+            clearFlash()
+        }
         jettyRequest.isHandled = true
     }
 
@@ -295,4 +310,135 @@ class HttpCall internal constructor(
             session.clearPreviousFlashBag()
         }
     }
+
+    fun addHeaders(headers: Map<String, String>): HttpCall {
+        this.headers.putAll(headers)
+        return this
+    }
+
+    fun addHeader(key: String, value: String): HttpCall {
+        this.headers[key] = value
+        return this
+    }
+
+    private fun saveCookies() {
+        cookie.outgoingCookies.forEach {
+            servletResponse.addCookie(it)
+        }
+    }
+
+    private fun sendResponseBack(response: Response) {
+        val context = RenderContext(this, sharedData).also {
+            onBeforeRender(it)
+        }
+        try {
+            response.render(context)
+        } catch (e: Exception) {
+            response.renderException(e, context)
+        }
+    }
+
+    private fun copyHeaders() {
+        headers.forEach { (key, value) ->
+            servletResponse.addHeader(key, value)
+        }
+    }
+
+    fun share(pair: Pair<String, Any?>, vararg pairs: Pair<String, Any>) {
+        sharedData.add(pair, *pairs)
+    }
+
+    fun shared(key: String): Any? {
+        return sharedData[key]
+    }
+
+    fun status(code: Int): HttpCall {
+        if (::response.isInitialized) {
+            response.statusCode(code)
+            return this
+        } else {
+            throw IllegalStateException("Status Code can't be set before the response. Make sure to set a response first.")
+        }
+    }
+
+    fun contentType(type: String): HttpCall {
+        if (::response.isInitialized) {
+            response.contentType(type)
+            return this
+        } else {
+            throw IllegalStateException("Content type can't be set before the response. Make sure to set a response first.")
+        }
+    }
+
+    fun asHtml() = contentType(HTML_CONTENT_TYPE)
+    fun asJson() = contentType(JSON_CONTENT_TYPE)
+
+    fun abort(statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()): Nothing {
+        throw httpExceptionFor(statusCode, message, headers)
+    }
+
+    fun abortUnless(condition: Boolean, statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()) {
+        if (!condition) {
+            abort(statusCode, message, headers)
+        }
+    }
+
+    fun abortIf(condition: Boolean, statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()) {
+        if (condition) {
+            abort(statusCode, message, headers)
+        }
+    }
+
+    fun addHeader(header: Pair<String, String>, vararg headers: Pair<String, String>): HttpCall {
+        return addHeaders(mapOf(header) + headers)
+    }
+
+    fun <T> reply(payload: T? = null, statusCode: Int = HttpStatus.OK_200): HttpCall {
+        response = StringResponse(payload?.toString(), statusCode)
+        return this
+    }
+
+    fun <T : Map<*, *>> replyAsJson(payload: T, statusCode: Int = HttpStatus.OK_200): HttpCall {
+        response = JsonResponse(payload, statusCode)
+        return this
+    }
+
+    fun replyAsJson(payload: JsonSerializable, statusCode: Int = HttpStatus.OK_200): HttpCall {
+        response = JsonResponse(payload, statusCode)
+        return this
+    }
+
+    fun reply(response: Response): HttpCall {
+        this.response = response
+        return this
+    }
+
+    fun render(templateName: String, arg: Pair<String, Any?>, statusCode: Int = HttpStatus.OK_200): ViewResponse {
+        return render(templateName, mapOf(arg), statusCode)
+    }
+
+    fun render(templateName: String, args: Map<String, Any?>? = null, statusCode: Int = HttpStatus.OK_200): ViewResponse {
+        return ViewResponse(templateName.replace(".", "/"), args, statusCode)
+            .also { this.response = it }
+    }
+
+    fun acknowledge(statusCode: Int = HttpStatus.NO_CONTENT_204): HttpCall {
+        return reply(AcknowledgementResponse(statusCode))
+    }
+
+    fun render(
+        templateName: String,
+        args: MutableMap<String, Any?>? = null,
+        statusCode: Int = 200,
+        block: ArgsBuilder.() -> Unit
+    ): ViewResponse {
+        val builder = ArgsBuilder(args ?: mutableMapOf()).also(block)
+        return render(templateName, builder.map(), statusCode)
+    }
+
+    fun json(args: MutableMap<String, Any?>? = null, statusCode: Int = 200, block: ArgsBuilder.() -> Unit): HttpCall {
+        val builder = ArgsBuilder(args ?: mutableMapOf()).also(block)
+        return replyAsJson(builder.map(), statusCode)
+    }
+}
 }

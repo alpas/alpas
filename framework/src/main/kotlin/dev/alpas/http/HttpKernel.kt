@@ -74,4 +74,3 @@ open class HttpKernel : Kernel {
         pushedMiddleware.addAll(listOf(middleware, *others))
     }
 }
-

@@ -1,13 +1,10 @@
 package dev.alpas.http
 
 import dev.alpas.Middleware
-import dev.alpas.Pipeline
-import dev.alpas.cookie.CookieJar
 import dev.alpas.routing.UrlGenerator
 import org.eclipse.jetty.http.HttpStatus
-import org.eclipse.jetty.server.Response
 
-open class RedirectFilter : Middleware<Redirect>()
+open class RedirectFilter : Middleware<RedirectResponse>()
 
 interface Redirectable {
     fun isBeingRedirected(): Boolean
@@ -16,110 +13,88 @@ interface Redirectable {
         to: String,
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
         headers: Map<String, String> = emptyMap()
-    )
+    ): RedirectResponse
 
     fun toExternal(
         url: String,
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
         headers: Map<String, String> = emptyMap()
-    )
+    ): RedirectResponse
 
     fun back(
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
         headers: Map<String, String> = emptyMap(),
         default: String = "/"
-    )
+    ): RedirectResponse
 
     fun intended(
         default: String = "/",
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
         headers: Map<String, String> = emptyMap()
-    )
+    ): RedirectResponse
 
-    fun home(status: Int = HttpStatus.MOVED_TEMPORARILY_302, headers: Map<String, String> = emptyMap())
+    fun home(status: Int = HttpStatus.MOVED_TEMPORARILY_302, headers: Map<String, String> = emptyMap()): RedirectResponse
     fun toRouteNamed(
         name: String,
         params: Map<String, Any> = emptyMap(),
         status: Int = HttpStatus.MOVED_TEMPORARILY_302,
         headers: Map<String, String> = emptyMap()
-    )
+    ): RedirectResponse
 
     fun pushFilter(filter: RedirectFilter)
+    fun filters(): List<RedirectFilter>
+
+    fun flash(name: String, payload: Any?)
 }
 
 class Redirector(
     private val request: RequestableCall,
-    private val response: ResponsableCall,
     private val urlGenerator: UrlGenerator
 ) : Redirectable {
-
-    lateinit var redirect: Redirect
+    lateinit var redirectResponse: RedirectResponse
         private set
 
     private val redirectFilters: MutableList<RedirectFilter> = mutableListOf()
 
-    override fun isBeingRedirected() = ::redirect.isInitialized
+    override fun isBeingRedirected() = ::redirectResponse.isInitialized
 
-    override fun to(to: String, status: Int, headers: Map<String, String>) {
-        redirect = Redirect(to, status, headers, request.cookie)
+    override fun to(to: String, status: Int, headers: Map<String, String>): RedirectResponse {
+        redirectResponse = RedirectResponse(to, status, headers, request.cookie)
+        return redirectResponse
     }
 
-    override fun back(status: Int, headers: Map<String, String>, default: String) {
-        to(url, status, headers)
+    override fun back(status: Int, headers: Map<String, String>, default: String): RedirectResponse {
         val url = request.referrer ?: request.session.pull("_previous_url", default)
+        return to(url, status, headers)
     }
 
-    override fun intended(default: String, status: Int, headers: Map<String, String>) {
+    override fun intended(default: String, status: Int, headers: Map<String, String>): RedirectResponse {
         val url = request.session.pull("_intended_url", default)
-        to(url, status, headers)
+        return to(url, status, headers)
     }
 
-    override fun toRouteNamed(name: String, params: Map<String, Any>, status: Int, headers: Map<String, String>) {
-        to(urlGenerator.route(name, params = params), status, headers)
+    override fun toRouteNamed(name: String, params: Map<String, Any>, status: Int, headers: Map<String, String>): RedirectResponse {
+        return to(urlGenerator.route(name, params = params), status, headers)
     }
 
-    override fun home(status: Int, headers: Map<String, String>) {
-        to(urlGenerator.route("home", defaultPath = "/"), status, headers)
+    override fun home(status: Int, headers: Map<String, String>): RedirectResponse {
+        return to(urlGenerator.route("home", defaultPath = "/"), status, headers)
     }
 
-    override fun toExternal(url: String, status: Int, headers: Map<String, String>) {
-        copyHeaders(headers)
-        sendRedirect(Redirect(url, status, headers))
+    override fun toExternal(url: String, status: Int, headers: Map<String, String>): RedirectResponse {
+        redirectResponse = RedirectResponse(url, status, headers, isExternal = true)
+        return redirectResponse
     }
 
     override fun pushFilter(filter: RedirectFilter) {
         redirectFilters.add(filter)
     }
 
-    fun commitRedirect() {
-        copyHeaders(redirect.headers)
-        saveCookies(redirect.cookie)
-        sendRedirect(redirect)
+    override fun filters(): List<RedirectFilter> {
+        return redirectFilters.toList()
     }
 
-    private fun sendRedirect(redirectObj: Redirect) {
-        Pipeline<Redirect>().send(redirectObj).through(redirectFilters).then { finalRedirect ->
-            (response.servletResponse as? Response)?.sendRedirect(finalRedirect.status, finalRedirect.location)
-            request.jettyRequest.isHandled = true
-        }
-    }
-
-    private fun copyHeaders(headers: Map<String, String>) {
-        headers.forEach { (key, value) ->
-            response.servletResponse.addHeader(key, value)
-        }
-    }
-
-    private fun saveCookies(cookie: CookieJar?) {
-        cookie?.outgoingCookies?.forEach {
-            response.servletResponse.addCookie(it)
-        }
+    override fun flash(name: String, payload: Any?) {
+        request.session.flash(name, payload)
     }
 }
-
-data class Redirect(
-    val location: String,
-    val status: Int,
-    val headers: Map<String, String> = emptyMap(),
-    val cookie: CookieJar? = null
-)
