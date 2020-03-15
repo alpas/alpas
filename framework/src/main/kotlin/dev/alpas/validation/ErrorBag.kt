@@ -4,8 +4,8 @@ import dev.alpas.JsonSerializable
 import dev.alpas.JsonSerializer
 import dev.alpas.http.RequestError
 
-class ErrorBag(vararg errors: RequestError) : JsonSerializable {
-    private val errors = mutableListOf(*errors)
+class ErrorBag(vararg error: RequestError) : JsonSerializable {
+    private val errors = mutableListOf(*error)
     fun add(requestError: RequestError) {
         errors.add(requestError)
     }
