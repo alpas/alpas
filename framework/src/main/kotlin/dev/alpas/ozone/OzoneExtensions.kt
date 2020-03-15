@@ -15,6 +15,7 @@ import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.ColumnDeclaring
 import me.liuwj.ktorm.schema.SqlType
 import org.eclipse.jetty.http.HttpStatus
+import java.time.Instant
 
 /**
  * Checks whether this database is of the given name type.
@@ -45,7 +46,7 @@ fun Database.isPostgreSQL(): Boolean {
 }
 
 /**
- * Obtain a entity object by its ID, auto left joining all the reference tables.
+ * Obtain an entity object by its ID, auto left joining all the reference tables.
  *
  * This function will throw a NotFoundException if no records found, and throw an exception if there are more than one record.
  */
@@ -57,14 +58,12 @@ fun <E : Any> BaseTable<E>.findOrFail(
     return this.findById(id).orAbort(message ?: "Record with id $id doesn't exist.", statusCode)
 }
 
-fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.create(block: AssignmentsBuilder.(T) -> Unit): E {
-    val id = this.insertAndGenerateKey(block)
-    return this.findOrFail(id)
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.create(timestamp: Instant? = Instant.now(), block: AssignmentsBuilder.(T) -> Unit): E {
+    return create(emptyMap(), timestamp, block)
 }
 
-
 /**
- * Obtain a entity object matching the given [predicate], auto left joining all the reference tables.
+ * Obtain an entity object matching the given [predicate], auto left joining all the reference tables.
  *
  * This function will abort if no records found, and throw an exception if there are more than one record.
  */

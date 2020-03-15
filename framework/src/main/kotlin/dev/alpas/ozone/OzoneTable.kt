@@ -354,23 +354,28 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
         }
         return findList { whereConditions.combineConditions() }
     }
+}
 
-    /**
-     * Create an entity with the given attributes. Any non-existent column names in the attributes map will be skipped.
-     *
-     * @return A new entity.
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun create(attributes: Map<String, Any?>): E {
-        val table = this
-        return create { builder ->
-            for ((name, value) in attributes) {
-                table.columns.find { it.name == name }?.let {
-                    builder[name] to value
-                }
+/**
+ * Create an entity with the given attributes. Any non-existent column names in the attributes map will be skipped.
+ *
+ * @return A new entity.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.create(attributes: Map<String, Any?>, timestamp: Instant? = Instant.now()): E {
+    val table = this
+    val id = this.insertAndGenerateKey { builder ->
+        val actualAttributes = attributes.toMutableMap()
+        if (timestamp != null) {
+            setTimestampColumns(table, actualAttributes, timestamp)
+        }
+        for ((name, value) in actualAttributes) {
+            table.columns.find { it.name == name }?.let {
+                builder[name] to value
             }
         }
     }
+    return findOrFail(id)
 }
 
 /**
@@ -391,6 +396,7 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
  */
 fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.create(
     attributes: Map<String, Any?> = emptyMap(),
+    timestamp: Instant? = Instant.now(),
     block: AssignmentsBuilder.(T) -> Unit
 ): E {
     val combinedAttributes = attributes.toMutableMap()
@@ -399,7 +405,23 @@ fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.create(
     assignments.map {
         combinedAttributes[it.column.name] = (it.expression as ArgumentExpression).value
     }
+    if (timestamp != null) {
+        setTimestampColumns(this, combinedAttributes, timestamp)
+    }
     return create(combinedAttributes)
+}
+
+private fun <E : OzoneEntity<E>, T : OzoneTable<E>> setTimestampColumns(table: T, attributes: MutableMap<String, Any?>, timestamp: Instant? = Instant.now()) {
+    val columnNames = table.columns.map { it.name }
+    val createdAtColName = "created_at"
+    if (!attributes.containsKey(createdAtColName) && columnNames.contains(createdAtColName)) {
+        attributes[createdAtColName] = timestamp
+    }
+    val updatedAtColName = "updated_at"
+    if (!attributes.containsKey(updatedAtColName) && columnNames.contains(updatedAtColName)) {
+        attributes[updatedAtColName] = timestamp
+
+    }
 }
 
 fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.update(
@@ -439,7 +461,7 @@ fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.findOrCreate(
     whereAttributes: Map<String, Any?>,
     assignmentBlock: AssignmentsBuilder.(T) -> Unit
 ): E {
-    return findOne(whereAttributes) ?: create(whereAttributes, assignmentBlock)
+    return findOne(whereAttributes) ?: create(whereAttributes, block = assignmentBlock)
 }
 
 /**
