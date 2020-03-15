@@ -1,6 +1,7 @@
 package dev.alpas.exceptions
 
 import dev.alpas.http.HttpCall
+import dev.alpas.http.RequestError
 import dev.alpas.session.CSRF_SESSION_KEY
 import dev.alpas.session.OLD_INPUTS_KEY
 import dev.alpas.session.VALIDATION_ERRORS_KEY
@@ -12,6 +13,14 @@ class ValidationException(
     headers: Map<String, String> = emptyMap(),
     private val errorBag: ErrorBag
 ) : HttpException(HttpStatus.UNPROCESSABLE_ENTITY_422, message ?: "Validation Exception", headers = headers) {
+    constructor(message: String? = null, headers: Map<String, String> = emptyMap(), error: RequestError) : this(
+        message,
+        headers,
+        ErrorBag(error)
+    )
+
+    constructor(vararg error: RequestError) : this(errorBag = ErrorBag(*error))
+
     override fun report(call: HttpCall) {
         call.logger.warn { "Validation error: ${call.errorBag}" }
     }
