@@ -25,6 +25,10 @@ import java.util.concurrent.CompletionException
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.startCoroutine
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -240,7 +244,12 @@ class HttpCall internal constructor(
         return this
     }
 
+    fun <T : Response> hold(suspendingFunction: suspend () -> T): HttpCall {
+        val response = startInFuture {
+            suspendingFunction()
         }
+        return hold(response)
+    }
 
     fun close() {
         if (future == null) syncClose() else asyncClose()
@@ -441,4 +450,19 @@ class HttpCall internal constructor(
         return replyAsJson(builder.map(), statusCode)
     }
 }
+
+fun <T : Any> startInFuture(suspendingFunction: suspend () -> T): CompletableFuture<T> {
+    val future = CompletableFuture<T>()
+    suspendingFunction.startCoroutine(object : Continuation<T> {
+        override val context: CoroutineContext get() = EmptyCoroutineContext
+
+        override fun resumeWith(result: Result<T>) {
+            if (result.isSuccess) {
+                future.complete(result.getOrNull())
+            } else {
+                future.completeExceptionally(result.exceptionOrNull())
+            }
+        }
+    })
+    return future
 }
