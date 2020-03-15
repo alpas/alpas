@@ -65,8 +65,8 @@ class Redirector(
     }
 
     override fun back(status: Int, headers: Map<String, String>, default: String) {
-        val url = request.header("referrer") ?: request.session.pull("_previous_url", default)
         to(url, status, headers)
+        val url = request.referrer ?: request.session.pull("_previous_url", default)
     }
 
     override fun intended(default: String, status: Int, headers: Map<String, String>) {
