@@ -40,7 +40,7 @@ class ControllerHandler(val controller: KClass<out Controller>, val method: Stri
         }.orAbort()
     }
 
-    override fun toString() = "$controller#$method"
+    override fun toString() = "${controller.qualifiedName}#$method"
     private val controllerInstance by lazy { controller.createInstance() as? Controller }
 }
 

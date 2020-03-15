@@ -18,7 +18,7 @@ open class RouteServiceProvider : ServiceProvider {
     }
 
     override fun commands(app: Application): List<Command> {
-        val routeListCommand = RouteListCommand(app.make(), app.config { AuthConfig(app.make()) })
+        val routeListCommand = RouteInfoCommand(app.srcPackage, app.make(), app.config { AuthConfig(app.make()) })
         return if (app.env.isDev) {
             return listOf(
                 MakeControllerCommand(app.srcPackage),
