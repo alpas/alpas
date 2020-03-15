@@ -87,8 +87,8 @@ class HttpCall internal constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : Authenticatable> callerId(): Long {
-        return caller<T>().id
+    fun callerId(): Long {
+        return caller<Authenticatable>().id
     }
 
     fun applyRules(
