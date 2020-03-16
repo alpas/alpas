@@ -199,13 +199,22 @@ inline fun <E : Any, T : BaseTable<E>> T.oldest(column: String = "created_at"): 
  * the [paramKey] parameter of an [HttpCall]. This aborts the call If the [paramKey]
  * is not present in the call or an entity cannot be found in the table.
  *
+ * If the [paramKey] equals to "id", an attempt will be made to convert the corresponding
+ * parameter to a [Long]. If it cannot be converted to long, it is left as it is.
+ *
  * @param table The table to find the entity in.
  * @param paramKey The key to look in the call. Set to "id" by default.
  *
  * @return An entity instance or a [NotFoundHttpException].
  */
 inline fun <E : OzoneEntity<E>, T : OzoneTable<E>> HttpCall.entityParam(table: T, paramKey: String = "id"): E {
-    val key = param(paramKey).orAbort()
+    val key = param(paramKey).orAbort().let {
+        if (paramKey == "id") {
+            it.toString().toLongOrNull() ?: it
+        } else {
+            it
+        }
+    }
     return table.findOne {
         (it[paramKey] as Column<Any>) eq key
     }.orAbort()
