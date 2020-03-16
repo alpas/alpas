@@ -49,7 +49,7 @@ abstract class RoutableBase(
         middleware: Set<KClass<out Middleware<HttpCall>>>,
         controller: String,
         method: String
-    ) = add(Method.GET, path, DynamicControllerHandler(controller, method), middleware)
+    ) = add(Method.GET, path, DynamicControllerHandler(controller, method), middleware).name(method)
 
     internal fun post(path: String, controller: String, method: String) =
         post(path, middleware, controller, method)
@@ -59,7 +59,7 @@ abstract class RoutableBase(
         middleware: Set<KClass<out Middleware<HttpCall>>>,
         controller: String,
         method: String = DEFAULT_POST_METHOD
-    ) = add(Method.POST, path, DynamicControllerHandler(controller, method), middleware)
+    ) = add(Method.POST, path, DynamicControllerHandler(controller, method), middleware).name(method)
 
     internal fun delete(path: String, controller: String, method: String) =
         delete(path, middleware, controller, method)
@@ -69,7 +69,7 @@ abstract class RoutableBase(
         middleware: Set<KClass<out Middleware<HttpCall>>>,
         controller: String,
         method: String = DEFAULT_DELETE_METHOD
-    ) = add(Method.DELETE, path, DynamicControllerHandler(controller, method), middleware)
+    ) = add(Method.DELETE, path, DynamicControllerHandler(controller, method), middleware).name(method)
 
     internal fun patch(path: String, controller: String, method: String) =
         patch(path, middleware, controller, method)
@@ -79,7 +79,7 @@ abstract class RoutableBase(
         middleware: Set<KClass<out Middleware<HttpCall>>>,
         controller: String,
         method: String = DEFAULT_PATCH_METHOD
-    ) = add(Method.PATCH, path, DynamicControllerHandler(controller, method), middleware)
+    ) = add(Method.PATCH, path, DynamicControllerHandler(controller, method), middleware).name(method)
 
     // controller kclasses
 
@@ -101,11 +101,10 @@ abstract class RoutableBase(
         get(path, T::class, method.name)
 
     fun <T : Controller> get(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        add(Method.GET, path, ControllerHandler(controller, method.name), middleware)
+        add(Method.GET, path, ControllerHandler(controller, method.name), middleware).name(method.name)
 
     fun get(path: String, controller: KClass<out Controller>, method: String = DEFAULT_GET_METHOD) =
-        add(Method.GET, path, ControllerHandler(controller, method), middleware)
-
+        add(Method.GET, path, ControllerHandler(controller, method), middleware).name(method)
 
     inline fun <reified T : Controller> post(path: String = "", method: String = DEFAULT_POST_METHOD) =
         post(path, T::class, method)
@@ -122,11 +121,10 @@ abstract class RoutableBase(
         post(path, T::class, method.name)
 
     fun <T : Controller> post(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        add(Method.POST, path, ControllerHandler(controller, method.name), middleware)
+        add(Method.POST, path, ControllerHandler(controller, method.name), middleware).name(method.name)
 
     fun post(path: String, controller: KClass<out Controller>, method: String = DEFAULT_POST_METHOD) =
-        add(Method.POST, path, ControllerHandler(controller, method), middleware)
-
+        add(Method.POST, path, ControllerHandler(controller, method), middleware).name(method)
 
     inline fun <reified T : Controller> delete(path: String = "", method: String = DEFAULT_DELETE_METHOD) =
         delete(path, T::class, method)
@@ -144,11 +142,10 @@ abstract class RoutableBase(
         delete(path, T::class, method.name)
 
     fun delete(path: String, controller: KClass<out Controller>, method: String = DEFAULT_DELETE_METHOD) =
-        add(Method.DELETE, path, ControllerHandler(controller, method), middleware)
+        add(Method.DELETE, path, ControllerHandler(controller, method), middleware).name(method)
 
     fun <T : Controller> delete(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        add(Method.DELETE, path, ControllerHandler(controller, method.name), middleware)
-
+        add(Method.DELETE, path, ControllerHandler(controller, method.name), middleware).name(method.name)
 
     inline fun <reified T : Controller> patch(path: String = "", method: String = DEFAULT_PATCH_METHOD) =
         patch(path, T::class, method)
@@ -166,10 +163,10 @@ abstract class RoutableBase(
         patch(path, T::class, method.name)
 
     fun patch(path: String, controller: KClass<out Controller>, method: String = DEFAULT_PATCH_METHOD) =
-        add(Method.PATCH, path, ControllerHandler(controller, method), middleware)
+        add(Method.PATCH, path, ControllerHandler(controller, method), middleware).name(method)
 
     fun <T : Controller> patch(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        add(Method.PATCH, path, ControllerHandler(controller, method.name), middleware)
+        add(Method.PATCH, path, ControllerHandler(controller, method.name), middleware).name(method.name)
 
     fun group(
         prefix: String,
