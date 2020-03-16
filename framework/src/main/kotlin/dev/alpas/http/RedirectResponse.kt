@@ -11,7 +11,19 @@ class RedirectResponse(
     val cookie: CookieJar? = null,
     private val isExternal: Boolean = false
 ) : Response {
+
+    private val flashes = mutableListOf<Pair<String, Any?>>()
+
+    fun with(name: String, payload: Any?): RedirectResponse {
+        flashes.add(name to payload)
+        return this
+    }
+
     override fun render(context: RenderContext) {
+        flashes.forEach { (key, value) ->
+            context.call.session.flash(key, value)
+        }
+
         copyHeaders(context.call, headers)
         if (!isExternal) {
             saveCookies(context.call, cookie)
