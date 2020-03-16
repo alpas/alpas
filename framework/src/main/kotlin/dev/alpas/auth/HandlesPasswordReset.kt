@@ -34,7 +34,7 @@ interface HandlesPasswordReset {
     }
 
     fun resetPassword(call: HttpCall, user: Authenticatable) {
-        user.updatePassword(call.make<Hasher>().hash(call.stringParam("password").orAbort()))
+        user.updatePassword(call.make<Hasher>().hash(call.stringParam("password")))
         call.authChannel.login(user)
     }
 

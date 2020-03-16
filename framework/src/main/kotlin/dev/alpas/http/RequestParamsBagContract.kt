@@ -1,7 +1,9 @@
 package dev.alpas.http
 
 import dev.alpas.filterNotNullValues
+import dev.alpas.orAbort
 import dev.alpas.routing.RouteResult
+import org.eclipse.jetty.http.HttpStatus
 import java.util.concurrent.atomic.AtomicBoolean
 
 interface RequestParamsBagContract {
@@ -14,20 +16,36 @@ interface RequestParamsBagContract {
         return params?.get(key)?.firstOrNull()
     }
 
-    fun stringParam(key: String): String? {
+    fun stringParamOrNull(key: String): String? {
         return params?.get(key)?.firstOrNull()?.toString()
     }
 
-    fun intParam(key: String): Int? {
+    fun stringParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): String {
+        return stringParamOrNull(key).orAbort(message, statusCode)
+    }
+
+    fun intParamOrNull(key: String): Int? {
         return params?.get(key)?.firstOrNull()?.toString()?.toInt()
     }
 
-    fun longParam(key: String): Long? {
+    fun intParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Int? {
+        return intParamOrNull(key).orAbort(message, statusCode)
+    }
+
+    fun longParamOrNull(key: String): Long? {
         return params?.get(key)?.firstOrNull()?.toString()?.toLong()
     }
 
-    fun boolParam(key: String): Boolean? {
+    fun longParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
+        return longParamOrNull(key).orAbort()
+    }
+
+    fun boolParamOrNull(key: String): Boolean? {
         return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
+    }
+
+    fun boolParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Boolean? {
+        return boolParamOrNull(key).orAbort(message, statusCode)
     }
 
     fun paramList(key: String): List<Any>? {

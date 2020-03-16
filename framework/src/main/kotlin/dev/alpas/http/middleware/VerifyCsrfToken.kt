@@ -43,7 +43,7 @@ open class VerifyCsrfToken : Middleware<HttpCall>() {
     }
 
     private fun getCallToken(call: HttpCall): String? {
-        val token = call.stringParam(CSRF_SESSION_KEY) ?: call.header("X-CSRF-TOKEN")
+        val token = call.stringParamOrNull(CSRF_SESSION_KEY) ?: call.header("X-CSRF-TOKEN")
         val encryptedToken = call.header("X-XSRF-TOKEN")
         return if (token == null && encryptedToken != null) {
             return call.make<Encrypter>().decrypt(encryptedToken)
