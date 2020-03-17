@@ -16,7 +16,7 @@ open class JsonResponse(
                 payload.toJson()
             }
             is List<Any?> -> {
-                mapOf("payload" to payload).toJson()
+                payload.toJson()
             }
             else -> {
                 payload.toString()
