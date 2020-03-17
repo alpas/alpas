@@ -5,9 +5,7 @@ package dev.alpas.ozone
 import dev.alpas.extensions.toSnakeCase
 import me.liuwj.ktorm.dsl.and
 import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.entity.findList
-import me.liuwj.ktorm.entity.findOne
+import me.liuwj.ktorm.entity.*
 import me.liuwj.ktorm.schema.BaseTable
 import me.liuwj.ktorm.schema.Column
 import me.liuwj.ktorm.schema.ColumnDeclaring
@@ -27,14 +25,15 @@ inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasMany(
     foreignKey: String? = null,
     localKey: String? = null,
     cacheKey: String? = null,
+    query: EntitySequence<E, T>.() -> EntitySequence<E, T> = { this },
     predicate: (T) -> ColumnDeclaring<Boolean>
 ): List<E> {
     val name = cacheKey ?: table.hasManyCacheKey
-    return this[name] as? List<E> ?: table.findList {
+    return this[name] as? List<E> ?: table.asSequence().filter {
         val actualForeignKey = foreignKey ?: this.defaultForeignKey
         val foreignKeyValue = it[actualForeignKey] as Column<Any>
         (foreignKeyValue eq this[localKey ?: "id"]!!) and predicate(table)
-    }.also { this[name] = it }
+    }.let { query(it) }.toList().also { this[name] = it }
 }
 
 inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasMany(
