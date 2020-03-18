@@ -26,6 +26,7 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
     override val env by lazy(LazyThreadSafetyMode.NONE) { make<Environment>() }
     override val configs by lazy(LazyThreadSafetyMode.NONE) { makeMany<Config>() }
     override val callHooks: CopyOnWriteArraySet<KClass<out HttpCallHook>> = CopyOnWriteArraySet()
+    override val appHooks: CopyOnWriteArraySet<AppHook> = CopyOnWriteArraySet()
 
     override val kernel by lazy(LazyThreadSafetyMode.NONE) { if (env.inConsoleMode) makeElse { ConsoleKernel() } else makeElse { HttpKernel() } }
 
@@ -65,13 +66,32 @@ abstract class AppBase(val args: Array<String>, override var entryClass: Class<*
     }
 
     override fun <T : HttpCallHook> registerCallHook(hook: KClass<out T>, vararg hooks: KClass<out T>) {
-        logger.debug { "Registering call hook of type: $hook" }
-        callHooks.addAll(listOf(hook) + hooks)
+        val allHooks = listOf(hook) + hooks
+        logger.debug { "Registering call hook of type: $allHooks" }
+        callHooks.addAll(allHooks)
     }
 
     override fun <T : HttpCallHook> unregisterCallHook(hook: KClass<out T>) {
         logger.debug { "Unregistering call hook of type: $hook" }
         callHooks.remove(hook)
+    }
+
+    override fun <T : AppHook> registerAppHook(hook: T, vararg hooks: T) {
+        val allHooks = listOf(hook) + hooks
+        logger.debug { "Registering app hook of type: $allHooks" }
+        appHooks.addAll(allHooks)
+    }
+
+    override fun <T : AppHook> unregisterAppHook(hook: T) {
+        logger.debug { "Unregistering app hook of type: $hook" }
+        appHooks.remove(hook)
+    }
+
+    override fun inFlight(uri: URI) {
+        logger.info { "${env("APP_NAME")} is available at $uri" }
+        appHooks.forEach {
+            it.onAppStarted(this, uri)
+        }
     }
 }
 

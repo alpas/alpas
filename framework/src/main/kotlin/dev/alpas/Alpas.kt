@@ -91,6 +91,9 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
         serviceProviders.forEach {
             it.stop(this)
         }
+        appHooks.forEach {
+            it.onAppStopped()
+        }
     }
 
     override fun append(middleware: KClass<out Middleware<HttpCall>>, vararg others: KClass<out Middleware<HttpCall>>) {

@@ -4,6 +4,7 @@ import dev.alpas.http.HttpCall
 import dev.alpas.http.HttpCallHook
 import mu.KLogger
 import java.io.File
+import java.net.URI
 import kotlin.reflect.KClass
 
 interface Application : Container {
@@ -15,6 +16,7 @@ interface Application : Container {
     val kernel: Kernel
     val cwd: File
     val callHooks: Set<KClass<out HttpCallHook>>
+    val appHooks: Set<AppHook>
     fun ignite()
     fun takeOff()
     fun stop()
@@ -29,4 +31,8 @@ interface Application : Container {
 
     fun <T : HttpCallHook> registerCallHook(hook: KClass<out T>, vararg hooks: KClass<out T>)
     fun <T : HttpCallHook> unregisterCallHook(hook: KClass<out T>)
+    fun <T : AppHook> registerAppHook(hook: T, vararg hooks: T)
+    fun <T : AppHook> unregisterAppHook(hook: T)
+
+    fun inFlight(uri: URI)
 }

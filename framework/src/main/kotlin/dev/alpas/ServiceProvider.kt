@@ -2,7 +2,7 @@ package dev.alpas
 
 import dev.alpas.console.Command
 
-interface ServiceProvider {
+interface ServiceProvider : AppHook {
     fun register(app: Application) {}
     fun register(app: Application, loader: PackageClassLoader) {
         register(app)

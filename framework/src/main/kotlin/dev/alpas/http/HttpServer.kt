@@ -24,7 +24,7 @@ open class HttpServer {
         app.takeOff()
         val servlet = AlpasServlet(app, routeEntryMiddlewareGroups, serverEntryMiddleware)
         server = engine.start(app, servlet) ?: throw Exception("Error starting the server")
-        app.logger.info { "${app.env("APP_NAME")} is available at ${server.uri}" }
+        app.inFlight(server.uri)
     }
 
     open fun stop(app: Application) {
