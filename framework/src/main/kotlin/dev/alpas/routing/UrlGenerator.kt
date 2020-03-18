@@ -50,9 +50,13 @@ class UrlGenerator(private val root: String, private val router: Router, private
         return url(root, path, params, forceSecure)
     }
 
-    fun signedRoute(name: String, params: Map<String, Any>? = null, expiration: Duration): URL? {
-        // todo: cleanup UrlSignerUtils
+    fun signedRoute(name: String, params: Map<String, Any>? = null, expiration: Duration): URL {
         val url = route(name, params = params, absolute = true)
+        return sign(url, expiration)
+    }
+
+    fun sign(url: String, expiration: Duration): URL {
+        // todo: cleanup UrlSignerUtils
         val expirationDateTime = ZonedDateTime.now(appConfig.timezone).plusMinutes(expiration.toMinutes())
         return UrlSignerUtils.generatePreSignedURL(
             HttpMethod.GET,

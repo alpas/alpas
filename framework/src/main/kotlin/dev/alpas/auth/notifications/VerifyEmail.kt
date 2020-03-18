@@ -28,7 +28,7 @@ class VerifyEmail(private val container: Container) : MailableNotification<Authe
             view(
                 "auth.emails.verify",
                 mapOf(
-                    "verificationUrl" to verificationUrl?.toExternalForm(),
+                    "verificationUrl" to verificationUrl.toExternalForm(),
                     "user" to notifiable
                 )
             )
