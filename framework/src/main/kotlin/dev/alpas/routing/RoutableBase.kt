@@ -184,6 +184,10 @@ abstract class RoutableBase(
             }
         }
         routes.addAll(childGroup.routes)
+        if (childGroup.name.isEmpty()) {
+            val derivedName = prefix.replace("/", ".")
+            childGroup.name(derivedName)
+        }
         return childGroup
     }
 
