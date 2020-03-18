@@ -13,9 +13,10 @@ open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) :
     open val password = config?.password ?: env("DB_PASSWORD", "")
     open val useSSL = config?.useSSL ?: env("DB_USE_SSL", false)
     open val dialect = config?.sqlDialect ?: MySqlDialect()
+    open val serverTimezone = config?.serverTimezone ?: env("DB_TIMEZONE", "UTC")
     open val extraParams = config?.extraParams ?: emptyMap()
     internal val jdbcUrl by lazy {
-        val params = combineParams(extraParams + mapOf("useSSL" to useSSL))
+        val params = combineParams(mapOf("useSSL" to useSSL, "serverTimezone" to "UTC") + extraParams)
         "jdbc:mysql://$host:$port/$database?$params"
     }
 

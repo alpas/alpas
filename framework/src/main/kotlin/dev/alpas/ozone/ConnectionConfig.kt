@@ -10,5 +10,6 @@ open class ConnectionConfig(
     val database: String? = null,
     val useSSL: Boolean = false,
     val sqlDialect: SqlDialect? = null,
+    val serverTimezone: String? = null,
     val extraParams: Map<String, Any?> = emptyMap()
 )
