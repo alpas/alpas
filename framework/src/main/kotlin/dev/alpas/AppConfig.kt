@@ -35,5 +35,7 @@ open class AppConfig(private val env: Environment) : Config {
             return env.storagePath(*RESOURCES_DIRS, "web")
         }
 
+    open val asyncTimeout: Duration = Duration.ofSeconds(30)
+
     protected open fun extraStaticDirs() = emptyArray<String>()
 }

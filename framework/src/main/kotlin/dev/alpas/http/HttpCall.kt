@@ -273,7 +273,9 @@ class HttpCall internal constructor(
     }
 
     private fun asyncClose() {
-        val asyncContext = jettyRequest.startAsync()
+        val asyncContext = jettyRequest.startAsync().apply {
+            timeout = config<AppConfig>().asyncTimeout.toMillis()
+        }
         future!!.exceptionally { throwable ->
             future = null
             if (throwable is CompletionException && throwable.cause is Exception) {
