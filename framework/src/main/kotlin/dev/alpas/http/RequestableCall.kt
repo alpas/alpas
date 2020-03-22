@@ -33,6 +33,7 @@ interface RequestableCall {
     val isPjax get() = header("X-PJAX") == "true"
     val isJson get() = contentTypeIs("application/json")
     val isMultipartFormData get() = contentTypeIs("multipart/form-data")
+    val isUrlEncodedForm get() = contentTypeIs("application/x-www-form-urlencoded")
     val isPrefetch get() = header("X-Purpose") == "preview" || header("X-moz") == "prefetch"
     val expectsJson get() = (isAjax && !isPjax && acceptsAnyContentType) || wantsJson
     val wantsJson get() = acceptableContentTypes.contains("application/json")
@@ -53,6 +54,7 @@ interface RequestableCall {
     val multipartFiles: Iterable<Part>
     val multipartFields: Iterable<Part>
     val multipartParams: Map<String, List<String>>
+    val encoding: Charset
 
     fun header(name: String): String?
     fun headers(name: String): List<String>?
@@ -90,6 +92,7 @@ class Requestable(private val servletRequest: HttpServletRequest) : RequestableC
     override val rootUrl get() = jettyRequest.rootURL.toString()
     override val session by lazy { Session(servletRequest) }
     override val multiparts by lazy { servletRequest.parts }
+    override val encoding get() = Charset.forName(servletRequest.characterEncoding ?: Charsets.UTF_8.name())
     override val multipartFiles by lazy {
         prepareForMultipart()
         multiparts.filter { it.isFile }
@@ -112,7 +115,7 @@ class Requestable(private val servletRequest: HttpServletRequest) : RequestableC
 
     override val body: String by lazy {
         servletRequest.inputStream.readBytes()
-            .toString(Charset.forName(servletRequest.characterEncoding ?: Charsets.UTF_8.name()))
+            .toString(encoding)
     }
 
     @Suppress("RemoveExplicitTypeArguments")

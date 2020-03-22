@@ -4,6 +4,7 @@ import dev.alpas.filterNotNullValues
 import dev.alpas.orAbort
 import dev.alpas.routing.RouteResult
 import org.eclipse.jetty.http.HttpStatus
+import java.net.URLDecoder
 import java.util.concurrent.atomic.AtomicBoolean
 
 interface RequestParamsBagContract {
@@ -109,6 +110,10 @@ class RequestParamsBag(private val request: RequestableCall, private val route: 
             paramsMap[key] = paramsMap[key]?.plus(param) ?: param
         }
 
+        bodyFormParams.forEach { (key, param) ->
+            paramsMap[key] = paramsMap[key]?.plus(param) ?: param
+        }
+
         if (combineJsonBodyWithParams.get()) {
             request.jsonBody?.forEach { (key, param) ->
                 val actualParam = when (param) {
@@ -127,6 +132,20 @@ class RequestParamsBag(private val request: RequestableCall, private val route: 
             request.multipartParams
         } else {
             request.jettyRequest.parameterMap.mapValues { it.value.toList() }
+        }
+    }
+
+    private val bodyFormParams by lazy {
+        if (request.isUrlEncodedForm && request.body.isNotBlank()) {
+            request.body
+                .split("&")
+                .map { it.split("=", limit = 2) }
+                .groupBy(
+                    { it[0] },
+                    { if (it.size > 1) URLDecoder.decode(it[1], request.encoding) else "" }
+                ).mapValues { it.value.toList() }
+        } else {
+            emptyMap()
         }
     }
 
