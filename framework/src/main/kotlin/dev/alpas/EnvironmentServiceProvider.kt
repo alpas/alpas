@@ -2,6 +2,7 @@ package dev.alpas
 
 import io.github.cdimascio.dotenv.dotenv
 import java.io.File
+import java.lang.IllegalStateException
 import java.nio.file.Paths
 
 internal class EnvironmentServiceProvider : ServiceProvider {
@@ -30,7 +31,11 @@ internal class EnvironmentServiceProvider : ServiceProvider {
         return if (runMode.isConsole()) {
             EnvPath(File(System.getenv(ROOT_DIR_KEY)), ".env")
         } else {
-            findEnvDir(app.cwd)
+            try {
+                findEnvDir(app.cwd)
+            } catch (e: IllegalStateException) {
+               throw IllegalStateException("Looks like the .env file is missing. Create one in your root project.")
+            }
         }
     }
 
