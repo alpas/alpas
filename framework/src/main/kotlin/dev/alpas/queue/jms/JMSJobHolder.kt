@@ -40,7 +40,7 @@ open class JMSJobHolder(
         context.close()
     }
 
-    override fun process(container: Container) {
+    override suspend fun process(container: Container) {
         job(container)
     }
 }

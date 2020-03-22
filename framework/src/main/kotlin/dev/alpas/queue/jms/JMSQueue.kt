@@ -27,7 +27,7 @@ open class JMSQueue(
         pushToQueue(serializer.serialize(job), queueName, job.delayInSeconds)
     }
 
-    override fun dequeue(from: String?, timeout: Duration?): JobHolder? {
+    override suspend fun dequeue(from: String?, timeout: Duration?): JobHolder? {
         val queueName = queueName(from)
         val context = factory.createContext(username, password, JMSContext.SESSION_TRANSACTED)
         val queue = context.createQueue(queueName)

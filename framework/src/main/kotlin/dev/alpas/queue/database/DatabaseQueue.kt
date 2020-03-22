@@ -7,6 +7,7 @@ import dev.alpas.queue.Queue
 import dev.alpas.queue.job.Job
 import dev.alpas.queue.job.JobSerializer
 import dev.alpas.stackTraceString
+import kotlinx.coroutines.delay
 import me.liuwj.ktorm.database.useTransaction
 import me.liuwj.ktorm.dsl.*
 import java.time.Duration
@@ -22,7 +23,7 @@ class DatabaseQueue(
         pushToDatabase(serializer.serialize(job), onQueue, job.delayInSeconds)
     }
 
-    override fun dequeue(from: String?, timeout: Duration?): JobHolder? {
+    override suspend fun dequeue(from: String?, timeout: Duration?): JobHolder? {
         val queue = from ?: defaultQueueName
         // get the next available job and reserve it
         val job = useTransaction {
@@ -31,7 +32,7 @@ class DatabaseQueue(
             DatabaseJobHolder(serializer.deserialize(it.payload), it, this)
         }
         if (job == null) {
-            Thread.sleep((timeout ?: sleep).toMillis())
+            delay((timeout ?: sleep).toMillis())
         }
         return job
     }

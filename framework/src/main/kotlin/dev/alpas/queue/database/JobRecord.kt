@@ -28,7 +28,7 @@ interface FailedJobRecord : OzoneEntity<FailedJobRecord> {
 }
 
 object JobRecords : OzoneTable<JobRecord>("jobs") {
-    val id by bigIncrements("id").bindTo { it.id }
+    val id by bigIncrements("id")
     val queue by varchar("queue").index().bindTo { it.queue }
     val payload by longText("payload").bindTo { it.payload }
     val tries by tinyInt("tries").unsigned().bindTo { it.tries }
@@ -38,7 +38,7 @@ object JobRecords : OzoneTable<JobRecord>("jobs") {
 }
 
 object FailedJobRecords : OzoneTable<FailedJobRecord>("failed_jobs") {
-    val id by bigIncrements("id").bindTo { it.id }
+    val id by bigIncrements("id")
     val connection by varchar("connection").index().bindTo { it.connection }
     val queue by varchar("queue").index().bindTo { it.queue }
     val payload by longText("payload").bindTo { it.payload }

@@ -6,7 +6,7 @@ import dev.alpas.mailing.drivers.MailDriver
 import dev.alpas.queue.job.Job
 
 class SendMailJob(val mail: MailMessage) : Job() {
-    override fun invoke(container: Container) {
+    override suspend fun invoke(container: Container) {
         this(container.config<MailConfig>().driver())
     }
 

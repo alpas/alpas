@@ -7,6 +7,7 @@ import java.time.Duration
 
 interface QueueConnection {
     fun connect(container: Container): Queue
+    fun checkPrerequisites() = true
 }
 
 open class ConnectionConfig(

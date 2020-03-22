@@ -9,12 +9,12 @@ internal val queueLogger by lazy { KotlinLogging.logger("JobQueue") }
 
 interface Queue {
     fun <T : Job> enqueue(job: T, onQueue: String? = null)
-    fun dequeue(from: String? = null, timeout: Duration? = null): JobHolder?
+    suspend fun dequeue(from: String? = null, timeout: Duration? = null): JobHolder?
     fun close() {}
 }
 
 interface JobHolder {
     fun commit()
     fun rollback(ex: Exception)
-    fun process(container: Container)
+    suspend fun process(container: Container)
 }

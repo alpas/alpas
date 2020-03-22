@@ -2,6 +2,7 @@ package dev.alpas.queue.console
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.int
@@ -10,6 +11,8 @@ import dev.alpas.console.Command
 import dev.alpas.make
 import dev.alpas.queue.Queue
 import dev.alpas.queue.QueueConfig
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.time.Duration
 
 class QueueWorkCommand(private val container: Container) :
@@ -18,20 +21,29 @@ class QueueWorkCommand(private val container: Container) :
     private val connection by argument(help = "The name of the connection to use.")
         .choice(*queueConfig.registeredConnectionNames().toTypedArray()).default(queueConfig.defaultConnection)
     private val queueName by option("--queue", help = "Name of the queue to process.")
+    private val queueWorkers by option("--workers", help = "Number of queue workers.").int().default(2)
     private val sleep by option(help = "Seconds to sleep between if there are no new jobs.").int()
     private val sleepDuration by lazy { sleep?.let { Duration.ofSeconds(it.toLong()) } }
 
-    override fun run() {
+    override fun run() = runBlocking {
         printMessage()
-        val queue = queueConfig.connection(container, connection)
+
+        if (!queueConfig.checkPrerequisites(connection)) {
+            return@runBlocking
+        }
         val queueNames = queueName?.split(",") ?: emptyList()
-        do {
-            if (queueName == null) {
-                dequeue(container, queue)
-            } else {
-                dequeueMultiple(container, queue, queueNames)
+        (1..queueWorkers).map {
+            launch {
+                val queue = queueConfig.connection(container, connection)
+                do {
+                    if (queueName == null) {
+                        dequeue(container, queue)
+                    } else {
+                        dequeueMultiple(container, queue, queueNames)
+                    }
+                } while (true)
             }
-        } while (true)
+        }
     }
 
     private fun printMessage() {
@@ -41,25 +53,24 @@ class QueueWorkCommand(private val container: Container) :
             } else {
                 echo(green("Running '$queueName' queue(s) from $connection' connection..."))
             }
-            echo(yellow("https://alpas.dev/docs/queues"))
         }
     }
 
-    private fun dequeue(container: Container, queue: Queue, name: String? = null) {
-        queue.dequeue(name, sleepDuration)?.let {
+    private suspend fun dequeue(container: Container, queue: Queue, name: String? = null) {
+        queue.dequeue(name, sleepDuration)?.let { job ->
             try {
-                it.process(container)
-                it.commit()
+                job.process(container)
+                job.commit()
                 // Since we received a non-null JobHolder, we'll continue to dequeue from
                 // the same queue. When we get a null we'll yield to the next queue.
                 this.dequeue(container, queue, name)
             } catch (ex: Exception) {
-                it.rollback(ex)
+                job.rollback(ex)
             }
         }
     }
 
-    private fun dequeueMultiple(container: Container, queue: Queue, names: List<String>) {
+    private suspend fun dequeueMultiple(container: Container, queue: Queue, names: List<String>) {
         names.forEach { name ->
             dequeue(container, queue, name)
         }

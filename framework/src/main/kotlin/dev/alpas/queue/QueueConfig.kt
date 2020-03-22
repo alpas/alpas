@@ -22,4 +22,8 @@ open class QueueConfig(env: Environment) : Config {
     internal fun registeredConnectionNames(): List<String> {
         return connections.keys.toList()
     }
+
+    fun checkPrerequisites(name: String): Boolean {
+        return connections[name]?.value?.checkPrerequisites() ?: true
+    }
 }

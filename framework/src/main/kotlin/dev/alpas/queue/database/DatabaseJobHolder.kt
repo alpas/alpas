@@ -33,7 +33,7 @@ class DatabaseJobHolder(
         }
     }
 
-    override fun process(container: Container) {
+    override suspend fun process(container: Container) {
         job(container)
     }
 }
