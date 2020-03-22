@@ -25,7 +25,7 @@ inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasMany(
     foreignKey: String? = null,
     localKey: String? = null,
     cacheKey: String? = null,
-    query: EntitySequence<E, T>.() -> EntitySequence<E, T> = { this },
+    scope: EntitySequence<E, T>.() -> EntitySequence<E, T> = { this },
     predicate: (T) -> ColumnDeclaring<Boolean>
 ): List<E> {
     val name = cacheKey ?: table.hasManyCacheKey
@@ -33,23 +33,23 @@ inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasMany(
         val actualForeignKey = foreignKey ?: this.defaultForeignKey
         val foreignKeyValue = it[actualForeignKey] as Column<Any>
         (foreignKeyValue eq this[localKey ?: "id"]!!) and predicate(table)
-    }.let { query(it) }.toList().also { this[name] = it }
+    }.let { scope(it) }.toList().also { this[name] = it }
 }
 
 inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasMany(
     table: T,
     foreignKey: String? = null,
     localKey: String? = null,
-    cacheKey: String? = null
+    cacheKey: String? = null,
+    scope: EntitySequence<E, T>.() -> EntitySequence<E, T> = { this }
 ): List<E> {
     val name = cacheKey ?: table.hasManyCacheKey
-    return this[name] as? List<E> ?: table.findList {
+    return this[name] as? List<E> ?: table.asSequence().filter {
         val actualForeignKey = foreignKey ?: this.defaultForeignKey
         val foreignKeyValue = it[actualForeignKey] as Column<Any>
         foreignKeyValue eq this[localKey ?: "id"]!!
-    }.also { this[name] = it }
+    }.let { scope(it) }.toList().also { this[name] = it }
 }
-
 
 inline fun <reified E : Entity<E>, reified T : BaseTable<E>> Entity<*>.hasOneBy(
     table: T,
