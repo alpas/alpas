@@ -1,6 +1,7 @@
 package dev.alpas.routing
 
 import dev.alpas.Middleware
+import dev.alpas.extensions.toKebabCase
 import dev.alpas.http.HttpCall
 import dev.alpas.http.Method
 import kotlin.reflect.KClass
@@ -101,10 +102,10 @@ abstract class RoutableBase(
         get(path, T::class, method.name)
 
     fun <T : Controller> get(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        add(Method.GET, path, ControllerHandler(controller, method.name), middleware).name(method.name)
+        add(Method.GET, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
 
     fun get(path: String, controller: KClass<out Controller>, method: String = DEFAULT_GET_METHOD) =
-        add(Method.GET, path, ControllerHandler(controller, method), middleware).name(method)
+        add(Method.GET, path, ControllerHandler(controller, method), middleware).name(method.toKebabCase())
 
     inline fun <reified T : Controller> post(path: String = "", method: String = DEFAULT_POST_METHOD) =
         post(path, T::class, method)
@@ -121,7 +122,7 @@ abstract class RoutableBase(
         post(path, T::class, method.name)
 
     fun <T : Controller> post(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        add(Method.POST, path, ControllerHandler(controller, method.name), middleware).name(method.name)
+        add(Method.POST, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
 
     fun post(path: String, controller: KClass<out Controller>, method: String = DEFAULT_POST_METHOD) =
         add(Method.POST, path, ControllerHandler(controller, method), middleware).name(method)
@@ -142,10 +143,10 @@ abstract class RoutableBase(
         delete(path, T::class, method.name)
 
     fun delete(path: String, controller: KClass<out Controller>, method: String = DEFAULT_DELETE_METHOD) =
-        add(Method.DELETE, path, ControllerHandler(controller, method), middleware).name(method)
+        add(Method.DELETE, path, ControllerHandler(controller, method), middleware).name(method.toKebabCase())
 
     fun <T : Controller> delete(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        add(Method.DELETE, path, ControllerHandler(controller, method.name), middleware).name(method.name)
+        add(Method.DELETE, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
 
     inline fun <reified T : Controller> patch(path: String = "", method: String = DEFAULT_PATCH_METHOD) =
         patch(path, T::class, method)
@@ -163,10 +164,10 @@ abstract class RoutableBase(
         patch(path, T::class, method.name)
 
     fun patch(path: String, controller: KClass<out Controller>, method: String = DEFAULT_PATCH_METHOD) =
-        add(Method.PATCH, path, ControllerHandler(controller, method), middleware).name(method)
+        add(Method.PATCH, path, ControllerHandler(controller, method), middleware).name(method.toKebabCase())
 
     fun <T : Controller> patch(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
-        add(Method.PATCH, path, ControllerHandler(controller, method.name), middleware).name(method.name)
+        add(Method.PATCH, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
 
     fun group(
         prefix: String,
