@@ -1,14 +1,12 @@
 package dev.alpas.console
 
-import dev.alpas.Application
-import dev.alpas.Kernel
-import dev.alpas.ServiceProvider
+import dev.alpas.*
 import dev.alpas.encryption.EncryptionServiceProvider
 import dev.alpas.hashing.HashServiceProvider
 import dev.alpas.logging.LoggerServiceProvider
-import dev.alpas.make
 import dev.alpas.ozone.OzoneServiceProvider
 import dev.alpas.routing.RouteServiceProvider
+import java.net.URI
 import kotlin.reflect.KClass
 
 open class ConsoleKernel : Kernel {
@@ -22,6 +20,8 @@ open class ConsoleKernel : Kernel {
         app.logger.debug { "Running your dev.alpas.console commands" }
         app.takeOff()
         if (app.env.runMode.isConsole()) {
+            val config = app.config<AppConfig>()
+            app.inFlight(URI(config.appUrl))
             app.make<AlpasCommand>().execute(args)
         }
     }

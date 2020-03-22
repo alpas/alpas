@@ -75,10 +75,6 @@ class HttpCall internal constructor(
 
     private val sharedData by lazy { SharedDataBag() }
 
-    init {
-        singleton(UrlGenerator(requestableCall.rootUrl, make(), make()))
-    }
-
     fun charset() = servletResponse.charset()
 
     fun isSigned(): Boolean {

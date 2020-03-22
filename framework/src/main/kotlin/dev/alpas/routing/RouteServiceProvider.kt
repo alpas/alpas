@@ -5,6 +5,7 @@ import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.console.MakeAuthCommand
 import dev.alpas.console.Command
 import dev.alpas.routing.console.*
+import java.net.URI
 
 @Suppress("unused")
 open class RouteServiceProvider : ServiceProvider {
@@ -12,10 +13,10 @@ open class RouteServiceProvider : ServiceProvider {
         val router = Router()
         app.singleton(router)
         loadRoutes(router)
+        app.registerAppHook(this)
     }
 
-    protected open fun loadRoutes(router: Router) {
-    }
+    protected open fun loadRoutes(router: Router) {}
 
     override fun commands(app: Application): List<Command> {
         val routeListCommand = RouteInfoCommand(app.srcPackage, app.make(), app.config { AuthConfig(app.make()) })
@@ -36,5 +37,14 @@ open class RouteServiceProvider : ServiceProvider {
     override fun boot(app: Application, loader: PackageClassLoader) {
         app.logger.debug { "Compiling Router" }
         app.make<Router>().compile(loader)
+    }
+
+    override fun onAppStarted(app: Application, uri: URI) {
+        bindUrlGenerator(app, uri)
+    }
+
+    private fun bindUrlGenerator(container: Container, uri: URI) {
+        // todo: re-initialize URL generator in dev mode
+        container.singleton(UrlGenerator(uri, container.make(), container.make()))
     }
 }

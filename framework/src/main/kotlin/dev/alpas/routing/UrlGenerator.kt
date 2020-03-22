@@ -10,7 +10,7 @@ import java.net.URL
 import java.time.Duration
 import java.time.ZonedDateTime
 
-class UrlGenerator(private val root: String, private val router: Router, private val appConfig: AppConfig) {
+class UrlGenerator(private val root: URI, private val router: Router, private val appConfig: AppConfig) {
     private val paramMatchRegex by lazy { """<([^>]*)>""".toRegex() }
 
     fun route(
@@ -41,7 +41,7 @@ class UrlGenerator(private val root: String, private val router: Router, private
         return (if (absolute) {
             uri
         } else {
-            URI(root).relativize(uri)
+            root.relativize(uri)
         }).toString()
     }
 
@@ -80,8 +80,9 @@ class UrlGenerator(private val root: String, private val router: Router, private
     }
 }
 
-fun url(root: String, path: String, params: Map<String, Any> = emptyMap(), forceSecure: Boolean = false): URI {
-    val builder = buildUri("$root$path")
+fun url(root: URI, path: String = "", params: Map<String, Any> = emptyMap(), forceSecure: Boolean = false): URI {
+    val builder = buildUri(root)
+        .encodedPath(path)
         .addQueryParams(*params.map { it.key to it.value.toString() }.toTypedArray())
     if (forceSecure) {
         builder.scheme("https://")
