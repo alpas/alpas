@@ -5,10 +5,7 @@ import dev.alpas.auth.AuthChannel
 import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.auth.UserProvider
-import dev.alpas.exceptions.ExceptionHandler
-import dev.alpas.exceptions.HttpException
-import dev.alpas.exceptions.ValidationException
-import dev.alpas.exceptions.httpExceptionFor
+import dev.alpas.exceptions.*
 import dev.alpas.routing.RouteResult
 import dev.alpas.routing.UrlGenerator
 import dev.alpas.validation.ErrorBag
@@ -302,6 +299,9 @@ class HttpCall internal constructor(
         if (isBeingRedirected()) {
             sendResponseBack(redirector.redirectResponse)
         } else {
+            if (!::response.isInitialized) {
+                throw InternalServerException("A response has not been set. Make sure to set a response in ${route.target().handler}.")
+            }
             saveCookies()
             copyHeaders()
             sendResponseBack(response)
