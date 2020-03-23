@@ -191,6 +191,11 @@ inline fun <reified T : Any> Container.make(block: T.() -> Unit): T {
  *
  */
 inline fun <reified T : Any> Container.makeMany(): List<T> {
+    if (picoContainer.parent != null) {
+        val parentComponents = picoContainer.parent.getComponents(T::class.java)
+        val childComponents = picoContainer.getComponents(T::class.java)
+        return childComponents + parentComponents
+    }
     return picoContainer.getComponents(T::class.java)
 }
 
@@ -254,5 +259,11 @@ class ChildContainer(val parent: Container) : Container, AutoCloseable {
     fun detachFromParent() {
         parent.removeChildContainer(this)
         picoContainer.dispose()
+    }
+
+    inline fun <reified T : Any> makeMany(): List<T> {
+        val parentComponents = parent.makeMany<T>()
+        val childComponents = picoContainer.getComponents(T::class.java)
+        return childComponents + parentComponents
     }
 }

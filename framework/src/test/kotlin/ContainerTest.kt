@@ -328,6 +328,17 @@ class ContainerTest {
     }
 
     @Test
+    fun `resolve multiple instances include components from parents`() {
+        val container = DefaultContainer()
+        container.bind(ContainerTestObject())
+        container.bind(ContainerTestObject2())
+        val childContainer = ChildContainer(container)
+        childContainer.bind(ContainerTestObject2())
+        val instancesThroughChild = childContainer.makeMany<ContainerTestObjectContract>()
+        assertEquals(3, instancesThroughChild.count())
+    }
+
+    @Test
     fun `unresolved binding will throw an exception`() {
         assertThrows<IllegalStateException> { DefaultContainer().make<ContainerTestObject>() }
     }
