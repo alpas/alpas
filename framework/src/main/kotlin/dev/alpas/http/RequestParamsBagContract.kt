@@ -142,7 +142,7 @@ class RequestParamsBag(private val request: RequestableCall, private val route: 
                 .map { it.split("=", limit = 2) }
                 .groupBy(
                     { it[0] },
-                    { if (it.size > 1) URLDecoder.decode(it[1], request.encoding) else "" }
+                    { if (it.size > 1) URLDecoder.decode(it[1], request.encoding.name()) else "" }
                 ).mapValues { it.value.toList() }
         } else {
             emptyMap()
