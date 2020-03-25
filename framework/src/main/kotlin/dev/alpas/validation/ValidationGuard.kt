@@ -29,6 +29,7 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
     }
 
     fun validate(attribute: String, errorBag: ErrorBag) {
+        checkAuthentication()
         validate(attribute, errorBag, rules)
     }
 
@@ -37,6 +38,7 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
     }
 
     fun validate(rules: Map<String, Iterable<Rule>>, errorBag: ErrorBag) {
+        checkAuthentication()
         rules.forEach { (attribute, rules) ->
             validate(attribute, errorBag, rules)
             if (!errorBag.isEmpty() && shouldFailFast) {
@@ -59,12 +61,15 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
         return validatedParams[key]
     }
 
-    private fun validate(attribute: String, errorBag: ErrorBag, rules: Iterable<Rule>) {
+    private fun checkAuthentication() {
         val shouldAllow = user()?.let { allow(it) } ?: allow()
 
         if (!shouldAllow) {
             call.abort(HttpStatus.UNAUTHORIZED_401)
         }
+    }
+
+    private fun validate(attribute: String, errorBag: ErrorBag, rules: Iterable<Rule>) {
         rules.forEach {
             if (inJsonBodyContext || call.validateUsingJsonBody.get()) {
                 it.inJsonBody()
