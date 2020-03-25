@@ -31,7 +31,7 @@ interface HandlesEmailVerification {
         if (user.isEmailVerified()) {
             call.redirect().to(ifVerifiedRedirectTo(call))
         } else {
-            user.verifyEmail(call)
+            user.verifyEmail()
             onVerificationSuccess(call)
         }
     }
@@ -56,7 +56,7 @@ interface HandlesEmailVerification {
     }
 }
 
-private fun Authenticatable.verifyEmail(call: HttpCall) {
+private fun Authenticatable.verifyEmail() {
     UsersTable.update {
         it.emailVerifiedAt to Instant.now()
         where { it.id eq id }
