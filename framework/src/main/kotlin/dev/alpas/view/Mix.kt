@@ -55,6 +55,6 @@ class Mix(private val app: Application) {
         val text = resourceLoader.load(mixManifestPath)?.readText()
             ?: throw Exception("Mix manifestMap file $mixManifestPath doesn't exist")
 
-        return JsonSerializer.deserialize<Map<String, String>>(text)
+        return JsonSerializer.deserialize(text)
     }
 }
