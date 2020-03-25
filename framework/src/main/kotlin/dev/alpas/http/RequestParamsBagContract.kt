@@ -17,36 +17,68 @@ interface RequestParamsBagContract {
         return params?.get(key)?.firstOrNull()
     }
 
-    fun stringParamOrNull(key: String): String? {
+    fun stringOrNull(key: String): String? {
         return params?.get(key)?.firstOrNull()?.toString()
     }
 
+    fun stringParamOrNull(key: String): String? {
+        return stringOrNull(key)
+    }
+
+    fun string(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): String {
+        return stringOrNull(key).orAbort(message, statusCode)
+    }
+
     fun stringParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): String {
-        return stringParamOrNull(key).orAbort(message, statusCode)
+        return string(key, message, statusCode)
+    }
+
+    fun intOrNull(key: String): Int? {
+        return params?.get(key)?.firstOrNull()?.toString()?.toInt()
     }
 
     fun intParamOrNull(key: String): Int? {
         return params?.get(key)?.firstOrNull()?.toString()?.toInt()
     }
 
+    fun int(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Int? {
+        return intOrNull(key).orAbort(message, statusCode)
+    }
+
     fun intParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Int? {
-        return intParamOrNull(key).orAbort(message, statusCode)
+        return intOrNull(key).orAbort(message, statusCode)
+    }
+
+    fun longOrNull(key: String): Long? {
+        return params?.get(key)?.firstOrNull()?.toString()?.toLong()
     }
 
     fun longParamOrNull(key: String): Long? {
         return params?.get(key)?.firstOrNull()?.toString()?.toLong()
     }
 
+    fun long(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
+        return longOrNull(key).orAbort()
+    }
+
     fun longParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
-        return longParamOrNull(key).orAbort()
+        return longOrNull(key).orAbort()
+    }
+
+    fun boolOrNull(key: String): Boolean? {
+        return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
     }
 
     fun boolParamOrNull(key: String): Boolean? {
         return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
     }
 
+    fun bool(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Boolean? {
+        return boolOrNull(key).orAbort(message, statusCode)
+    }
+
     fun boolParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Boolean? {
-        return boolParamOrNull(key).orAbort(message, statusCode)
+        return boolOrNull(key).orAbort(message, statusCode)
     }
 
     fun paramList(key: String): List<Any>? {
