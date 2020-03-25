@@ -1,6 +1,7 @@
 package dev.alpas.ozone
 
 import dev.alpas.extensions.toCamelCase
+import dev.alpas.extensions.toSnakeCase
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.findList
 import me.liuwj.ktorm.entity.findOne
@@ -411,7 +412,11 @@ fun <E : OzoneEntity<E>, T : OzoneTable<E>> T.create(
     return create(combinedAttributes)
 }
 
-private fun <E : OzoneEntity<E>, T : OzoneTable<E>> setTimestampColumns(table: T, attributes: MutableMap<String, Any?>, timestamp: Instant? = Instant.now()) {
+private fun <E : OzoneEntity<E>, T : OzoneTable<E>> setTimestampColumns(
+    table: T,
+    attributes: MutableMap<String, Any?>,
+    timestamp: Instant? = Instant.now()
+) {
     val columnNames = table.columns.map { it.name }
     val createdAtColName = "created_at"
     if (!attributes.containsKey(createdAtColName) && columnNames.contains(createdAtColName)) {
@@ -479,6 +484,7 @@ fun <T : OzoneEntity<T>> OzoneTable<T>.propertyNamesToColumnNames(): Map<String,
     }.toMap()
 }
 
+@Deprecated("Deprecated", ReplaceWith("intReference(referenceTable, localColumnName, to, unsigned, onDelete, selector)"))
 fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.intReference(
     localColumnName: String,
     referenceTable: OzoneTable<R>,
@@ -487,7 +493,19 @@ fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.intReference(
     onDelete: String? = "cascade",
     selector: (E) -> R?
 ): BaseTable<E>.ColumnRegistration<Int> {
-    return int(localColumnName).apply {
+    return intReference(referenceTable, localColumnName, to, unsigned, onDelete, selector)
+}
+
+fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.intReference(
+    referenceTable: OzoneTable<R>,
+    localColumnName: String,
+    to: String = "id",
+    unsigned: Boolean = true,
+    onDelete: String? = "cascade",
+    selector: (E) -> R?
+): BaseTable<E>.ColumnRegistration<Int> {
+    val actualLocalColumnName = localColumnName ?: "${referenceTable.entityClass?.simpleName?.toSnakeCase()}_id"
+    return int(actualLocalColumnName).apply {
         if (unsigned) {
             unsigned()
         }
@@ -497,6 +515,7 @@ fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.intReference(
     }
 }
 
+@Deprecated("Deprecated", ReplaceWith("longReference(referenceTable, localColumnName, to, unsigned, onDelete, selector)"))
 fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.longReference(
     localColumnName: String,
     referenceTable: OzoneTable<R>,
@@ -505,7 +524,19 @@ fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.longReference(
     onDelete: String? = "cascade",
     selector: (E) -> R?
 ): BaseTable<E>.ColumnRegistration<Long> {
-    return long(localColumnName).apply {
+    return longReference(referenceTable, localColumnName, to, unsigned, onDelete, selector)
+}
+
+fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.longReference(
+    referenceTable: OzoneTable<R>,
+    localColumnName: String? = null,
+    to: String = "id",
+    unsigned: Boolean = true,
+    onDelete: String? = "cascade",
+    selector: (E) -> R?
+): BaseTable<E>.ColumnRegistration<Long> {
+    val actualLocalColumnName = localColumnName ?: "${referenceTable.entityClass?.simpleName?.toSnakeCase()}_id"
+    return long(actualLocalColumnName).apply {
         if (unsigned) {
             unsigned()
         }
