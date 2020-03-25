@@ -1,8 +1,8 @@
 package dev.alpas.http
 
 import dev.alpas.JsonSerializable
+import dev.alpas.JsonSerializer
 import dev.alpas.exceptions.HttpException
-import dev.alpas.toJson
 import org.eclipse.jetty.http.HttpStatus
 
 open class JsonResponse(
@@ -12,11 +12,8 @@ open class JsonResponse(
 ) : Response {
     override fun render(context: RenderContext) {
         val output = when (payload) {
-            is JsonSerializable, is Map<*, *> -> {
-                payload.toJson()
-            }
-            is List<Any?> -> {
-                payload.toJson()
+            is JsonSerializable, is Map<*, *>, is List<Any?> -> {
+                JsonSerializer.serialize(payload)
             }
             else -> {
                 payload.toString()

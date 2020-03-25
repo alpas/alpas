@@ -143,7 +143,7 @@ fun String.hash(algorithm: String): String {
     }.toHexString()
 }
 
-fun Any.toJson(wrapItWith: String? = null): String {
+fun Map<*, *>.toJson(wrapItWith: String? = null): String {
     return if (wrapItWith != null) {
         JsonSerializer.serialize(mapOf(wrapItWith to this))
     } else {
