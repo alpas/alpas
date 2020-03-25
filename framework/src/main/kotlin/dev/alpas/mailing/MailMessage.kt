@@ -1,8 +1,6 @@
 package dev.alpas.mailing
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import dev.alpas.validation.SharedDataBag
-import dev.alpas.view.ViewRenderer
 
 open class MailMessage {
     lateinit var to: String
@@ -11,6 +9,7 @@ open class MailMessage {
 
     @JsonIgnore
     protected var view: String? = null
+
     @JsonIgnore
     protected var viewBag: Map<String, Any?>? = null
 
@@ -20,9 +19,9 @@ open class MailMessage {
         return this
     }
 
-    open fun render(viewRenderer: ViewRenderer) {
+    open fun render(renderer: EmailRenderer = EmailRenderer()) {
         if (view != null) {
-            message = viewRenderer.renderView(view!!, SharedDataBag(), viewBag)
+            message = renderer.renderEmail(view!!, viewBag)
         }
     }
 }

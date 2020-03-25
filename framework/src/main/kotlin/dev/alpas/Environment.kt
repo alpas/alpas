@@ -15,6 +15,9 @@ enum class RunMode {
 const val ROOT_DIR_KEY = "alpas_root_dir"
 const val SRC_DIR_KEY = "alpas_src_dir"
 const val RUN_MODE = "alpas_run_mode"
+const val STORAGE_PATH = "alpas_storage_path"
+const val ROOT_PATH = "alpas_root_path"
+const val STORAGE_TEMPLATES_PATH = "alpas_storage_templates_path"
 val RESOURCES_DIRS = arrayOf("src", "main", "resources")
 
 open class Environment(
@@ -32,6 +35,12 @@ open class Environment(
     val storagePath = rootPath("storage")
     var supportsSession = false
         internal set
+
+    init {
+        System.setProperty(ROOT_PATH, rootPath)
+        System.setProperty(STORAGE_PATH, storagePath)
+        System.setProperty(STORAGE_PATH, storagePath("templates"))
+    }
 
     operator fun invoke(key: String): String? {
         return dotenv[key]

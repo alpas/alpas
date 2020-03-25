@@ -10,4 +10,7 @@ interface Notification<T : Notifiable> : Serializable {
     fun shouldQueue(notifiable: T): Boolean {
         return false
     }
+
+    fun onQueue(notifiable: T): String? = null
+    fun queueConnection(notifiable: T): String? = null
 }

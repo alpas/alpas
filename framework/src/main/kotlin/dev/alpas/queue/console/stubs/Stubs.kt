@@ -10,7 +10,7 @@ internal class Stubs {
                 import dev.alpas.queue.job.Job
 
                 class StubClazzName : Job() {
-                    override fun invoke(container: Container) {
+                    override suspend fun invoke(container: Container) {
                     }
                 }
             """.trimIndent()

@@ -13,7 +13,7 @@ class LocalMailDriver(env: Environment) : MailDriver {
     private val fromName = env("MAIL_FROM_NAME", "Postmaster")
     private val fromAddress = env("MAIL_FROM_ADDRESS", "hello@example.com")
 
-    override fun send(mail: MailMessage) {
+    override suspend fun send(mail: MailMessage) {
         val datePrefix = LocalDateTime.now()
             .format(DateTimeFormatter.ofPattern("y_MM_dd_Hmmss"))
 

@@ -3,12 +3,12 @@ package dev.alpas.mailing.drivers
 import dev.alpas.Environment
 import dev.alpas.mailing.MailDriverConfig
 import dev.alpas.mailing.MailMessage
+import org.simplejavamail.api.mailer.config.TransportStrategy
+import org.simplejavamail.config.ConfigLoader
 import org.simplejavamail.email.EmailBuilder
 import org.simplejavamail.mailer.MailerBuilder
-import org.simplejavamail.mailer.config.TransportStrategy
-import org.simplejavamail.util.ConfigLoader
 import java.time.Duration
-import java.util.Properties
+import java.util.*
 
 open class SmtpDriver(env: Environment, config: MailDriverConfig = MailDriverConfig()) : MailDriver {
     open val host = config.host ?: env("MAIL_HOST", "smtp.mailtrap.io")
@@ -41,7 +41,7 @@ open class SmtpDriver(env: Environment, config: MailDriverConfig = MailDriverCon
         loadGlobalProperties()
     }
 
-    override fun send(mail: MailMessage) {
+    override suspend fun send(mail: MailMessage) {
         val email = EmailBuilder.startingBlank()
             .to(mail.to)
             .withSubject(mail.subject)
