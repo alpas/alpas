@@ -7,9 +7,7 @@ import me.liuwj.ktorm.jackson.KtormModule
 
 class JsonSerializer {
     companion object {
-        val mapper by lazy {
-            ObjectMapper().registerKotlinModule().registerKtormModule()
-        }
+        val mapper = ObjectMapper().registerKotlinModule().registerKtormModule()
 
         fun serialize(input: Any?, dti: ObjectMapper.DefaultTyping? = null): String {
             return mapper.apply {
