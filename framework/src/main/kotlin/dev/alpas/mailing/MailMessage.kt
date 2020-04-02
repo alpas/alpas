@@ -19,9 +19,9 @@ open class MailMessage {
         return this
     }
 
-    open fun render(renderer: EmailRenderer = EmailRenderer()) {
+    open fun render(renderer: EmailRenderer = EmailRenderer(), extension: String = "peb") {
         if (view != null) {
-            message = renderer.renderEmail(view!!, viewBag)
+            message = renderer.renderEmail(view!!, viewBag, extension)
         }
     }
 }

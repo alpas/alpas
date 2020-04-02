@@ -20,7 +20,7 @@ class EmailRenderer(private val storageTemplatesPath: String? = null) {
         return ClasspathLoader().apply { prefix = "templates" }
     }
 
-    fun renderEmail(viewName: String, emailArgs: Map<String, Any?>?, extension: String = "pebble"): String {
+    fun renderEmail(viewName: String, emailArgs: Map<String, Any?>?, extension: String = "peb"): String {
         return StringWriter().use { writer ->
             val template = engine.getTemplate("${viewName}.${extension}")
             template.evaluate(writer, emailArgs)
