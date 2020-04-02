@@ -11,7 +11,7 @@ import me.liuwj.ktorm.schema.Column
 internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDryRun, quiet) {
     override fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean) {
         val notExists = if (ifNotExists) " IF NOT EXISTS " else " "
-        val sb = StringBuilder("CREATE TABLE$notExists${tableBuilder.tableName}")
+        val sb = StringBuilder("CREATE TABLE$notExists`${tableBuilder.tableName}`")
         sb.appendln(" (")
         val colDef = tableBuilder.columnsToAdd.joinToString(",\n") {
             columnDefinition(it)
