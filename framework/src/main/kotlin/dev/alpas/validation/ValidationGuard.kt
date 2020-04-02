@@ -3,6 +3,7 @@ package dev.alpas.validation
 import dev.alpas.auth.Authenticatable
 import dev.alpas.http.HttpCall
 import dev.alpas.http.RequestError
+import dev.alpas.orAbort
 import org.eclipse.jetty.http.HttpStatus
 
 open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Boolean = false) {
@@ -92,16 +93,12 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
 
     open fun afterSuccessfulValidation() {}
 
-    fun params(vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
-        return call.params(*keys, firstValueOnly = firstValueOnly)
-    }
-
-    fun stringParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): String {
-        return call.stringParam(key, message, statusCode)
+    fun string(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): String {
+        return validatedParams[key]?.toString().orAbort(message, statusCode)
     }
 
     fun longParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
-        return call.longParam(key, message, statusCode)
+        return validatedParams[key]?.toString()?.toLongOrNull().orAbort(message, statusCode)
     }
 
     fun user(): Authenticatable? {
