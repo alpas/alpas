@@ -17,6 +17,10 @@ class JsonSerializer {
             }.writeValueAsString(input)
         }
 
+        fun serialize(input: Map<*, *>): String {
+            return mapper.writeValueAsString(input)
+        }
+
         inline fun <reified T> deserialize(input: String, dti: ObjectMapper.DefaultTyping? = null): T {
             return mapper.apply {
                 if (dti != null) {

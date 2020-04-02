@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import dev.alpas.JsonSerializer
 import dev.alpas.cookie.CookieJar
 import dev.alpas.ifNotBlank
-import dev.alpas.isOneOf
 import dev.alpas.session.Session
 import org.eclipse.jetty.server.Request
 import java.nio.charset.Charset
@@ -32,6 +31,7 @@ interface RequestableCall {
     val isAjax get() = isXmlHttpRequest
     val isPjax get() = header("X-PJAX") == "true"
     val isJson get() = contentTypeIs("application/json")
+    val isEventStream get() = accepts("text/event-stream")
     val isMultipartFormData get() = contentTypeIs("multipart/form-data")
     val isUrlEncodedForm get() = contentTypeIs("application/x-www-form-urlencoded")
     val isPrefetch get() = header("X-Purpose") == "preview" || header("X-moz") == "prefetch"
@@ -39,7 +39,7 @@ interface RequestableCall {
     val wantsJson get() = acceptableContentTypes.contains("application/json")
     val acceptsHtml get() = accepts("text/html", "application/xhtml+xml")
     val acceptsAnyContentType
-        get() = acceptableContentTypes.isEmpty() || acceptableContentTypes.firstOrNull().isOneOf("*/*", "*")
+        get() = acceptableContentTypes.isEmpty() || acceptableContentTypes.firstOrNull() in listOf("*/*", "*")
     val isGet get() = methodIs(Method.GET)
     val isPost get() = methodIs(Method.POST)
     val isPut get() = methodIs(Method.PUT)
@@ -59,15 +59,14 @@ interface RequestableCall {
     fun header(name: String): String?
     fun headers(name: String): List<String>?
     fun accepts(contentType: String, vararg contentTypes: String): Boolean {
-        if (acceptsAnyContentType) {
-            return true
-        }
+//        if (acceptsAnyContentType) {
+//            return true
+//        }
 
-        acceptableContentTypes.forEach { accept ->
-            return accept.isOneOf(contentType, *contentTypes)
-        }
-
-        return false
+        val types = listOf(contentType, *contentTypes)
+        return acceptableContentTypes.firstOrNull() { accept ->
+            accept in types
+        } != null
     }
 
     fun methodIs(method: Method) = this.method == method

@@ -33,7 +33,7 @@ dependencies {
     compile "me.liuwj.ktorm:ktorm-support-postgresql:${ktormVersion}"
     compile "me.liuwj.ktorm:ktorm-support-sqlite:${ktormVersion}"
     compile "com.github.marlonlom:timeago:4.0.1"
-    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2"
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.+"
     compile "com.github.javafaker:javafaker:1.0.2"
 
     testCompile "org.xerial:sqlite-jdbc:3.28.0"

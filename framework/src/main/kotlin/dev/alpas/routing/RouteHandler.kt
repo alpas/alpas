@@ -1,9 +1,16 @@
 package dev.alpas.routing
 
-import dev.alpas.PackageClassLoader
-import dev.alpas.Pipeline
+import dev.alpas.*
+import dev.alpas.auth.Authenticatable
+import dev.alpas.exceptions.httpExceptionFor
+import dev.alpas.http.EventStreamResponse
 import dev.alpas.http.HttpCall
-import dev.alpas.orAbort
+import dev.alpas.http.RenderContext
+import dev.alpas.http.RequestParamsBagContract
+import dev.alpas.validation.SharedDataBag
+import org.eclipse.jetty.http.HttpStatus
+import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -73,4 +80,54 @@ class ClosureHandler(private val closure: HttpCall.() -> Unit) : RouteHandler() 
     }
 
     override fun toString() = "Closure: $closure"
+}
+
+class SSEClosureHandler(private val closure: SSECall.() -> Unit) : RouteHandler() {
+    override fun handle(call: HttpCall) {
+        if (!call.isEventStream) {
+            throw httpExceptionFor(HttpStatus.METHOD_NOT_ALLOWED_405)
+        }
+
+        EventStreamResponse().render(RenderContext(call, SharedDataBag()))
+        call.startAsync()
+        closure(SSECall(call))
+    }
+
+    override fun toString() = "SSE Closure: $closure"
+}
+
+class SSECall(private val call: HttpCall) : Container by call, RequestParamsBagContract by call {
+    private val isClosed = AtomicBoolean(false)
+    private var closeCallback: Runnable? = null
+
+    val isAuthenticated = call.isAuthenticated
+    val isFromGuest = !isAuthenticated
+    val user: Authenticatable by lazy { call.user }
+
+    fun onClose(closeCallback: Runnable) {
+        this.closeCallback = closeCallback
+    }
+
+    fun notify(event: String = "message", data: Map<String, Any?>, id: Any? = null): Unit = synchronized(this) {
+        try {
+            val sb = StringBuilder()
+            if (id != null) {
+                sb.appendln("id: $id")
+            }
+            sb.appendln("event: $event")
+            sb.appendln("data: ${data.toJson()}")
+            sb.appendln()
+            sb.appendln()
+            call.servletRequest.asyncContext.response.apply {
+                outputStream.print(sb.toString())
+                flushBuffer()
+            }
+        } catch (e: IOException) {
+            isClosed.set(true)
+        } finally {
+            if (isClosed.get()) {
+                closeCallback?.run()
+            }
+        }
+    }
 }

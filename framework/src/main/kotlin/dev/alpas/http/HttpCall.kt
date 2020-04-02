@@ -15,11 +15,15 @@ import dev.alpas.validation.ValidationGuard
 import mu.KotlinLogging
 import org.eclipse.jetty.http.HttpStatus
 import java.net.URI
+import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.servlet.AsyncContext
+import javax.servlet.AsyncEvent
+import javax.servlet.AsyncListener
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import kotlin.coroutines.Continuation
@@ -32,8 +36,9 @@ import kotlin.reflect.full.createInstance
 @Suppress("unused")
 class HttpCall internal constructor(
     private val container: Container,
-    private val requestableCall: RequestableCall,
+    val servletRequest: HttpServletRequest,
     val servletResponse: HttpServletResponse,
+    private val requestableCall: RequestableCall,
     internal val route: RouteResult,
     private val callHooks: List<HttpCallHook>
 ) : Container by container,
@@ -46,7 +51,7 @@ class HttpCall internal constructor(
         response: HttpServletResponse,
         route: RouteResult,
         callHooks: List<HttpCallHook>
-    ) : this(container, Requestable(request), response, route, callHooks)
+    ) : this(container, request, response, Requestable(request), route, callHooks)
 
     val logger by lazy { KotlinLogging.logger {} }
     val errorBag: ErrorBag by lazy { ErrorBag() }
@@ -266,9 +271,7 @@ class HttpCall internal constructor(
     }
 
     private fun asyncClose() {
-        val asyncContext = jettyRequest.startAsync().apply {
-            timeout = config<AppConfig>().asyncTimeout.toMillis()
-        }
+        val asyncContext = startAsync(config<AppConfig>().asyncTimeout)
         future!!.exceptionally { throwable ->
             future = null
             if (throwable is CompletionException && throwable.cause is Exception) {
@@ -276,6 +279,7 @@ class HttpCall internal constructor(
             } else if (throwable is Exception) {
                 drop(throwable)
             }
+            asyncContext.complete()
             null
         }.thenAccept {
             future = null
@@ -296,10 +300,14 @@ class HttpCall internal constructor(
     }
 
     private fun syncClose() {
+        if (isEventStream) {
+            jettyRequest.isHandled = true
+            return
+        }
         if (isBeingRedirected()) {
             sendResponseBack(redirector.redirectResponse)
         } else {
-            if (!::response.isInitialized) {
+            if (!isEventStream && !::response.isInitialized) {
                 throw InternalServerException("A response has not been set. Make sure to set a response in ${route.target().handler}.")
             }
             saveCookies()
@@ -446,6 +454,24 @@ class HttpCall internal constructor(
     fun json(args: MutableMap<String, Any?>? = null, statusCode: Int = 200, block: ArgsBuilder.() -> Unit): HttpCall {
         val builder = ArgsBuilder(args ?: mutableMapOf()).also(block)
         return replyAsJson(builder.map(), statusCode)
+    }
+
+    internal fun startAsync(timeoutDuration: Duration = Duration.ofSeconds(0)): AsyncContext {
+        return servletRequest.startAsync(servletRequest, servletResponse).apply {
+            timeout = timeoutDuration.toMillis()
+        }.apply {
+            addListener(object : AsyncListener {
+                override fun onComplete(event: AsyncEvent?) {}
+                override fun onStartAsync(event: AsyncEvent?) {}
+                override fun onTimeout(event: AsyncEvent?) {
+                    event?.asyncContext?.complete()
+                }
+
+                override fun onError(event: AsyncEvent?) {
+                    event?.asyncContext?.complete()
+                }
+            })
+        }
     }
 }
 

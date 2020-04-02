@@ -25,6 +25,11 @@ abstract class RoutableBase(
     fun get(path: String, middleware: Set<KClass<out Middleware<HttpCall>>>, closure: HttpCall.() -> Unit) =
         add(Method.GET, path, ClosureHandler(closure), middleware)
 
+    fun sse(closure: SSECall.() -> Unit) = sse("", middleware, closure)
+    fun sse(path: String, closure: SSECall.() -> Unit) = sse(path, middleware, closure)
+    fun sse(path: String, middleware: Set<KClass<out Middleware<HttpCall>>>, closure: SSECall.() -> Unit) =
+        add(Method.GET, path, SSEClosureHandler(closure), middleware)
+
     fun post(closure: HttpCall.() -> Unit) = post("", middleware, closure)
     fun post(path: String, closure: HttpCall.() -> Unit) = post(path, middleware, closure)
     fun post(path: String, middleware: Set<KClass<out Middleware<HttpCall>>>, closure: HttpCall.() -> Unit) =
