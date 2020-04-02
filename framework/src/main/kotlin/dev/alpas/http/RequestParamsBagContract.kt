@@ -58,11 +58,11 @@ interface RequestParamsBagContract {
     }
 
     fun long(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
-        return longOrNull(key).orAbort()
+        return longOrNull(key).orAbort(message, statusCode)
     }
 
     fun longParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
-        return longOrNull(key).orAbort()
+        return longOrNull(key).orAbort(message, statusCode)
     }
 
     fun boolOrNull(key: String): Boolean? {
@@ -99,6 +99,15 @@ interface RequestParamsBagContract {
 
     fun queryParams(key: String): List<Any>? {
         return queryParams?.get(key)
+    }
+
+    fun has(key: String): Boolean {
+        return param(key) != null
+    }
+
+    fun filled(key: String): Boolean {
+        val value = param(key) ?: return false
+        return (value as? String)?.isNotEmpty() ?: true
     }
 
     fun params(vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
