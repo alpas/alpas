@@ -194,6 +194,15 @@ inline fun <E : Any, T : BaseTable<E>> T.oldest(column: String = "created_at"): 
     return asSequence().sorted { listOf(it[column].asc()) }
 }
 
+@Deprecated("Deprecated", ReplaceWith("entity(table, paramKey, primaryKey)"))
+inline fun <E : OzoneEntity<E>, T : OzoneTable<E>> HttpCall.entityParam(
+    table: T,
+    paramKey: String = "id",
+    primaryKey: String = "id"
+): E {
+    return entity(table, paramKey, primaryKey)
+}
+
 /**
  * A convenience method to find an entity in a [table] by matching its primary key to
  * the [paramKey] parameter of an [HttpCall]. This aborts the call If the [paramKey]
@@ -207,7 +216,7 @@ inline fun <E : Any, T : BaseTable<E>> T.oldest(column: String = "created_at"): 
  *
  * @return An entity instance or a [NotFoundHttpException].
  */
-inline fun <E : OzoneEntity<E>, T : OzoneTable<E>> HttpCall.entityParam(
+inline fun <E : OzoneEntity<E>, T : OzoneTable<E>> HttpCall.entity(
     table: T,
     paramKey: String = "id",
     primaryKey: String = "id"

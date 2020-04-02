@@ -498,7 +498,7 @@ fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.intReference(
 
 fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.intReference(
     referenceTable: OzoneTable<R>,
-    localColumnName: String,
+    localColumnName: String? = null,
     to: String = "id",
     unsigned: Boolean = true,
     onDelete: String? = "cascade",
