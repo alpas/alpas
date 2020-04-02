@@ -131,6 +131,23 @@ open class JsonField(private val rules: List<Rule>) : Rule() {
     }
 }
 
+// Attribute is required if other attribute exists
+open class RequiredIf(private val otherAttribute: String, private val message: ErrorMessage = null) : Rule() {
+    override fun check(attribute: String, call: HttpCall): Boolean {
+        if (call.filled(otherAttribute)) {
+            val value = call.param(attribute)
+            val passes = call.filled(attribute)
+            if (!passes) {
+                error =
+                    message?.let { it(attribute, value) }
+                        ?: "$attribute cannot be null or empty when $otherAttribute is present."
+            }
+            return passes
+        }
+        return true
+    }
+}
+
 fun ValidationGuard.max(length: Int, message: ErrorMessage = null): Rule {
     return rule(Max(length, message))
 }
@@ -175,4 +192,8 @@ fun ValidationGuard.inJsonBody(rules: ValidationGuard.() -> Rule) {
     inJsonBodyContext = true
     rules()
     inJsonBodyContext = false
+}
+
+fun ValidationGuard.requiredIf(otherAttribute: String, message: ErrorMessage = null): Rule {
+    return rule(RequiredIf(otherAttribute, message))
 }
