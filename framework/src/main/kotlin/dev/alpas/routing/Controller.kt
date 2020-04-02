@@ -9,6 +9,7 @@ import dev.alpas.notifications.Notification
 import dev.alpas.notifications.NotificationDispatcher
 import dev.alpas.queue.QueueDispatcher
 import dev.alpas.queue.job.Job
+import dev.alpas.validation.ValidationGuard
 import java.time.Duration
 import javax.servlet.http.Cookie
 import kotlin.reflect.KClass
@@ -73,5 +74,9 @@ open class Controller {
 
     fun forget(name: String, path: String? = null, domain: String? = null) {
         call.cookie.forget(name, path, domain)
+    }
+
+    fun <T : ValidationGuard> guard(validator: KClass<out T>, afterSuccessBlock: T.() -> Unit = {}): T {
+        return call.validateUsing(validator, afterSuccessBlock)
     }
 }
