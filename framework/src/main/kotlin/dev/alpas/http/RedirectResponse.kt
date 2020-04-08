@@ -14,8 +14,8 @@ class RedirectResponse(
 
     private val flashes = mutableListOf<Pair<String, Any?>>()
 
-    fun with(name: String, payload: Any?): RedirectResponse {
-        flashes.add(name to payload)
+    fun with(flashName: String, payload: Any?): RedirectResponse {
+        flashes.add(flashName to payload)
         return this
     }
 
