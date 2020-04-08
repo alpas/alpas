@@ -187,6 +187,9 @@ abstract class RoutableBase(
             routes.forEach { route ->
                 route.middleware(middleware)
                 route.groupName = fullName(route.groupName)
+                if (skipCsrfCheck) {
+                    route.skipCsrfCheck()
+                }
             }
         }
         routes.addAll(childGroup.routes)

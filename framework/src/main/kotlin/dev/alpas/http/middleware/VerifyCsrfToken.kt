@@ -9,7 +9,8 @@ import dev.alpas.session.TokenMismatchException
 
 open class VerifyCsrfToken : Middleware<HttpCall>() {
     override fun invoke(passable: HttpCall, forward: Handler<HttpCall>) {
-        if (passable.method.isReading() || isValidXSRFToken(passable)) {
+        val skipCsrfCheck = passable.route()?.skipCsrfCheck ?: false
+        if (passable.method.isReading() || skipCsrfCheck || isValidXSRFToken(passable)) {
             forward(passable)
             if (passable.sessionIsValid()) {
                 addXSRFToken(passable)

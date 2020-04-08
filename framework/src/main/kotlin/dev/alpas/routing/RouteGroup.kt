@@ -16,6 +16,8 @@ class RouteGroup(
 ) : RoutableBase(middleware, middlewareGroups) {
     internal var name = ""
         private set
+    internal var skipCsrfCheck = false
+        private set
 
     override fun add(
         method: Method,
@@ -42,6 +44,12 @@ class RouteGroup(
         this.middleware.add(middleware)
         this.middleware.addAll(others)
         routes.forEach { route -> route.middleware(middleware, *others) }
+        return this
+    }
+
+    fun skipCsrfCheck(): RouteGroup {
+        skipCsrfCheck = true
+        routes.forEach { it.skipCsrfCheck() }
         return this
     }
 

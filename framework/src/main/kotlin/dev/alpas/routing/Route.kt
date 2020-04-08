@@ -29,6 +29,9 @@ class Route(
     internal var name = ""
         private set
 
+    internal var skipCsrfCheck = false
+        private set
+
     var groupName = ""
         internal set
 
@@ -93,6 +96,11 @@ class Route(
 
     fun mustBeGuest(): Route {
         middleware(GuestOnlyMiddleware::class as KClass<out Middleware<HttpCall>>)
+        return this
+    }
+
+    fun skipCsrfCheck(): Route {
+        skipCsrfCheck = true
         return this
     }
 
