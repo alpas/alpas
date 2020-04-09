@@ -6,7 +6,10 @@ import dev.alpas.ozone.*
 import dev.alpas.terminalColors
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.database.useConnection
+import me.liuwj.ktorm.jackson.JsonSqlType
+import me.liuwj.ktorm.schema.BlobSqlType
 import me.liuwj.ktorm.schema.Column
+import me.liuwj.ktorm.schema.TextSqlType
 
 internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDryRun, quiet) {
     override fun createTable(tableBuilder: TableBuilder, ifNotExists: Boolean) {
@@ -43,7 +46,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
     }
 
     private fun columnDefinition(colInfo: ColumnInfo): String {
-        return "`${colInfo.col.name}` ${toColTypeName(colInfo.col)}${colInfo.meta.def()}"
+        return "`${colInfo.col.name}` ${toColTypeName(colInfo.col)}${colInfo.meta.def(colInfo)}"
     }
 
     private fun columnKeysDefinition(key: ColumnKey): String {
@@ -53,7 +56,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
 
     private fun columnConstraints(constraint: ColumnReferenceConstraint, tableName: String): String {
         val sql =
-                "CONSTRAINT `${tableName}_${constraint.foreignKey}_foreign` FOREIGN KEY (`${constraint.foreignKey}`) REFERENCES `${constraint.tableToRefer}` (`${constraint.columnToRefer}`)"
+            "CONSTRAINT `${tableName}_${constraint.foreignKey}_foreign` FOREIGN KEY (`${constraint.foreignKey}`) REFERENCES `${constraint.tableToRefer}` (`${constraint.columnToRefer}`)"
         return constraint.onDelete?.let {
             "$sql ON DELETE $it"
         } ?: sql
@@ -63,7 +66,7 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
         return col.sqlType.typeName.toLowerCase()
     }
 
-    private fun ColumnMetadata?.def(): String {
+    private fun ColumnMetadata?.def(colInfo: ColumnInfo): String {
         if (this == null) {
             return ""
         }
@@ -81,7 +84,13 @@ internal class MySqlAdapter(isDryRun: Boolean, quiet: Boolean) : DbAdapter(isDry
             sb.append(" DEFAULT CURRENT_TIMESTAMP")
         } else {
             defaultValue?.let { dval ->
-                sb.append(" DEFAULT $dval")
+                sb.append(" DEFAULT ")
+                val sqlType = colInfo.col.sqlType
+                if (sqlType is JsonSqlType || sqlType is BlobSqlType || sqlType is TextSqlType) {
+                    sb.append("('$dval')")
+                } else {
+                    sb.append("$dval")
+                }
             }
         }
         if (autoIncrement) {
