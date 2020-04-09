@@ -21,6 +21,7 @@ interface RequestParamsBagContract {
         return params?.get(key)?.firstOrNull()?.toString()
     }
 
+    @Deprecated("Deprecated", ReplaceWith("stringOrNull(key)"))
     fun stringParamOrNull(key: String): String? {
         return stringOrNull(key)
     }
@@ -29,6 +30,7 @@ interface RequestParamsBagContract {
         return stringOrNull(key).orAbort(message, statusCode)
     }
 
+    @Deprecated("Deprecated", ReplaceWith("string(key, message, statusCode)"))
     fun stringParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): String {
         return string(key, message, statusCode)
     }
@@ -37,48 +39,54 @@ interface RequestParamsBagContract {
         return params?.get(key)?.firstOrNull()?.toString()?.toInt()
     }
 
+    @Deprecated("Deprecated", ReplaceWith("intOrNull(key)"))
     fun intParamOrNull(key: String): Int? {
-        return params?.get(key)?.firstOrNull()?.toString()?.toInt()
+        return intOrNull(key)
     }
 
-    fun int(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Int? {
+    fun int(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Int {
         return intOrNull(key).orAbort(message, statusCode)
     }
 
-    fun intParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Int? {
-        return intOrNull(key).orAbort(message, statusCode)
+    @Deprecated("Deprecated", ReplaceWith("int(key, message, statusCode)"))
+    fun intParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Int {
+        return int(key, message, statusCode)
     }
 
     fun longOrNull(key: String): Long? {
         return params?.get(key)?.firstOrNull()?.toString()?.toLong()
     }
 
+    @Deprecated("Deprecated", ReplaceWith("longOrNull(key)"))
     fun longParamOrNull(key: String): Long? {
-        return params?.get(key)?.firstOrNull()?.toString()?.toLong()
+        return longOrNull(key)
     }
 
     fun long(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
         return longOrNull(key).orAbort(message, statusCode)
     }
 
+    @Deprecated("Deprecated", ReplaceWith("long(key, message, statusCode)"))
     fun longParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
-        return longOrNull(key).orAbort(message, statusCode)
+        return long(key, message, statusCode)
     }
 
     fun boolOrNull(key: String): Boolean? {
         return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
     }
 
+    @Deprecated("Deprecated", ReplaceWith("boolOrNull(key)"))
     fun boolParamOrNull(key: String): Boolean? {
-        return params?.get(key)?.firstOrNull()?.toString()?.toBoolean()
+        return boolOrNull(key)
     }
 
-    fun bool(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Boolean? {
+    fun bool(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Boolean {
         return boolOrNull(key).orAbort(message, statusCode)
     }
 
+    @Deprecated("Deprecated", ReplaceWith("bool(key, message, statusCode)"))
     fun boolParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Boolean? {
-        return boolOrNull(key).orAbort(message, statusCode)
+        return bool(key, message, statusCode)
     }
 
     fun paramList(key: String): List<Any>? {
@@ -107,13 +115,16 @@ interface RequestParamsBagContract {
 
     fun filled(key: String): Boolean {
         val value = param(key) ?: return false
+        if (value as? Boolean != null) {
+            return value
+        }
         return (value as? String)?.isNotEmpty() ?: true
     }
 
     fun params(vararg keys: String, firstValueOnly: Boolean = true): Map<String, Any?> {
-        return params
-            ?.filterKeys { it in keys }
-            ?.filterNotNullValues() // remove nulls
+        return params?.let {
+            if (keys.isEmpty()) it else it.filterKeys { key -> key in keys }
+        }?.filterNotNullValues() // remove nulls
             ?.let { filteredParams ->
                 if (firstValueOnly) {
                     filteredParams.map { it.key to it.value.firstOrNull() }.toMap()
