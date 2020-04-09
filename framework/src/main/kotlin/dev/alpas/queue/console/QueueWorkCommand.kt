@@ -20,7 +20,7 @@ class QueueWorkCommand(private val container: Container) :
     private val queueConfig by lazy { container.make<QueueConfig>() }
     private val connection by argument(help = "The name of the connection to use.")
         .choice(*queueConfig.registeredConnectionNames().toTypedArray()).default(queueConfig.defaultConnection)
-    private val queueName by option("--queue", help = "Name of the queue to process.")
+    private val queueName by option("--queue", help = "Comma separated queue names to process.")
     private val queueWorkers by option("--workers", help = "Number of queue workers.").int().default(2)
     private val sleep by option(help = "Seconds to sleep between if there are no new jobs.").int()
     private val sleepDuration by lazy { sleep?.let { Duration.ofSeconds(it.toLong()) } }
