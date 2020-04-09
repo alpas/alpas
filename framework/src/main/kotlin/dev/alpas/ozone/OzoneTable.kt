@@ -235,14 +235,7 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
         nullable: Boolean = true,
         useCurrent: Boolean = false
     ): ColumnRegistration<Instant> {
-        return registerAndBind(name, InstantSqlType).apply {
-            if (nullable) {
-                nullable()
-            }
-            if (useCurrent) {
-                useCurrent()
-            }
-        }
+        return instant(name, nullable, useCurrent)
     }
 
     /**
@@ -253,13 +246,13 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
         nullable: Boolean = true,
         useCurrent: Boolean = false
     ): ColumnRegistration<Instant> {
+        return instant(name, nullable, useCurrent)
+    }
+
+    fun instant(name: String, nullable: Boolean = true, useCurrent: Boolean = false): ColumnRegistration<Instant> {
         return registerAndBind(name, InstantSqlType).apply {
-            if (nullable) {
-                nullable()
-            }
-            if (useCurrent) {
-                useCurrent()
-            }
+            if (nullable) nullable()
+            if (useCurrent) useCurrent()
         }
     }
 
