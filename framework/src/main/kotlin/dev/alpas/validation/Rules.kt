@@ -31,12 +31,20 @@ open class Min(private val length: Int, private val message: ErrorMessage = null
 // Attribute must be present and the value must not be null or empty.
 open class Required(private val message: ErrorMessage = null) : Rule() {
     override fun check(attribute: String, value: Any?): Boolean {
-        return (!value?.toString().isNullOrBlank()).also {
-            if (!it) {
+        if (value as? List<Any?> != null) {
+            val passes = value.isNotEmpty()
+            if (!passes) {
                 error = message?.let { it(attribute, value) }
-                    ?: "The required field '$attribute' is missing, null, or empty."
+                    ?: "The required field '$attribute' is empty."
             }
+            return passes
         }
+        val passes = !value?.toString().isNullOrBlank()
+        if (!passes) {
+            error = message?.let { it(attribute, value) }
+                ?: "The required field '$attribute' is missing, null, or empty."
+        }
+        return passes
     }
 }
 
