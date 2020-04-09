@@ -29,4 +29,8 @@ class ErrorBag(vararg error: RequestError) : JsonSerializable {
     override fun toJson(): String {
         return JsonSerializer.serialize(asMap())
     }
+
+    override fun toString(): String {
+        return asMap().toString()
+    }
 }
