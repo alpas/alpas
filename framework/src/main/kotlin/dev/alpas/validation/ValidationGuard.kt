@@ -97,7 +97,7 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
         return validatedParams[key]?.toString().orAbort(message, statusCode)
     }
 
-    fun longParam(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
+    fun long(key: String, message: String? = null, statusCode: Int = HttpStatus.NOT_FOUND_404): Long {
         return validatedParams[key]?.toString()?.toLongOrNull().orAbort(message, statusCode)
     }
 
