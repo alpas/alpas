@@ -2,7 +2,6 @@ package dev.alpas
 
 import io.github.cdimascio.dotenv.dotenv
 import java.io.File
-import java.lang.IllegalStateException
 import java.nio.file.Paths
 
 internal class EnvironmentServiceProvider : ServiceProvider {
@@ -17,6 +16,7 @@ internal class EnvironmentServiceProvider : ServiceProvider {
 
         System.setProperty(ROOT_DIR_KEY, rootPath)
         System.setProperty(SRC_DIR_KEY, Paths.get(rootPath, "src", "main", "kotlin").toAbsolutePath().toString())
+        System.setProperty(RUN_MODE, runMode.name)
 
         app.bufferDebugLog("${envPath.envFile} found at: ${envPath.parentDir.path}")
         app.bufferDebugLog("Root is at: $rootPath")
@@ -34,7 +34,7 @@ internal class EnvironmentServiceProvider : ServiceProvider {
             try {
                 findEnvDir(app.cwd)
             } catch (e: IllegalStateException) {
-               throw IllegalStateException("Looks like the .env file is missing. Create one in your root project.")
+                throw IllegalStateException("Looks like the .env file is missing. Create one in your root project.")
             }
         }
     }
