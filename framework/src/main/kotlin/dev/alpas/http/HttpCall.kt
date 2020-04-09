@@ -6,6 +6,7 @@ import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.auth.UserProvider
 import dev.alpas.exceptions.*
+import dev.alpas.routing.Route
 import dev.alpas.routing.RouteResult
 import dev.alpas.routing.UrlGenerator
 import dev.alpas.validation.ErrorBag
@@ -81,6 +82,13 @@ class HttpCall internal constructor(
 
     fun isSigned(): Boolean {
         return urlGenerator.checkSignature(fullUrl)
+    }
+
+    fun route(): Route? {
+        if (route.isSuccess) {
+            return route.target()
+        }
+        return null
     }
 
     @Suppress("UNCHECKED_CAST")
