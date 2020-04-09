@@ -5,5 +5,8 @@ internal fun combinePaths(path: String, vararg paths: String): String {
 }
 
 internal fun combineNames(name: String, vararg names: String): String {
-    return listOf(name, *names).filter { it.isNotBlank() }.joinToString(".").replace(Regex("/.{2,}"), ".")
+    return listOf(name, *names)
+        .filter { it.isNotBlank() }.joinToString(".")
+        .replace(Regex(""".?<[0-9a-zA-Z]*>"""), "")
+        .replace("..", ".")
 }
