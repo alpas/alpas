@@ -7,7 +7,9 @@ import dev.alpas.http.Method
 
 class SessionStart : Middleware<HttpCall>() {
     override fun invoke(passable: HttpCall, forward: Handler<HttpCall>) {
-        passable.authChannel.tryLogin()
+        passable.onBeforeAuthCheck()
+        val isAuthenticated = passable.authChannel.tryLogin()
+        passable.afterAuthCheck(isAuthenticated)
         if (passable.methodIs(Method.GET) && !passable.isAjax && !passable.isPrefetch) {
             passable.session.savePreviousUrl(passable.fullUrl)
         }

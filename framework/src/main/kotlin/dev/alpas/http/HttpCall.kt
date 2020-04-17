@@ -211,6 +211,14 @@ class HttpCall internal constructor(
         }
     }
 
+    internal fun onBeforeAuthCheck() {
+        callHooks.forEach { it.beforeAuthCheck(this) }
+    }
+
+    internal fun afterAuthCheck(isAuthenticated: Boolean) {
+        callHooks.forEach { it.afterAuthCheck(this, isAuthenticated) }
+    }
+
     fun validateUsingJsonBody() {
         validateUsingJsonBody.set(true)
     }
