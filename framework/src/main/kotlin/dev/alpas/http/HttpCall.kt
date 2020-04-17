@@ -64,7 +64,7 @@ class HttpCall internal constructor(
     internal val userProvider: UserProvider? by lazy { authChannel.userProvider }
     val isAuthenticated by lazy { authChannel.isLoggedIn() }
     val isFromGuest by lazy { !isAuthenticated }
-    val user: Authenticatable by lazy { authChannel.user.orAbort() }
+    val user: Authenticatable by lazy { authChannel.user.orAbort("User is not authenticated") }
     val env by lazy { make<Environment>() }
     private val redirector by lazy { Redirector(requestableCall, urlGenerator) }
     val urlGenerator: UrlGenerator by lazy { container.make<UrlGenerator>() }
