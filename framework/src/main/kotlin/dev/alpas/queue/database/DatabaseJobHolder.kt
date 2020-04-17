@@ -24,12 +24,25 @@ class DatabaseJobHolder(
 
         if (shouldRetry) {
             val tries = record.tries + 1
-            queueLogger.warn { "Job ${record.id} processing failed. Tries so far: ${tries}." }
-            queueLogger.error { ex.stackTraceString }
-            queue.pushToDatabase(record.payload, record.queue, job.delayInSeconds, tries)
+            if (job.onAttemptFailed(record, tries)) {
+                queueLogger.warn {
+                    "Job ${record.id} processing failed. Tries so far: ${tries}. Not requeueing because it has been handled"
+                }
+                queueLogger.error { ex.stackTraceString }
+            } else {
+                queueLogger.warn { "Job ${record.id} processing failed. Tries so far: ${tries}." }
+                queueLogger.error { ex.stackTraceString }
+                queue.pushToDatabase(record.payload, record.queue, job.delayInSeconds, tries)
+            }
         } else {
-            queueLogger.warn { "Job '${record.id}' has exceeded its retries count. Moving this job to the failed jobs queue." }
-            queue.markAsFailedJob(record, ex)
+            if (job.onJobFailed(record)) {
+                queueLogger.warn {
+                    "Job '${record.id}' has exceeded its retries count but is handled. Not moving it to the failed job queue."
+                }
+            } else {
+                queueLogger.warn { "Job '${record.id}' has exceeded its retries count. Moving this job to the failed jobs queue." }
+                queue.markAsFailedJob(record, ex)
+            }
         }
     }
 
