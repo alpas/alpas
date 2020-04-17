@@ -221,11 +221,16 @@ inline fun <E : OzoneEntity<E>, T : OzoneTable<E>> HttpCall.entity(
     paramKey: String = "id",
     primaryKey: String = "id"
 ): E {
-    val key = param(paramKey).orAbort().let {
-        val param = it.toString()
-        param.toLongOrNull() ?: it
-    }
+    val missingKeyError = if (env.isDev)
+        "Couldn't fetch an entity from the table '${table.tableName}' because of missing parameter '$paramKey'." else null
+    val key =
+        param(paramKey).orAbort(missingKeyError)
+            .let {
+                val param = it.toString()
+                param.toLongOrNull() ?: it
+            }
+    val noEntityError = if (env.isDev) "Entity with $primaryKey $key doesn't exist in the table '${table.tableName}'." else null
     return table.findOne {
         (it[primaryKey] as Column<Any>) eq key
-    }.orAbort()
+    }.orAbort(noEntityError)
 }
