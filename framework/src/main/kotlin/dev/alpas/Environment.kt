@@ -39,7 +39,7 @@ open class Environment(
     init {
         System.setProperty(ROOT_PATH, rootPath)
         System.setProperty(STORAGE_PATH, storagePath)
-        System.setProperty(STORAGE_PATH, storagePath("templates"))
+        System.setProperty(STORAGE_TEMPLATES_PATH, storagePath("templates"))
     }
 
     operator fun invoke(key: String): String? {
