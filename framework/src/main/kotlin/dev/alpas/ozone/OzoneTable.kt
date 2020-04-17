@@ -249,8 +249,9 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
         return instant(name, nullable, useCurrent)
     }
 
-    fun instant(name: String, nullable: Boolean = true, useCurrent: Boolean = false): ColumnRegistration<Instant> {
-        return registerAndBind(name, InstantSqlType).apply {
+    fun instant(name: String, nullable: Boolean = true, useCurrent: Boolean = false, autoBind: Boolean = true):
+            ColumnRegistration<Instant> {
+        return registerAndBind(name, InstantSqlType, autoBind).apply {
             if (nullable) nullable()
             if (useCurrent) useCurrent()
         }
@@ -259,9 +260,9 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
     /**
      * Automatically register and bind a column under the given name and type.
      */
-    internal fun <T : Any> registerAndBind(name: String, type: SqlType<T>): ColumnRegistration<T> {
+    internal fun <T : Any> registerAndBind(name: String, type: SqlType<T>, autoBind: Boolean = true): ColumnRegistration<T> {
         return registerColumn(name, type).also {
-            if (shouldAutoBind(name)) {
+            if (autoBind || shouldAutoBind(name)) {
                 autoBind(it)
             }
         }
