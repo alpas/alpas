@@ -8,6 +8,7 @@ open class AppConfig(private val env: Environment) : Config {
     open val appPort = env("APP_PORT", 8080)
     open val appUrl = env("APP_URL", "")
     open val connectionTimeOut: Duration = Duration.ofMinutes(1)
+    open val combineJsonBodyWithParams = false
     open val staticDirs: Array<String>
         get() {
             val dirs = arrayOf("/web", env.storagePath("app", "web")) +
