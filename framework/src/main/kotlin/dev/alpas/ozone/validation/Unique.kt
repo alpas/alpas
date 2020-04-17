@@ -34,7 +34,7 @@ class Unique(
         }
         return !exists.also { fails ->
             if (fails) {
-                error = message?.let { it(attribute, value) } ?: "$attribute already exists in $table"
+                error = message?.let { it(attribute, value) } ?: "The $attribute is already used."
             }
         }
     }
