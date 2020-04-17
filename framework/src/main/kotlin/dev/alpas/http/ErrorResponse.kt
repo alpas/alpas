@@ -1,8 +1,9 @@
 package dev.alpas.http
 
 import dev.alpas.exceptions.HttpException
+import dev.alpas.exceptions.ValidationException
 
-class ErrorResponse(val exception: Exception) : Response {
+open class ErrorResponse(val exception: Exception) : Response {
     override fun render(context: RenderContext) {
         handleException(context.call, exception)
         // The handleException method should have set a final response, either a string
@@ -27,3 +28,6 @@ class ErrorResponse(val exception: Exception) : Response {
         return
     }
 }
+
+class ValidationErrorResponse(val attribute: String, val message: String, val value: Any? = null) :
+    ErrorResponse(ValidationException(RequestError(attribute, value = value, message = message)))
