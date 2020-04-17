@@ -130,7 +130,7 @@ abstract class RoutableBase(
         add(Method.POST, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
 
     fun post(path: String, controller: KClass<out Controller>, method: String = DEFAULT_POST_METHOD) =
-        add(Method.POST, path, ControllerHandler(controller, method), middleware).name(method)
+        add(Method.POST, path, ControllerHandler(controller, method), middleware).name(method.toKebabCase())
 
     inline fun <reified T : Controller> delete(path: String = "", method: String = DEFAULT_DELETE_METHOD) =
         delete(path, T::class, method)
