@@ -48,6 +48,10 @@ interface RequestableCall {
     val isPatch get() = methodIs(Method.PATCH)
     val isDelete get() = methodIs(Method.DELETE)
     val isReading get() = this.method.isReading()
+    val isPreflight
+        get() = methodIs(Method.OPTIONS)
+                && header("Access-Control-Request-Headers") != null
+                && header("Origin") != null
     val cookie: CookieJar
     val jettyRequest: Request
     val body: String
