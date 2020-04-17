@@ -7,6 +7,9 @@ class NotFoundHttpException(message: String? = null, headers: Map<String, String
     HttpException(HttpStatus.NOT_FOUND_404, message ?: "Not Found", headers = headers) {
     override fun report(call: HttpCall) {
         call.logger.warn { "Resource not found: ${call.fullUrl}" }
+        if (message != null) {
+            call.logger.error { message }
+        }
     }
 
     override fun render(call: HttpCall) {
