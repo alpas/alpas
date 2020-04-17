@@ -14,6 +14,7 @@ class RouteGroup(
     val middleware: MutableSet<KClass<out Middleware<HttpCall>>> = mutableSetOf(),
     val middlewareGroups: MutableSet<String> = mutableSetOf()
 ) : RoutableBase(middleware, middlewareGroups) {
+    val skippedMiddlewareGroups: MutableSet<String> = mutableSetOf()
     internal var name = ""
         private set
     internal var skipCsrfCheck = false
@@ -79,15 +80,29 @@ class RouteGroup(
     }
 
     fun middlewareGroup(groupName: String): RouteGroup {
-        middlewareGroups.add(groupName)
+        addMiddlewareGroup(groupName)
         routes.forEach { route -> route.middlewareGroup(groupName) }
         return this
     }
 
+    fun skipMiddlewareGroup(groupName: String): RouteGroup {
+        middlewareGroups.remove(groupName)
+        routes.forEach { route -> route.skipMiddlewareGroup(groupName) }
+        return this
+    }
+
     fun middlewareGroup(groupNames: List<String>): RouteGroup {
-        middlewareGroups.addAll(groupNames)
+        groupNames.forEach {
+            addMiddlewareGroup(it)
+        }
         routes.forEach { route -> route.middlewareGroup(groupNames) }
         return this
+    }
+
+    private fun addMiddlewareGroup(groupName: String) {
+        if(!skippedMiddlewareGroups.contains(groupName)) {
+            middlewareGroups.add(groupName)
+        }
     }
 
     override fun fullName(name: String) = combineNames(this.name, name)

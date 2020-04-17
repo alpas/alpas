@@ -18,6 +18,8 @@ class Route(
     val middlewareGroups: MutableSet<String> = mutableSetOf(),
     val handler: RouteHandler
 ) {
+    val skippedMiddlewareGroups: MutableSet<String> = mutableSetOf()
+
     constructor(method: Method, path: String, handler: RouteHandler) : this(
         method,
         path,
@@ -110,17 +112,31 @@ class Route(
     }
 
     fun middlewareGroup(groupName: String): Route {
-        middlewareGroups.add(groupName)
+        addMiddlewareGroup(groupName)
         return this
     }
 
     fun middlewareGroup(groupNames: List<String>): Route {
-        middlewareGroups.addAll(groupNames)
+        groupNames.forEach {
+            addMiddlewareGroup(it)
+        }
+        return this
+    }
+
+    fun skipMiddlewareGroup(groupName: String): Route {
+        skippedMiddlewareGroups.add(groupName)
+        middlewareGroups.remove(groupName)
         return this
     }
 
     internal fun handle(call: HttpCall) {
         handler.handle(call)
+    }
+
+    private fun addMiddlewareGroup(groupName: String) {
+        if(!skippedMiddlewareGroups.contains(groupName)) {
+            middlewareGroups.add(groupName)
+        }
     }
 
     override fun toString() = "$name :: $method :: $path"
