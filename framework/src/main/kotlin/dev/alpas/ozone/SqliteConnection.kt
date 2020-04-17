@@ -7,11 +7,15 @@ import me.liuwj.ktorm.support.sqlite.SQLiteDialect
 import java.io.File
 
 @Suppress("unused")
-open class SqliteConnection(private val env: Environment, config: ConnectionConfig? = null) : DatabaseConnection {
+open class SqliteConnection(private val env: Environment, private val config: ConnectionConfig? = null) : DatabaseConnection {
     open val dialect = config?.sqlDialect ?: SQLiteDialect()
     open val extraParams = config?.extraParams ?: emptyMap()
 
     private val db by lazy {
+        makeConnection()
+    }
+
+    private fun makeConnection(): Database {
         val database = if (config?.database == ":memory:") {
             ":memory:"
         } else {
@@ -19,7 +23,7 @@ open class SqliteConnection(private val env: Environment, config: ConnectionConf
         }
         val params = combineParams(extraParams)
         val ds = HikariDataSource().also { it.jdbcUrl = "jdbc:sqlite:$database?$params" }
-        Database.connect(ds, dialect)
+        return Database.connect(ds, dialect)
     }
 
     private fun defaultDatabase(): String {
@@ -35,4 +39,5 @@ open class SqliteConnection(private val env: Environment, config: ConnectionConf
     }
 
     override fun connect(): Database = db
+    override fun reconnect(): Database = makeConnection()
 }

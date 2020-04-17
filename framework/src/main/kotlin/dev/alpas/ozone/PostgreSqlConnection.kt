@@ -20,13 +20,18 @@ open class PostgreSqlConnection(env: Environment, config: ConnectionConfig? = nu
     }
 
     private val db: Database by lazy {
+        makeConnection()
+    }
+
+    private fun makeConnection(): Database {
         val ds = HikariDataSource().also {
             it.jdbcUrl = jdbcUrl
             it.username = username
             it.password = password
         }
-        Database.connect(ds, dialect)
+        return Database.connect(ds, dialect)
     }
 
     override fun connect(): Database = db
+    override fun reconnect(): Database = makeConnection()
 }

@@ -21,13 +21,19 @@ open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) :
     }
 
     private val db: Database by lazy {
+        makeNewConnection()
+    }
+
+    override fun connect(): Database = db
+    override fun reconnect(): Database = makeNewConnection()
+
+    private fun makeNewConnection(): Database {
         val ds = HikariDataSource().also {
             it.jdbcUrl = jdbcUrl
             it.username = username
             it.password = password
         }
-        Database.connect(ds, dialect)
+        return Database.connect(ds, dialect)
     }
 
-    override fun connect(): Database = db
 }
