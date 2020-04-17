@@ -4,13 +4,14 @@ import com.github.ajalt.clikt.output.TermUi.echo
 import com.github.ajalt.mordant.TermColors
 import dev.alpas.*
 import dev.alpas.extensions.toPascalCase
+import io.github.classgraph.ScanResult
 import java.io.File
 
 internal class MigrationRunner(
     private val migrationDirectory: File,
     private val isDryRun: Boolean,
-    private val packageClassLoader: PackageClassLoader,
-    private val migrateByNames: Boolean,
+    private val migrationClassesScanner: ScanResult,
+    private val migrateByFilenames: Boolean,
     private val quiet: Boolean
 ) {
     private val adapter by lazy { DbAdapter.make(isDryRun, quiet) }
@@ -81,17 +82,17 @@ internal class MigrationRunner(
     }
 
     private fun migrationsToRun(): List<Migration> {
-        return if (migrateByNames) {
-            migrationsToRunByMigrationNames()
-        } else {
+        return if (migrateByFilenames) {
             migrationsToRunByFilenames()
+        } else {
+            migrationsToRunByMigrationNames()
         }
     }
 
     private fun migrationsToRunByMigrationNames(): List<Migration> {
         val migrations = mutableListOf<Migration>()
-        packageClassLoader.classesExtending(Migration::class) {
-            val migration = it.load<Migration>()
+        migrationClassesScanner.getSubclasses(Migration::class.java.name).filter { !it.isAbstract }.forEach { classInfo ->
+            val migration = classInfo.load<Migration>()
             val name = migration.name
             if (name != null && !migrationRepo.isMigrated(name)) {
                 migration.givenName = name
@@ -104,10 +105,10 @@ internal class MigrationRunner(
 
     private fun migrationsToRunByFilenames(): List<Migration> {
         val migrations = mutableListOf<Migration>()
-        packageClassLoader.classesExtending(Migration::class) { classInfo ->
+        migrationClassesScanner.getSubclasses(Migration::class.java.name).filter { !it.isAbstract }.forEach { classInfo ->
             // derive name of the migration from the corresponding filename
-            val filename = migrationFiles.first { name -> name.toPascalCase().endsWith(classInfo.simpleName) }
-            if (!migrationRepo.isMigrated(filename)) {
+            val filename = migrationFiles.firstOrNull { name -> name.toPascalCase().endsWith(classInfo.simpleName) }
+            if (filename != null && !migrationRepo.isMigrated(filename)) {
                 classInfo.load<Migration>().also { migration ->
                     migration.givenName = filename
                     migration.adapter = adapter
@@ -123,10 +124,10 @@ internal class MigrationRunner(
         val (latestBatchMigrations, batch) = migrationRepo.latestMigrationBatch()
         val migrationNamesToRollback = latestBatchMigrations.map { it.name }
 
-        val migrations = if (migrateByNames) {
-            migrationsToRollbackByMigrationNames(migrationNamesToRollback)
-        } else {
+        val migrations = if (migrateByFilenames) {
             migrationsToRollbackByFilenames(migrationNamesToRollback)
+        } else {
+            migrationsToRollbackByMigrationNames(migrationNamesToRollback)
         }
 
         val filenamesToRollback = migrations.map { it.givenName }
@@ -141,7 +142,7 @@ internal class MigrationRunner(
 
     private fun migrationsToRollbackByMigrationNames(migrationNamesToRollback: List<String>): List<Migration> {
         val migrations = mutableListOf<Migration>()
-        packageClassLoader.classesExtending(Migration::class) { classInfo ->
+        migrationClassesScanner.getSubclasses(Migration::class.java.name).filter { !it.isAbstract }.forEach { classInfo ->
             val migration = classInfo.load<Migration>()
             // If this migration is in the list of migrationNamesToRollback, we need to mark it for rolling back
             val name = migrationNamesToRollback.firstOrNull { name -> migration.name != null && name == migration.name }
@@ -158,7 +159,7 @@ internal class MigrationRunner(
         // mark all the migration files that contain migration classes. These migrations will be removed.
         val migrationFilesToRollback = migrationFiles.filter { migrationNamesToRollback.contains(it) }
         val migrations = mutableListOf<Migration>()
-        packageClassLoader.classesExtending(Migration::class) { classInfo ->
+        migrationClassesScanner.getSubclasses(Migration::class.java.name).filter { !it.isAbstract }.forEach { classInfo ->
             // check if this class is in the list of migrations that are marked to be removed
             val filename =
                 migrationFilesToRollback.firstOrNull { name -> name.toPascalCase().endsWith(classInfo.simpleName) }

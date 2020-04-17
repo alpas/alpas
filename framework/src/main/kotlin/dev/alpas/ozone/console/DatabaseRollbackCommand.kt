@@ -8,7 +8,7 @@ class DatabaseRollbackCommand(srcPackage: String) :
 
     override fun run() {
         println()
-        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, packageClassLoader, useNames, quiet).rollback()
+        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, migrationClassesScanner, useFilenames, quiet).rollback()
         withColors {
             println()
             echo(yellow("https://alpas.dev/docs/migrations"))

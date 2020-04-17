@@ -8,7 +8,7 @@ class DatabaseMigrateCommand(srcPackage: String) :
 
     override fun run() {
         println()
-        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, packageClassLoader, useNames, quiet).migrate()
+        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, migrationClassesScanner, useFilenames, quiet).migrate()
         withColors {
             println()
             echo(yellow("https://alpas.dev/docs/migrations"))
