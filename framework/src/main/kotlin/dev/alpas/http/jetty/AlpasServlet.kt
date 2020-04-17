@@ -37,13 +37,17 @@ class AlpasServlet(
             }
         }
 
-        val allowMethodSpoofing = app.config<AppConfig>().allowMethodSpoofing
+        val appConfig = app.config<AppConfig>()
+        val allowMethodSpoofing = appConfig.allowMethodSpoofing
         val route = router.routeFor(methodName = req.method(allowMethodSpoofing), uri = req.requestURI)
         val callHooks = app.callHooks.map {
             it.createInstance()
         }
 
         val call = HttpCall(container, req, resp, route, callHooks).also {
+            if (appConfig.combineJsonBodyWithParams) {
+                it.combineJsonBodyWithParams()
+            }
             if (app.env.inTestMode) {
                 app.recordLastCall(it)
             }
