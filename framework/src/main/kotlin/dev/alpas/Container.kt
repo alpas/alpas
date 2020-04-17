@@ -44,6 +44,8 @@ interface Container {
     /**
      * Bind a concrete Class of type [T].
      *
+     * e.g. bind(Concrete::class.java)
+     *
      * @param concrete A concrete class of type [T] to bind.
      */
     fun <T> bind(concrete: Class<T>) {
