@@ -4,6 +4,7 @@ import dev.alpas.Handler
 import dev.alpas.Middleware
 import dev.alpas.encryption.Encrypter
 import dev.alpas.http.HttpCall
+import dev.alpas.http.X_CSRF_TOKEN_KEY
 import dev.alpas.make
 import dev.alpas.makeElse
 import dev.alpas.session.SessionConfig
@@ -41,7 +42,7 @@ class EncryptCookies : Middleware<HttpCall>() {
             it.name !in listOf(
                 config.cookieName,
                 "JSESSIONID",
-                "X-CSRF-TOKEN",
+                X_CSRF_TOKEN_KEY,
                 *config.encryptExcept.toTypedArray()
             )
         }

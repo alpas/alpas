@@ -3,6 +3,8 @@ package dev.alpas.http.middleware
 import dev.alpas.*
 import dev.alpas.encryption.Encrypter
 import dev.alpas.http.HttpCall
+import dev.alpas.http.X_CSRF_TOKEN_KEY
+import dev.alpas.http.X_XSRF_TOKEN_KEY
 import dev.alpas.session.CSRF_SESSION_KEY
 import dev.alpas.session.SessionConfig
 import dev.alpas.session.TokenMismatchException
@@ -44,8 +46,8 @@ open class VerifyCsrfToken : Middleware<HttpCall>() {
     }
 
     private fun getCallToken(call: HttpCall): String? {
-        val token = call.stringParamOrNull(CSRF_SESSION_KEY) ?: call.header("X-CSRF-TOKEN")
-        val encryptedToken = call.header("X-XSRF-TOKEN")
+        val token = call.stringParamOrNull(CSRF_SESSION_KEY) ?: call.header(X_CSRF_TOKEN_KEY)
+        val encryptedToken = call.header(X_XSRF_TOKEN_KEY)
         return if (token == null && encryptedToken != null) {
             return call.make<Encrypter>().decrypt(encryptedToken)
         } else {

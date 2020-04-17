@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.Part
 
 const val CONTENT_TYPE_KEY = "Content-Type"
+const val X_CSRF_TOKEN_KEY = "X-CSRF-TOKEN"
+const val X_XSRF_TOKEN_KEY = "X-XSRF-TOKEN"
 
 @Suppress("unused")
 interface RequestableCall {
