@@ -226,25 +226,25 @@ abstract class RoutableBase(
     ): RouteGroup {
         return group(prefix = path) {
             if (only.contains(DEFAULT_GET_METHOD) && !except.contains(DEFAULT_GET_METHOD)) {
-                get<T>().name(DEFAULT_GET_METHOD)
+                get<T>()
             }
             if (only.contains("edit") && !except.contains("edit")) {
-                get<T>("<id>/edit", "edit").name("edit")
+                get<T>("<id>/edit", "edit")
             }
             if (only.contains("new") && !except.contains("new")) {
-                get<T>("new", "new").name("new")
+                get<T>("new", "new")
             }
             if (only.contains("show") && !except.contains("show")) {
-                get<T>("<id>", "show").name("show")
+                get<T>("<id>", "show")
             }
             if (only.contains(DEFAULT_POST_METHOD) && !except.contains(DEFAULT_POST_METHOD)) {
-                post<T>().name(DEFAULT_POST_METHOD)
+                post<T>()
             }
             if (only.contains(DEFAULT_PATCH_METHOD) && !except.contains(DEFAULT_PATCH_METHOD)) {
-                patch<T>().name(DEFAULT_PATCH_METHOD)
+                patch<T>("<id>")
             }
             if (only.contains(DEFAULT_DELETE_METHOD) && !except.contains(DEFAULT_DELETE_METHOD)) {
-                delete<T>().name(DEFAULT_DELETE_METHOD)
+                delete<T>("<id>")
             }
         }
     }
