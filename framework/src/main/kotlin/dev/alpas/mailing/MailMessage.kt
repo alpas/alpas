@@ -3,9 +3,10 @@ package dev.alpas.mailing
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 open class MailMessage {
-    lateinit var to: String
-    lateinit var subject: String
-    lateinit var message: String
+    open lateinit var to: String
+    open lateinit var subject: String
+    open lateinit var message: String
+    open lateinit var extraProps: Map<String, Any?>
 
     @JsonIgnore
     protected var view: String? = null
