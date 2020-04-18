@@ -76,8 +76,10 @@ open class SessionAuthChannel(private val call: HttpCall, override val userProvi
     private fun tryLoginUsingRememberToken() {
         call.cookie[rememberTokenCookieName()]?.let { cookie ->
             val rememberToken = RememberCookieToken(cookie)
-            user = userProvider.findByToken(rememberToken)?.also {
-                setSession(it)
+            if (rememberToken.isValid()) {
+                user = userProvider.findByToken(rememberToken)?.also {
+                    setSession(it)
+                }
             }
         }
     }

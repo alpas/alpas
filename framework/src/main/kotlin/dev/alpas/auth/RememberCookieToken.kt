@@ -3,6 +3,8 @@ package dev.alpas.auth
 data class RememberCookieToken(val token: String) {
     private val parsedTokens = token.split(':')
 
+    fun isValid() = parsedTokens.size == 3
+
     fun id(): Any {
         return parsedTokens[0].toLong()
     }
