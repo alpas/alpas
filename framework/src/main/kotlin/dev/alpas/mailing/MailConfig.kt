@@ -6,7 +6,7 @@ import dev.alpas.RESOURCES_DIRS
 import dev.alpas.mailing.drivers.MailDriver
 
 open class MailConfig(env: Environment) : Config {
-    open val defaultDriver = env("MAIL_DRIVER", "smtp")
+    open val defaultDriver = env("MAIL_DRIVER", "local")
     open val templatesPath = env.storagePath(*RESOURCES_DIRS, "templates")
     private val drivers = mutableMapOf<String, Lazy<MailDriver>>()
 
@@ -14,8 +14,9 @@ open class MailConfig(env: Environment) : Config {
         drivers[name] = driver
     }
 
-    fun driver(name: String = defaultDriver): MailDriver {
-        return drivers[name]?.value ?: throw Exception("Unsupported mail driver: '$name'.")
+    fun driver(name: String? = null): MailDriver {
+        val driverName = name ?: defaultDriver
+        return drivers[driverName]?.value ?: throw Exception("Unsupported mail driver: '$driverName'.")
     }
 
     fun renderer(): EmailRenderer {

@@ -8,19 +8,17 @@ import dev.alpas.notifications.Notification
 import dev.alpas.queue.QueueDispatcher
 import kotlinx.coroutines.runBlocking
 
-class MailChannel(private val queueDispatcher: QueueDispatcher, private val mailConfig: MailConfig) : NotificationChannel {
+open class MailChannel(private val queueDispatcher: QueueDispatcher, private val mailConfig: MailConfig) : NotificationChannel {
     override fun <T : Notifiable> send(notification: Notification<T>, notifiable: T) {
-        val not = notification as MailableNotification<T>
-        val message = not.toMail(notifiable).apply { render(mailConfig.renderer()) }
-        val job = SendMailJob(message)
+        val mailableNotification = notification as MailableNotification<T>
+        val message = mailableNotification.toMail(notifiable).apply { render(mailConfig.renderer()) }
+        val job = SendMailJob(message, mailableNotification.mailDriverName(notifiable))
         if (notification.shouldQueue(notifiable)) {
             queueDispatcher.dispatch(job, notification.onQueue(notifiable), notification.queueConnection(notifiable))
         } else {
             runBlocking {
-                job(mailer)
+                job(mailConfig.driver(mailableNotification.mailDriverName(notifiable)))
             }
         }
     }
-
-    private val mailer by lazy { mailConfig.driver() }
 }
