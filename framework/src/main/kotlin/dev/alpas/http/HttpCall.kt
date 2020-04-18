@@ -490,19 +490,3 @@ class HttpCall internal constructor(
         }
     }
 }
-
-fun <T : Any> startInFuture(suspendingFunction: suspend () -> T): CompletableFuture<T> {
-    val future = CompletableFuture<T>()
-    suspendingFunction.startCoroutine(object : Continuation<T> {
-        override val context: CoroutineContext get() = EmptyCoroutineContext
-
-        override fun resumeWith(result: Result<T>) {
-            if (result.isSuccess) {
-                future.complete(result.getOrNull())
-            } else {
-                future.completeExceptionally(result.exceptionOrNull())
-            }
-        }
-    })
-    return future
-}

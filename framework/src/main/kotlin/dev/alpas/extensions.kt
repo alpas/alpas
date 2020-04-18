@@ -22,9 +22,14 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.servlet.http.HttpServletResponse
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.startCoroutine
 import kotlin.reflect.full.createInstance
 
 val terminalColors = TermColors(TermColors.Level.ANSI256)
@@ -205,4 +210,20 @@ inline fun <reified T : Any> ClassInfo.load(): T {
 
 fun hashEquals(strA: String, strB: String): Boolean {
     return MessageDigest.isEqual(strA.toByteArray(), strB.toByteArray())
+}
+
+fun <T : Any> startInFuture(suspendingFunction: suspend () -> T): CompletableFuture<T> {
+    val future = CompletableFuture<T>()
+    suspendingFunction.startCoroutine(object : Continuation<T> {
+        override val context: CoroutineContext get() = EmptyCoroutineContext
+
+        override fun resumeWith(result: Result<T>) {
+            if (result.isSuccess) {
+                future.complete(result.getOrNull())
+            } else {
+                future.completeExceptionally(result.exceptionOrNull())
+            }
+        }
+    })
+    return future
 }
