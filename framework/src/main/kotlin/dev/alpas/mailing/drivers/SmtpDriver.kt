@@ -45,7 +45,7 @@ open class SmtpDriver(env: Environment, config: MailDriverConfig = MailDriverCon
         val email = EmailBuilder.startingBlank()
             .to(mail.to)
             .withSubject(mail.subject)
-            .withHTMLText(mail.message)
+            .withHTMLText(mail.message ?: "")
             .buildEmail()
         mailer.sendMail(email)
     }
