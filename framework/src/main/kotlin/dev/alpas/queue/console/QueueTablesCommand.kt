@@ -25,9 +25,9 @@ class QueueTablesCommand(srcPackage: String) :
         val datePrefix = LocalDateTime.now()
             .format(DateTimeFormatter.ofPattern(MIGRATION_FILE_DATE_FORMAT))
 
-        val outputName = "${datePrefix}_$filename.kt"
+        val outputName = "${datePrefix}_$filename"
         return OutputFile()
-            .target(File(outputPath, outputName))
+            .target(File(outputPath, "$outputName.kt"))
             .packageName(packageName)
             .className(filename)
             .replacements("StubJobName" to outputName)
