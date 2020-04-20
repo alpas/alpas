@@ -25,6 +25,8 @@ internal class Stubs {
                 import dev.alpas.queue.database.JobRecords
 
                 class StubClazzName : Migration() {
+                    override val name = "StubJobName"
+                    
                     override fun up() {
                         createTable(JobRecords)
                         createTable(FailedJobRecords)
