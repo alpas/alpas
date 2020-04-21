@@ -22,8 +22,10 @@ class SessionManager(private val app: Application) {
                 name = sessionConfig.cookieName
                 maxAge = sessionConfig.lifetime.seconds.toInt()
                 path = sessionConfig.path
-                domain = sessionConfig.domain
                 isSecure = sessionConfig.secure
+            }
+            sessionConfig.domain?.let {
+                sessionCookieConfig.domain = it
             }
             sessionCache = createCacheDriver(this)
         }
