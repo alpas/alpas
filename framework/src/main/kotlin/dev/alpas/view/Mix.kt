@@ -36,7 +36,6 @@ class Mix(private val app: Application) {
         return resourceLoader.calculateVersion(mixManifestPath)
     }
 
-    @Synchronized
     internal operator fun invoke(path: String, manifestDirectory: String = ""): String {
         // Even on Windows, resource loader requires the path to be UNIX style path
         val separator = "/"
@@ -54,7 +53,6 @@ class Mix(private val app: Application) {
     private fun loadManifestMap(): Map<String, String> {
         val text = resourceLoader.load(mixManifestPath)?.readText()
             ?: throw Exception("Mix manifestMap file $mixManifestPath doesn't exist")
-
-        return JsonSerializer.deserialize(text)
+        return JsonSerializer.deserialize<HashMap<String, String>>(text)
     }
 }
