@@ -6,7 +6,8 @@ open class MailMessage {
     open lateinit var to: String
     open lateinit var subject: String
     open var message: String? = null
-    open lateinit var extraProps: Map<String, Any?>
+    open lateinit var extraData: Map<String, Any?>
+    open var props: Map<String, Any?>? = null
 
     @JsonIgnore
     protected var view: String? = null
