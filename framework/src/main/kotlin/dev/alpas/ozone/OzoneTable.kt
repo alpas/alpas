@@ -539,3 +539,18 @@ fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.longReference(
         }
     }
 }
+
+fun <E : OzoneEntity<E>, R : OzoneEntity<R>> OzoneTable<E>.stringReference(
+    referenceTable: OzoneTable<R>,
+    localColumnName: String? = null,
+    to: String = "id",
+    onDelete: String? = "cascade",
+    selector: (E) -> R?
+): BaseTable<E>.ColumnRegistration<String> {
+    val actualLocalColumnName = localColumnName ?: "${referenceTable.entityClass?.simpleName?.toSnakeCase()}_id"
+    return string(actualLocalColumnName).apply {
+        belongsTo(referenceTable, selector).reference(to) {
+            onDelete(onDelete)
+        }
+    }
+}
