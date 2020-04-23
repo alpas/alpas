@@ -27,10 +27,6 @@ import javax.servlet.AsyncEvent
 import javax.servlet.AsyncListener
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.startCoroutine
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -65,7 +61,8 @@ class HttpCall internal constructor(
     val isAuthenticated by lazy { authChannel.isLoggedIn() }
     val isFromGuest by lazy { !isAuthenticated }
     val user: Authenticatable by lazy { authChannel.user.orAbort("User is not authenticated") }
-    val env by lazy { make<Environment>() }
+    // let's "cache" the env even though the container already provides it
+    override val env by lazy { make<Environment>() }
     private val redirector by lazy { Redirector(requestableCall, urlGenerator) }
     val urlGenerator: UrlGenerator by lazy { container.make<UrlGenerator>() }
     internal var validateUsingJsonBody: AtomicBoolean = AtomicBoolean(false)
