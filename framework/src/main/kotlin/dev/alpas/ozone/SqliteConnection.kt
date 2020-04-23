@@ -1,5 +1,6 @@
 package dev.alpas.ozone
 
+import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import dev.alpas.Environment
 import me.liuwj.ktorm.database.Database
@@ -22,8 +23,11 @@ open class SqliteConnection(private val env: Environment, private val config: Co
             (config?.database ?: defaultDatabase()).also(::createDatabaseFile)
         }
         val params = combineParams(extraParams)
-        val ds = HikariDataSource().also { it.jdbcUrl = "jdbc:sqlite:$database?$params" }
-        return Database.connect(ds, dialect)
+        val config = HikariConfig().apply {
+            jdbcUrl = "jdbc:sqlite:$database?$params"
+            driverClassName = "org.sqlite.JDBC"
+        }
+        return Database.connect(HikariDataSource(config), dialect)
     }
 
     private fun defaultDatabase(): String {
