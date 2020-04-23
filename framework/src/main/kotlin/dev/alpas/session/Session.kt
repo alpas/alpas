@@ -1,6 +1,7 @@
 package dev.alpas.session
 
 import dev.alpas.isOneOf
+import org.eclipse.jetty.server.session.Session
 import javax.servlet.http.HttpServletRequest
 
 const val CSRF_SESSION_KEY = "_csrf"
@@ -13,7 +14,7 @@ const val NEXT_FLASH_BAG_KEY = "_next_flash_bag"
 
 @Suppress("UNCHECKED_CAST", "unused")
 class Session(private val request: HttpServletRequest) {
-    private val session = request.session
+    private val session = request.session as Session
     operator fun <T> invoke(key: String): T? {
         return get<T>(key)
     }
@@ -123,7 +124,7 @@ class Session(private val request: HttpServletRequest) {
     }
 
     fun isValid(): Boolean {
-        return request.isRequestedSessionIdValid
+        return session.isValid
     }
 
     internal fun clearPreviousFlashBag() {
