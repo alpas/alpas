@@ -8,6 +8,7 @@ open class RedirectFilter : Middleware<RedirectResponse>()
 
 interface Redirectable {
     fun isBeingRedirected(): Boolean
+    val redirectResponse: RedirectResponse
 
     fun to(
         to: String,
@@ -51,7 +52,7 @@ class Redirector(
     private val request: RequestableCall,
     private val urlGenerator: UrlGenerator
 ) : Redirectable {
-    lateinit var redirectResponse: RedirectResponse
+    override lateinit var redirectResponse: RedirectResponse
         private set
 
     private val redirectFilters: MutableList<RedirectFilter> = mutableListOf()

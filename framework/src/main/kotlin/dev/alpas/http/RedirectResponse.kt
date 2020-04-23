@@ -5,7 +5,7 @@ import dev.alpas.cookie.CookieJar
 import org.eclipse.jetty.http.HttpStatus
 
 class RedirectResponse(
-    private val location: String,
+    val location: String,
     var statusCode: Int = HttpStatus.MOVED_TEMPORARILY_302,
     val headers: Map<String, String> = emptyMap(),
     val cookie: CookieJar? = null,

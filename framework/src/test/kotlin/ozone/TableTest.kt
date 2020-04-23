@@ -133,7 +133,7 @@ class OzoneTableTest : BaseTest() {
         val entities = from(TestObjectFactory, 5)
 
         every { call.param("id") } returns 2
-        val entity = call.entityParam(TestTable())
+        val entity = call.entity(TestTable())
 
         assertEquals(entity.firstName, entities[1].firstName)
     }
@@ -146,7 +146,7 @@ class OzoneTableTest : BaseTest() {
         }
 
         every { call.param("first_name") } returns entities[1].firstName
-        val entity = call.entityParam(TestTable(), "first_name")
+        val entity = call.entity(TestTable(), "first_name")
 
         assertEquals(entity.firstName, entities[1].firstName)
     }
@@ -157,7 +157,7 @@ class OzoneTableTest : BaseTest() {
         from(TestObjectFactory, 5)
         every { call.param("id") } returns 10
         Assertions.assertThrows(NotFoundHttpException::class.java) {
-            call.entityParam(TestTable())
+            call.entity(TestTable())
         }
     }
 
@@ -166,7 +166,7 @@ class OzoneTableTest : BaseTest() {
         execSqlScript(TestTable.createSql)
         every { call.param("pid") } returns null
         Assertions.assertThrows(NotFoundHttpException::class.java) {
-            call.entityParam(TestTable(), "pid")
+            call.entity(TestTable(), "pid")
         }
     }
 }

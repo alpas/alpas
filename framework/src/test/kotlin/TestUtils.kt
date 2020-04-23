@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package dev.alpas.tests
 
 import dev.alpas.PackageClassLoader
@@ -35,7 +37,7 @@ fun String.scope(): MockKAnswerScope<String, String>.(Call) -> String {
 open class BaseTest() {
     protected fun execSqlFile(filename: String) {
         useConnection { conn ->
-            conn.createStatement().use { statement ->
+            conn.createStatement().use {
                 javaClass.classLoader
                     ?.getResourceAsStream(filename)?.let {
                         it.bufferedReader().use { reader ->

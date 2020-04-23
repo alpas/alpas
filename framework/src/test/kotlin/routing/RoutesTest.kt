@@ -328,7 +328,7 @@ class RoutesTest {
             assertEquals("/", route?.path)
             assertEquals(
                 "dev.alpas.tests.routing.TypedController",
-                (route?.handler as ControllerHandler)?.controller.qualifiedName
+                (route?.handler as ControllerHandler).controller.qualifiedName
             )
         }
     }
@@ -353,7 +353,7 @@ class RoutesTest {
             assertEquals("/", route?.path)
             assertEquals(
                 "dev.alpas.tests.routing.TypedController",
-                (route?.handler as ControllerHandler)?.controller.qualifiedName
+                (route?.handler as ControllerHandler).controller.qualifiedName
             )
         }
     }
@@ -398,12 +398,13 @@ class RoutesTest {
             assertEquals("test${method.toString().toLowerCase()}", (route?.handler as ControllerHandler).method)
             assertEquals(
                 "dev.alpas.tests.routing.TypedController",
-                (route?.handler as ControllerHandler)?.controller.qualifiedName
+                (route.handler as ControllerHandler).controller.qualifiedName
             )
         }
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 class TypedController : Controller() {
     fun index(call: HttpCall) {}
     fun store(call: HttpCall) {}

@@ -4,9 +4,9 @@ import dev.alpas.*
 import dev.alpas.auth.AuthConfig
 import dev.alpas.auth.Authenticatable
 import dev.alpas.http.HttpCall
+import dev.alpas.http.ViewResponse
 import dev.alpas.http.middleware.VerifyCsrfToken
 import dev.alpas.routing.Router
-import dev.alpas.http.ViewResponse
 import io.restassured.RestAssured
 import io.restassured.config.SessionConfig
 import io.restassured.http.ContentType
@@ -105,14 +105,13 @@ abstract class TestBase(entryClass: Class<*>) {
     }
 
     protected fun assertRedirect(location: String, status: Int? = null) {
-        val redirector = call().redirector
-        if (!redirector.isBeingRedirected()) {
+        if (!call().isBeingRedirected()) {
             fail("Call wasn't redirected.")
         }
-        val redirect = redirector.redirect
-        assertEquals(location, redirect.location)
+        val response = call().redirect().redirectResponse
+        assertEquals(location, response.location)
         if (status != null) {
-            assertEquals(status, redirect.status)
+            assertEquals(status, response.statusCode)
         }
     }
 
@@ -126,11 +125,11 @@ abstract class TestBase(entryClass: Class<*>) {
     }
 
     protected fun assertRedirectExternal(location: String, status: Int? = null) {
-        val redirect = call().redirector.redirect
+        val redirect = call().redirect().redirectResponse
         val uri = buildUri(redirect.location).clearQuery().build().asString()
         assertEquals(location, uri)
         if (status != null) {
-            assertEquals(status, redirect.status)
+            assertEquals(status, redirect.statusCode)
         }
     }
 
