@@ -99,8 +99,6 @@ interface Container {
     private fun container(): MutablePicoContainer {
         return picoContainer
     }
-
-    val env: Environment get() = make()
 }
 
 /**

@@ -11,6 +11,7 @@ interface Application : Container {
     val entryClass: Class<*>
     val logger: KLogger
     val srcPackage: String
+    val env: Environment
     val configs: List<Config>
     val kernel: Kernel
     val cwd: File
