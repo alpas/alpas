@@ -37,6 +37,7 @@ open class AppConfig(private val env: Environment) : Config {
         }
 
     open val asyncTimeout: Duration = Duration.ofSeconds(30)
+    open val enableCors = false
 
     protected open fun extraStaticDirs() = emptyArray<String>()
 }
