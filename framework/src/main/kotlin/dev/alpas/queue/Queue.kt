@@ -17,4 +17,5 @@ interface JobHolder {
     fun commit()
     fun rollback(ex: Exception)
     suspend fun process(container: Container)
+    fun rollback()
 }

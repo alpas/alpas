@@ -5,6 +5,7 @@ import dev.alpas.ServiceProvider
 import dev.alpas.config
 import dev.alpas.console.Command
 import dev.alpas.queue.console.MakeJobCommand
+import dev.alpas.queue.console.QueueRestartCommand
 import dev.alpas.queue.console.QueueTablesCommand
 import dev.alpas.queue.console.QueueWorkCommand
 import dev.alpas.queue.job.JobSerializer
@@ -25,6 +26,6 @@ open class QueueServiceProvider : ServiceProvider {
     }
 
     override fun commands(app: Application): List<Command> {
-        return listOf(QueueWorkCommand(app), MakeJobCommand(app.srcPackage), QueueTablesCommand(app.srcPackage))
+        return listOf(QueueWorkCommand(app), MakeJobCommand(app.srcPackage), QueueTablesCommand(app.srcPackage), QueueRestartCommand(app))
     }
 }

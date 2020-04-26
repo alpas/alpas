@@ -43,4 +43,9 @@ open class JMSJobHolder(
     override suspend fun process(container: Container) {
         job(container)
     }
+
+    override fun rollback() {
+        queueLogger.info { "Rolling back $this" }
+        context.rollback()
+    }
 }

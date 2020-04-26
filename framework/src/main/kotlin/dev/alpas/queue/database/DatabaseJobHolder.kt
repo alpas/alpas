@@ -20,21 +20,21 @@ class DatabaseJobHolder(
     }
 
     override fun rollback(ex: Exception) {
-        queue.deleteJob(record)
 
         if (shouldRetry) {
             val tries = record.tries + 1
             if (job.onAttemptFailed(record, tries)) {
                 queueLogger.warn {
-                    "Job ${record.id} processing failed. Tries so far: ${tries}. Not requeueing because it has been handled"
+                    "Job ${record.id} processing failed. Tries so far: ${tries}. Not requeuing because it has been handled"
                 }
                 queueLogger.error { ex.stackTraceString }
             } else {
                 queueLogger.warn { "Job ${record.id} processing failed. Tries so far: ${tries}." }
                 queueLogger.error { ex.stackTraceString }
-                queue.pushToDatabase(record.payload, record.queue, job.delayInSeconds, tries)
+                queue.putBack(record, job.delayInSeconds, tries)
             }
         } else {
+            queue.deleteJob(record)
             if (job.onJobFailed(record)) {
                 queueLogger.warn {
                     "Job '${record.id}' has exceeded its retries count but is handled. Not moving it to the failed job queue."
@@ -48,5 +48,14 @@ class DatabaseJobHolder(
 
     override suspend fun process(container: Container) {
         job(container)
+    }
+
+    override fun toString(): String {
+        return "Database queue record ${record.id}; job $job"
+    }
+
+    override fun rollback() {
+        queueLogger.info { "Rolling back $this" }
+        queue.putBack(record, job.delayInSeconds, job.tries)
     }
 }

@@ -8,6 +8,12 @@ import dev.alpas.Environment
 open class QueueConfig(env: Environment) : Config {
     private val connections = mutableMapOf<String, Lazy<QueueConnection>>()
     open val defaultConnection = env("QUEUE_CONNECTION", "activemq")
+    open val restartTriggerFilename = triggerPath(env("QUEUE_RESTART_TRIGGER_PATH"))
+
+    private fun triggerPath(env: String?): String {
+        val path = env ?: System.getProperty("java.io.tmpdir")
+        return "$path/alpas_queue_trigger"
+    }
 
     fun addConnection(key: String, connection: Lazy<QueueConnection>) {
         connections[key] = connection

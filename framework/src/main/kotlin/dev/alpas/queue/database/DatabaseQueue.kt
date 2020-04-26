@@ -39,10 +39,10 @@ class DatabaseQueue(
 
     internal fun markAsFailedJob(record: JobRecord, e: Exception) {
         FailedJobRecords.insert {
-            FailedJobRecords.connection to "database"
-            FailedJobRecords.queue to record.queue
-            FailedJobRecords.payload to record.payload
-            FailedJobRecords.exception to e.stackTraceString
+            it.connection to "database"
+            it.queue to record.queue
+            it.payload to record.payload
+            it.exception to e.stackTraceString
         }
     }
 
@@ -52,9 +52,9 @@ class DatabaseQueue(
 
     private fun reserveJob(record: JobRecord) {
         JobRecords.update {
-            JobRecords.reservedAt to epochNow()
-            JobRecords.tries to (record.tries + 1)
-            where { JobRecords.id eq record.id }
+            it.reservedAt to nextAvailableTime()
+            it.tries to (record.tries + 1)
+            where { it.id eq record.id }
         }
     }
 
@@ -68,17 +68,29 @@ class DatabaseQueue(
             .firstOrNull()
     }
 
-    internal fun pushToDatabase(payload: String, onQueue: String?, delayInSeconds: Long = 0, tries: Int = 0) {
-        JobRecords.insert {
-            JobRecords.payload to payload
-            JobRecords.queue to (onQueue ?: defaultQueueName)
-            JobRecords.tries to tries
-            JobRecords.availableAt to epochNow(delayInSeconds)
-            JobRecords.createdAt to epochNow()
+    internal fun putBack(record: JobRecord, delayInSeconds: Long = 0, tries: Int = 0) {
+        JobRecords.update {
+            it.payload to record.payload
+            it.queue to record.queue
+            it.tries to tries
+            it.availableAt to nextAvailableTime(delayInSeconds)
+            where {
+                it.id eq record.id
+            }
         }
     }
 
-    private fun epochNow(delayInSeconds: Long = 0) = Instant.now().plusSeconds(delayInSeconds).epochSecond
+    private fun pushToDatabase(payload: String, onQueue: String?, delayInSeconds: Long = 0, tries: Int = 0) {
+        JobRecords.insert {
+            it.payload to payload
+            it.queue to (onQueue ?: defaultQueueName)
+            it.tries to tries
+            it.availableAt to nextAvailableTime(delayInSeconds)
+            it.createdAt to Instant.now()
+        }
+    }
+
+    private fun nextAvailableTime(delayInSeconds: Long = 0) = Instant.now().plusSeconds(delayInSeconds).epochSecond
 
     private fun makeJobRecord(row: QueryRowSet): JobRecord {
         return JobRecord {
