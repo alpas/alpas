@@ -86,7 +86,7 @@ class DatabaseQueue(
             it.queue to (onQueue ?: defaultQueueName)
             it.tries to tries
             it.availableAt to nextAvailableTime(delayInSeconds)
-            it.createdAt to Instant.now()
+            it.createdAt to Instant.now().epochSecond
         }
     }
 
