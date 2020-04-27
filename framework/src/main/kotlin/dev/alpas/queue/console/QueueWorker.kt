@@ -20,12 +20,19 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     private val sleepDuration = sleep?.let { Duration.ofSeconds(it.toLong()) }
     private val channel by lazy {
         val restartFilePath = File(queueConfig.restartTriggerFilename).also { it.deleteOnExit() }
-        FileChannel.open(restartFilePath.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE)
+        FileChannel.open(
+            restartFilePath.toPath(),
+            StandardOpenOption.READ,
+            StandardOpenOption.WRITE,
+            StandardOpenOption.CREATE
+        )
     }
 
     private val isAlreadyCancelled = AtomicBoolean(false)
 
     internal fun work(noOfWorkers: Int, queueNames: List<String>?, connection: String) = runBlocking {
+        // Since we are just starting, we don't care about the restart trigger of the past
+        File(queueConfig.restartTriggerFilename).delete()
         (1..noOfWorkers).map {
             launch {
                 val queue = queueConfig.connection(container, connection)
@@ -68,7 +75,8 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     }
 
     private fun shouldCancelJob(): Boolean {
-        return isAlreadyCancelled.get() || channel.map(FileChannel.MapMode.READ_WRITE, 0, 8).asCharBuffer().get().toInt() != 0
+        return isAlreadyCancelled.get() || channel.map(FileChannel.MapMode.READ_WRITE, 0, 8).asCharBuffer().get()
+            .toInt() != 0
     }
 
     private suspend fun dequeueMultiple(queue: Queue, names: List<String>) {
