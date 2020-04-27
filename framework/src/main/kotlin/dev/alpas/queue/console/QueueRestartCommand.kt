@@ -18,9 +18,9 @@ class QueueRestartCommand(private val container: Container) : Command(name = "qu
         }
         FileChannel.open(
             restartFilePath.toPath(),
-            StandardOpenOption.READ,
             StandardOpenOption.WRITE,
-            StandardOpenOption.CREATE
+            StandardOpenOption.CREATE,
+            StandardOpenOption.TRUNCATE_EXISTING
         ).use { channel ->
             val string = "${1}\u0000".toCharArray()
             val buff = channel.map(FileChannel.MapMode.READ_WRITE, 0, 4)

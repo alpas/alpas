@@ -12,7 +12,6 @@ import java.io.File
 import java.nio.channels.FileChannel
 import java.nio.file.StandardOpenOption
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
 
 class QueueWorker(private val container: Container, sleep: Int?) {
     private val logger = KotlinLogging.logger {}
@@ -28,7 +27,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
         )
     }
 
-    private val isAlreadyCancelled = AtomicBoolean(false)
+    private val isCancelled = !channel.isOpen
 
     internal fun work(noOfWorkers: Int, queueNames: List<String>?, connection: String) = runBlocking {
         // Since we are just starting, we don't care about the restart trigger of the past
@@ -75,7 +74,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     }
 
     private fun shouldCancelJob(): Boolean {
-        return isAlreadyCancelled.get() || channel.map(FileChannel.MapMode.READ_WRITE, 0, 8).asCharBuffer().get()
+        return isCancelled || channel.map(FileChannel.MapMode.READ_WRITE, 0, 8).asCharBuffer().get()
             .toInt() != 0
     }
 
@@ -93,8 +92,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     }
 
     private fun cancel() {
-        if (!isAlreadyCancelled.get()) {
-            isAlreadyCancelled.set(true)
+        if (!channel.isOpen) {
             channel.close()
         }
     }
