@@ -18,6 +18,7 @@ class QueueRestartCommand(private val container: Container) : Command(name = "qu
         }
         FileChannel.open(
             restartFilePath.toPath(),
+            StandardOpenOption.READ,
             StandardOpenOption.WRITE,
             StandardOpenOption.CREATE,
             StandardOpenOption.TRUNCATE_EXISTING
