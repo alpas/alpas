@@ -5,13 +5,13 @@ import dev.alpas.Container
 import dev.alpas.Environment
 
 @Suppress("unused")
-open class QueueConfig(env: Environment) : Config {
+open class QueueConfig(private val env: Environment) : Config {
     private val connections = mutableMapOf<String, Lazy<QueueConnection>>()
     open val defaultConnection = env("QUEUE_CONNECTION", "activemq")
-    open val restartTriggerFilename = triggerPath(env("QUEUE_RESTART_TRIGGER_PATH"))
+    open val queueRestartTripPath = triggerPath(env("QUEUE_RESTART_TRIP_PATH"))
 
-    private fun triggerPath(env: String?): String {
-        val path = env ?: System.getProperty("java.io.tmpdir")
+    private fun triggerPath(envPath: String?): String {
+        val path = envPath ?: env.storagePath("app")
         return "$path/alpas_queue_trigger"
     }
 

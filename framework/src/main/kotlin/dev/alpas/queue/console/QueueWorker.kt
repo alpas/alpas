@@ -9,29 +9,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.io.File
-import java.nio.channels.FileChannel
-import java.nio.file.StandardOpenOption
 import java.time.Duration
 
 class QueueWorker(private val container: Container, sleep: Int?) {
     private val logger = KotlinLogging.logger {}
     private val queueConfig = container.make<QueueConfig>()
     private val sleepDuration = sleep?.let { Duration.ofSeconds(it.toLong()) }
-    private val channel by lazy {
-        val restartFilePath = File(queueConfig.restartTriggerFilename).also { it.deleteOnExit() }
-        FileChannel.open(
-            restartFilePath.toPath(),
-            StandardOpenOption.READ,
-            StandardOpenOption.WRITE,
-            StandardOpenOption.CREATE
-        )
-    }
-
-    private val isCancelled get() = !channel.isOpen
+    private val circuitBreaker = CircuitBreaker(queueConfig.queueRestartTripPath)
 
     internal fun work(noOfWorkers: Int, queueNames: List<String>?, connection: String) = runBlocking {
         // Since we are just starting, we don't care about the restart trigger of the past
-        File(queueConfig.restartTriggerFilename).delete()
+        File(queueConfig.queueRestartTripPath).delete()
         (1..noOfWorkers).map {
             launch {
                 val queue = queueConfig.connection(container, connection)
@@ -56,7 +44,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
         queue.dequeue(name, sleepDuration)?.let { job ->
             if (shouldCancelJob()) {
                 logger.debug { "Queue cancel request received. Won't process the job $job on queue $name" }
-                cancel()
+                close()
                 job.rollback()
             } else {
                 try {
@@ -74,15 +62,14 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     }
 
     private fun shouldCancelJob(): Boolean {
-        return isCancelled || channel.map(FileChannel.MapMode.READ_WRITE, 0, 8).asCharBuffer().get()
-            .toInt() != 0
+        return circuitBreaker.isTripped()
     }
 
     private suspend fun dequeueMultiple(queue: Queue, names: List<String>) {
         for (name in names) {
             if (shouldCancelJob()) {
                 logger.debug { "Queue cancel request received. Won't process queue $name" }
-                cancel()
+                close()
                 break
             } else {
                 dequeue(queue, name)
@@ -91,9 +78,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
         }
     }
 
-    private fun cancel() {
-        if (channel.isOpen) {
-            channel.close()
-        }
+    private fun close() {
+        circuitBreaker.close()
     }
 }

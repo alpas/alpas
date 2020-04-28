@@ -35,4 +35,3 @@ class QueueWorkCommand(private val container: Container) : Command(name = "queue
         }
     }
 }
-
