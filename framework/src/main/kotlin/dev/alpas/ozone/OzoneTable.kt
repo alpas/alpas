@@ -10,6 +10,9 @@ import me.liuwj.ktorm.expression.ColumnAssignmentExpression
 import me.liuwj.ktorm.schema.*
 import java.time.Instant
 import java.time.temporal.Temporal
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 
@@ -271,14 +274,17 @@ abstract class OzoneTable<E : OzoneEntity<E>>(
     /**
      * Automatically bind a column after inferring its corresponding member name from the entity.
      */
-    private fun <T : Any> autoBind(column: ColumnRegistration<T>): ColumnRegistration<T> {
+    fun <T : Any> autoBind(column: ColumnRegistration<T>): ColumnRegistration<T> {
         val entityClass = this.entityClass ?: error("No entity class configured for table: $tableName")
         return column.apply {
             val colName = columnName.toCamelCase()
-            val props = entityClass.memberProperties.find { prop ->
+            val props = entityClass.memberProperties.firstOrNull { prop ->
                 prop.name == colName
             } ?: throw IllegalStateException("Entity ${entityClass.simpleName} doesn't contain property $colName.")
-            doBindInternal(NestedBinding(listOf(props)))
+            bindTo {
+                @Suppress("UNCHECKED_CAST")
+                props.get(it) as? T
+            }
         }
     }
 

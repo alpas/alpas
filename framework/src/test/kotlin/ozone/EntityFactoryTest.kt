@@ -5,6 +5,7 @@ import dev.alpas.tests.BaseTest
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.entity.findAll
 import me.liuwj.ktorm.entity.findById
+import me.liuwj.ktorm.logging.NoOpLogger
 import me.liuwj.ktorm.schema.int
 import me.liuwj.ktorm.support.sqlite.SQLiteDialect
 import org.junit.jupiter.api.AfterEach
@@ -22,7 +23,7 @@ class EntityFactoryTest : BaseTest() {
     @BeforeEach
     fun beforeEach() {
         connection = DriverManager.getConnection("jdbc:sqlite::memory:")
-        Database.connect(logger = null, dialect = SQLiteDialect()) {
+        Database.connect(logger = NoOpLogger, dialect = SQLiteDialect()) {
             object : Connection by connection {
                 override fun close() {
                 }
