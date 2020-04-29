@@ -9,7 +9,8 @@ internal class Stubs {
                 import dev.alpas.Container
                 import dev.alpas.queue.job.Job
 
-                class StubClazzName : Job() {
+                @Suppress("MemberVisibilityCanBePrivate")
+                class StubClazzName(val someId: Long, val someString: String) : Job() {
                     override suspend fun invoke(container: Container) {
                     }
                 }
