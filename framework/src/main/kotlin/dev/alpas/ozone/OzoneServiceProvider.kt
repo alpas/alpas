@@ -1,10 +1,7 @@
 package dev.alpas.ozone
 
-import dev.alpas.Application
-import dev.alpas.ServiceProvider
+import dev.alpas.*
 import dev.alpas.console.Command
-import dev.alpas.make
-import dev.alpas.makeElse
 import dev.alpas.ozone.console.*
 
 class OzoneServiceProvider : ServiceProvider {
@@ -40,5 +37,9 @@ class OzoneServiceProvider : ServiceProvider {
         } else {
             coreOzoneCommands
         }
+    }
+
+    override fun stop(app: Application) {
+        app.tryMake<DatabaseConfig>()?.connection()?.disconnect()
     }
 }

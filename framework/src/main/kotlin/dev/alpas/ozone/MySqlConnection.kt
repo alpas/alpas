@@ -5,7 +5,7 @@ import dev.alpas.Environment
 import me.liuwj.ktorm.database.Database
 
 @Suppress("unused")
-open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) : DatabaseConnection {
+open class MySqlConnection(private val env: Environment, private val config: ConnectionConfig? = null) : DatabaseConnection {
     open val host = config?.host ?: env("DB_HOST", "localhost")
     open val port = config?.port ?: env("DB_PORT", 3306)
     open val database = config?.database ?: env("DB_DATABASE", "")
@@ -20,20 +20,32 @@ open class MySqlConnection(env: Environment, config: ConnectionConfig? = null) :
         "jdbc:mysql://$host:$port/$database?$params"
     }
 
-    private val db: Database by lazy {
-        makeNewConnection()
-    }
-
-    override fun connect(): Database = db
-    override fun reconnect(): Database = makeNewConnection()
-
-    private fun makeNewConnection(): Database {
-        val ds = HikariDataSource().also {
+    private val dataSource by lazy {
+        HikariDataSource().also {
             it.jdbcUrl = jdbcUrl
             it.username = username
             it.password = password
         }
-        return Database.connect(ds, dialect)
     }
 
+    private val db: Database by lazy {
+        makeConnection()
+    }
+
+    override fun connect(): Database = db
+    override fun reconnect(): Database = makeConnection()
+
+    private fun makeConnection(): Database {
+        return Database.connect(dataSource, dialect)
+    }
+
+    override fun disconnect() {
+        if (!isClosed()) {
+            dataSource.close()
+        }
+    }
+
+    override fun isClosed(): Boolean {
+        return dataSource.isClosed
+    }
 }

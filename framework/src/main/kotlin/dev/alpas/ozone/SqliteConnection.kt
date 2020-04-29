@@ -16,7 +16,7 @@ open class SqliteConnection(private val env: Environment, private val config: Co
         makeConnection()
     }
 
-    private fun makeConnection(): Database {
+    private val dataSource by lazy {
         val database = if (config?.database == ":memory:") {
             ":memory:"
         } else {
@@ -27,7 +27,11 @@ open class SqliteConnection(private val env: Environment, private val config: Co
             jdbcUrl = "jdbc:sqlite:$database?$params"
             driverClassName = "org.sqlite.JDBC"
         }
-        return Database.connect(HikariDataSource(config), dialect)
+        HikariDataSource(config)
+    }
+
+    private fun makeConnection(): Database {
+        return Database.connect(dataSource, dialect)
     }
 
     private fun defaultDatabase(): String {
@@ -43,5 +47,12 @@ open class SqliteConnection(private val env: Environment, private val config: Co
     }
 
     override fun connect(): Database = db
+
+    override fun disconnect() {
+        if (!dataSource.isClosed) {
+            dataSource.close()
+        }
+    }
+
     override fun reconnect(): Database = makeConnection()
 }

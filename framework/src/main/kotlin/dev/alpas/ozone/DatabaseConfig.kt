@@ -16,13 +16,12 @@ open class DatabaseConfig(val env: Environment) : Config {
         return connections.isNotEmpty()
     }
 
-    open fun connect(connection: String = defaultConnection): Database {
-        return connections[connection]?.value?.connect()
-            ?: throw Exception("Unsupported database connection: '$connection'.")
+    open fun connect(name: String = defaultConnection): Database {
+        return connection(name)?.connect()
+            ?: throw Exception("Unsupported database connection: '$name'.")
     }
 
-    open fun reconnect(connection: String = defaultConnection): Database {
-        return connections[connection]?.value?.reconnect()
-            ?: throw Exception("Unsupported database connection: '$connection'.")
+    open fun connection(name: String = defaultConnection): DatabaseConnection? {
+        return connections[name]?.value
     }
 }
