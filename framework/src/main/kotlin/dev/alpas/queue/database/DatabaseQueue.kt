@@ -73,6 +73,7 @@ class DatabaseQueue(
             it.payload to record.payload
             it.queue to record.queue
             it.tries to tries
+            it.reservedAt to null
             it.availableAt to nextAvailableTime(delayInSeconds)
             where {
                 it.id eq record.id
