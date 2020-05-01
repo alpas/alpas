@@ -39,9 +39,6 @@ fun TermColors.deleteLastLine() {
     print("\u001b[2K")
 }
 
-inline fun String?.ifNotBlank(defaultValue: (String) -> String): String =
-    if (!isNullOrBlank()) defaultValue(this!!) else ""
-
 fun LocalDateTime.format(pattern: String): String? {
     return format(DateTimeFormatter.ofPattern(pattern))
 }
@@ -177,6 +174,12 @@ inline infix fun <T : Any, R : Any> T?.whenNotNull(thenDo: (T) -> R?): R? = if (
 
 inline infix fun String?.whenNotNullOrEmpty(thenDo: (String) -> String?): String? =
     if (this.isNullOrEmpty()) this else thenDo(this)
+
+inline fun String?.ifNotBlank(defaultValue: (String) -> String): String =
+    if (!isNullOrBlank()) defaultValue(this!!) else ""
+
+inline infix fun <R : Any> String?.whenNotNullOrEmpty(thenDo: (String) -> R): R? =
+    if (this.isNullOrEmpty()) null else thenDo(this)
 
 /**
  * When something isn't null do something, kinda the opposite of ?:
