@@ -7,54 +7,89 @@
 
 ### Alpas - The Rapid and Delightful Kotlin Web Framework. Easy, elegant, and productive! 🚀
 
-Alpas is a batteries-included web framework for Kotlin with a strong focus on developers' productivity.
-The main goal of Alpas is to get you started quickly and enable you to move faster while
-letting you enjoy doing what you are the best at — crafting a delightful web app.
+Alpas is a Kotlin-based web framework that gets you creating web apps and APIs simply, and quickly. 
 
-Alpas strives to be simple and elegant and wants to serve you whether you have written JVM based web
-apps before or not—there is no xml or properties files to configure, no scattered annotations
-to memorize—and yet, there is no huge learning curve to get started.
+#### Routes. Simple, and defined. 
 
-Alpas comes bundled with most of what you need to write modern web apps—**authentication**,
-**auth scaffolding**, **email verification**, **notifications**, **mail**, **queues**,
-**fast and intuitive routing**, **powerful templating engine** etc.—and yet it
-remains flexible for you to extend it to make it more powerful and
-delightful than it already is.
+```kotlin
+
+import example.controllers.WelcomeController
+import dev.alpas.routing.RouteGroup
+import dev.alpas.routing.Router
+
+fun Router.addRoutes() = apply {
+    
+    get("/", WelcomeController::welcome)
+
+}
+
+```
+
+#### Controllers. Write less, do more. 
+
+```kotlin
+
+import dev.alpas.http.HttpCall
+import dev.alpas.routing.Controller
+
+class WelcomeController : Controller() {
+
+    fun welcome(call: HttpCall) {
+
+        call.render("Welcome!")
+
+    }
+}
+
+```
+
+## Batteries-included
+Alpas strives to be simple and elegant and wants to serve you whether you have written JVM-based web
+apps before or not. There is no huge learning curve to get started and Alpas comes bundled with what you'll need
+to build a powerful web application or API. 
+
+- Authentication 
+- Notifications
+- Security
+- Emails 
+- Queues
+- Front-End (Pebble, Vuejs, TailwindCSS)
 
 We have sweated picking the good parts, so you don’t have to!
 
-### Who is Alpas for?
+Want to use a different library? That's also quick and easy to do with Alpas. 
 
-Alpas is for you if you are looking to learn some dynamic web development.
+## Get Started Quickly
 
-If you are tired of the complexities of a dynamic web programming ecosystem, Alpas is for you.
+The [Alpas documentation][alpas-docs] has everything you need to get started. 
 
-If you are tired of gigantic "enterprisey" web frameworks, Alpas is for you. 
+- [Installation](https://alpas.dev/docs/installation) - Simple steps to get your Alpas environment ready. 
+- [Quick Start Guide](https://alpas.dev/docs/quick-start-guide-todo-list) - Walks you through creating a To-Do task list. 
+If you are a beginner to web development, this is for you! 
+- [Starter Template](https://github.com/alpas/starter) - Starting a new project? The starter template will 
+quickly get you rolling.
 
-If you just want to enjoy writing a web app using a ["happy programming language"][happy-kotlin] with a
-framework that has everything you need but still gets out of your way, then Alpas is definitely for you!
+## Examples
+Sometimes, it's easiest to see the possibilities of a new framework by checking out what modules are available in 
+the ecosystem and by looking at real-life examples. [Alpas Resources][alpas-resources] has a curated list of resources 
+available to you so that you can get acquainted with all things Alpas. 
 
-### Learning Alpas
+## Contribution
+Alpas is an open-source project and we appreciate contributions. 
 
-Alpas is extensively and meticulously documented; and, no, we are not just talking about code
-comments and hand-waving! We have put as much effort writing and updating the documentation as
-we have spent time crafting the framework, and we are proud of it!
+If you don't want to directly contribute to the core, you can still contribute in other ways; such as: open issues for 
+encountered bugs, add feature requests, submit documentation updates, and so on. 
 
-The [Alpas documentation site][alpas-docs] has everything you need to get started and get going—including
-two full featured tutorials showing you how to write web apps from start to finish.
+We want you to enjoy writing web apps with Alpas. If you are not, please let us know! We'll keep improving Alpas until it 
+is just right for all of us. The best way to let us help you is by joining our 
+[official Slack][alpas-slack] and asking questions. [Please do!][alpas-slack]
 
-If you are not satisfied with the quality of Alpas documentation or feel like something is not properly
-documented, please open an issue, and we'll tackle it with a high priority. Feel free to send a pull
-request if you want, of course!
+## Sponsors
 
-We want you to enjoy writing a web app in Alpas. If you are not, please let us know, and we'll keep it
-improving until it is just right for all of us. The best way to let us help you is by joining our 
-[official Slack][alpas-slack] and asking questions. [Please do!][alpas-slack].
+- [DigitalOcean](https://www.digitalocean.com/)
 
-Sometimes, it's easiest to see the possibilities of a new framework by checking out what modules are available in the ecosystem and by looking at real-life examples. [Alpas Resources][alpas-resources] has a curated list of resources available to you so that you can get acquainted with all things Alpas. 
 
 [happy-kotlin]: https://medium.com/signal-v-noise/kotlin-makes-me-a-happier-better-programmer-1fc668724563
 [alpas-slack]: https://join.slack.com/t/alpasdev/shared_invite/enQtODcwMjE1MzMxODQ3LTJjZWMzOWE5MzBlYzIzMWQ2MTcxN2M2YjU3MTQ5ZDE4NjBmYjY1YTljOGIwYmJmYWFlYjc4YTcwMDFmZDIzNDE
 [alpas-docs]: https://alpas.dev/docs
 [alpas-resources]: https://github.com/alpas/resources
-
