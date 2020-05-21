@@ -18,9 +18,7 @@ import dev.alpas.routing.RouteGroup
 import dev.alpas.routing.Router
 
 fun Router.addRoutes() = apply {
-    
     get("/", WelcomeController::welcome)
-
 }
 
 ```
@@ -33,11 +31,8 @@ import dev.alpas.http.HttpCall
 import dev.alpas.routing.Controller
 
 class WelcomeController : Controller() {
-
     fun welcome(call: HttpCall) {
-
-        call.render("Welcome!")
-
+        call.render("dashboard")
     }
 }
 
