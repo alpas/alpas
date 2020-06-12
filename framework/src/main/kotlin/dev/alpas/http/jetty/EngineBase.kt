@@ -19,7 +19,7 @@ abstract class EngineBase {
     }
 
     protected open fun hostAndPort(config: AppConfig, isDev: Boolean): Pair<String?, Int> {
-        val host = if (config.enableNetworkShare) null else "localhost"
+        val host = if (config.enableNetworkShare) null else (config.appHost ?: "localhost")
         var port = config.appPort
 
         if (isDev && !isTcpPortAvailable(host, port)) {
