@@ -6,7 +6,7 @@ import dev.alpas.Environment
 import dev.alpas.make
 import org.eclipse.jetty.server.*
 
-class HttpEngine : EngineBase() {
+open class HttpEngine : EngineBase() {
     override fun connector(server: Server, container: Container): ServerConnector {
         val config = container.make<AppConfig>()
         val httpConfig = HttpConfiguration().apply {

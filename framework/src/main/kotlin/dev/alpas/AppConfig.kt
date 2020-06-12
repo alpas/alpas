@@ -6,6 +6,7 @@ import java.time.ZoneOffset
 open class AppConfig(private val env: Environment) : Config {
     open val enableNetworkShare = env("ENABLE_NETWORK_SHARE", false)
     open val appPort = env("APP_PORT", 8080)
+    open val appHost = env("APP_HOST")
     open val appUrl = env("APP_URL", "")
     open val connectionTimeOut: Duration = Duration.ofMinutes(1)
     open val staticDirs: Array<String>
