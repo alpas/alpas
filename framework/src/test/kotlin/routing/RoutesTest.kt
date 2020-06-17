@@ -90,6 +90,53 @@ class RoutesTest {
             }
         }
     }
+//    @Test
+//    fun `route group prefix is added to routes when name is missing`() {
+//        val routePaths = mapOf("path_one" to "one", "path_two" to "two", "path_three" to "three", "path_four" to "four")
+//        val router = withRouter {
+//            group("group") {
+//                routePaths.forEach {
+//                    get(it.key) {}.name("get_${it.value}")
+//                    post(it.key) {}.name("post_${it.value}")
+//                    patch(it.key) {}.name("patch_${it.value}")
+//                    delete(it.key) {}.name("delete_${it.value}")
+//                }
+//            }
+//        }
+//
+//        routePaths.forEach { routePath ->
+//            listOf("get", "post", "patch", "delete").forEach { method ->
+//                router.findNamedRoute("group.${method}_${routePath.value}").also { route ->
+//                    assertNotNull(route)
+//                    assertEquals("/group/${routePath.key}", route?.path)
+//                }
+//            }
+//        }
+//    }
+
+    @Test
+    fun `route group prefix is not added to routes when name is present`() {
+        val routePaths = mapOf("path_one" to "one", "path_two" to "two", "path_three" to "three", "path_four" to "four")
+        val router = withRouter {
+            group("group") {
+                routePaths.forEach {
+                    get(it.key) {}.name("get_${it.value}")
+                    post(it.key) {}.name("post_${it.value}")
+                    patch(it.key) {}.name("patch_${it.value}")
+                    delete(it.key) {}.name("delete_${it.value}")
+                }
+            }.name("test")
+        }
+
+        routePaths.forEach { routePath ->
+            listOf("get", "post", "patch", "delete").forEach { method ->
+                router.findNamedRoute("test.${method}_${routePath.value}").also { route ->
+                    assertNotNull(route)
+                    assertEquals("/group/${routePath.key}", route?.path)
+                }
+            }
+        }
+    }
 
     @Test
     fun `parent route group paths are prepended with a route's path`() {
