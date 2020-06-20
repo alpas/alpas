@@ -40,7 +40,12 @@ open class RouteServiceProvider : ServiceProvider {
     }
 
     override fun onAppStarted(app: Application, uri: URI) {
-        bindUrlGenerator(app, uri)
+        val actualUri = if (app.env.isProduction) {
+            URI(app.appConfig().appUrl)
+        } else {
+            uri
+        }
+        bindUrlGenerator(app, actualUri)
     }
 
     private fun bindUrlGenerator(container: Container, uri: URI) {
