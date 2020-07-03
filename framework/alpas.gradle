@@ -35,6 +35,9 @@ dependencies {
     compile "com.github.marlonlom:timeago:4.0.1"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.+"
     compile "com.github.javafaker:javafaker:1.0.2"
+    ["fuel", "fuel-coroutines", "fuel-jackson"].each { pck ->
+        api "com.github.kittinunf.fuel:${pck}:2.2.2"
+    }
 
     testCompile "org.xerial:sqlite-jdbc:3.28.0"
 }
