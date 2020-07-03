@@ -40,6 +40,7 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
 
     init {
         if (args.contains("queue:restart")) {
+            logger.info { "Received queue:restart command" }
            CircuitBreaker.trip("${System.getenv(ROOT_DIR_KEY)}/storage/app/$QUEUE_TRIGGER_FILENAME")
            exitProcess(0)
         }
