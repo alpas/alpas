@@ -19,7 +19,8 @@ class QueueWorker(private val container: Container, sleep: Int?) {
 
     internal fun work(noOfWorkers: Int, queueNames: List<String>?, connection: String) = runBlocking {
         // Since we are just starting, we don't care about the restart trigger of the past
-        File(queueConfig.queueRestartTripPath).delete()
+        val deleted = File(queueConfig.queueRestartTripPath).delete()
+        logger.info { "Deleted queue tripper? $deleted" }
         (1..noOfWorkers).map {
             launch {
                 val queue = queueConfig.connection(container, connection)

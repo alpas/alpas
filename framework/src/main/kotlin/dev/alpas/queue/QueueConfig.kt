@@ -3,6 +3,7 @@ package dev.alpas.queue
 import dev.alpas.Config
 import dev.alpas.Container
 import dev.alpas.Environment
+const val QUEUE_TRIGGER_FILENAME = "alpas_queue_trigger"
 
 @Suppress("unused")
 open class QueueConfig(private val env: Environment) : Config {
@@ -12,7 +13,7 @@ open class QueueConfig(private val env: Environment) : Config {
 
     private fun triggerPath(envPath: String?): String {
         val path = envPath ?: env.storagePath("app")
-        return "$path/alpas_queue_trigger"
+        return "$path/$QUEUE_TRIGGER_FILENAME"
     }
 
     fun addConnection(key: String, connection: Lazy<QueueConnection>) {

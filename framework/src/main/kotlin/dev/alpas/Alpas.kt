@@ -8,8 +8,11 @@ import dev.alpas.exceptions.ExceptionHandler
 import dev.alpas.http.HttpCall
 import dev.alpas.http.HttpKernel
 import dev.alpas.notifications.NotificationServiceProvider
+import dev.alpas.queue.QUEUE_TRIGGER_FILENAME
+import dev.alpas.queue.console.CircuitBreaker
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
+import kotlin.system.exitProcess
 
 open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> Unit = {}) :
     Container by DefaultContainer(), AppBase(args, entryClass) {
@@ -36,6 +39,10 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
     private val serviceProviders = mutableListOf<ServiceProvider>()
 
     init {
+        if (args.contains("queue:restart")) {
+           CircuitBreaker.trip("${basePath.path}/storage/app/$QUEUE_TRIGGER_FILENAME")
+           exitProcess(0)
+        }
         registerCoreServices(args)
         loadKernel()
         block()

@@ -28,9 +28,9 @@ class QueueWorkCommand(private val container: Container) : Command(name = "queue
     private fun printMessage() {
         withColors {
             if (queueName == null) {
-                echo(green("Running default queue from '$connection' connection with $queueWorkers workers..."))
+                echo(green("Running default queue from '$connection' connection with $queueWorkers worker(s)..."))
             } else {
-                echo(green("Running '$queueName' queue(s) from '$connection' connection with $queueWorkers workers..."))
+                echo(green("Running '$queueName' queue(s) from '$connection' connection with $queueWorkers worker(s)..."))
             }
         }
     }
