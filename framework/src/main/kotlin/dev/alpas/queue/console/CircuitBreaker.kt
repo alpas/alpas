@@ -5,7 +5,7 @@ import java.nio.channels.FileChannel
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 
-class CircuitBreaker(private val path: String) : AutoCloseable {
+class CircuitBreaker(val path: String) : AutoCloseable {
     private val channel by lazy {
         val restartFilePath = File(path).also { it.deleteOnExit() }
         FileChannel.open(
