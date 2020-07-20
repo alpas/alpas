@@ -29,7 +29,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
                     if (shouldCancelJob()) {
                         coroutineContext.cancel()
                         logger.warn { "Queue cancel request received. Exiting..." }
-                        cancel()
+//                        cancel()
                         break
                     }
                     if (queueNames.isNullOrEmpty()) {
@@ -38,6 +38,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
                         dequeueMultiple(queue, queueNames)
                     }
                 } while (true)
+                logger.warn { "Queue worker $it exited." }
             }
         }
     }
