@@ -48,7 +48,7 @@ interface HandlesUserLogin {
         return call.authChannel.attempt(
             call.string(username()),
             call.string("password"),
-            call.param("remember") != null
+            call.filled("remember")
         )
     }
 
