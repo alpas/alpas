@@ -10,6 +10,5 @@ class QueueRestartCommand(private val container: Container) : Command(name = "qu
         withColors {
             echo(green("Stopping all queue workers..."))
         }
-        CircuitBreaker.trip(container.make<QueueConfig>().queueRestartTripPath)
     }
 }

@@ -8,20 +8,17 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import java.io.File
 import java.time.Duration
 
 class QueueWorker(private val container: Container, sleep: Int?) {
     private val logger = KotlinLogging.logger {}
     private val queueConfig = container.make<QueueConfig>()
     private val sleepDuration = sleep?.let { Duration.ofSeconds(it.toLong()) }
-    private val circuitBreaker = CircuitBreaker(queueConfig.queueRestartTripPath)
+    private val circuitBreaker = container.make<QueueCircuitChecker>() //CircuitBreaker(queueConfig.queueRestartTripPath)
 
     internal fun work(noOfWorkers: Int, queueNames: List<String>?, connection: String) = runBlocking {
         // Since we are just starting, we don't care about the restart trigger of the past
-        val queueRestartTripPath = queueConfig.queueRestartTripPath
-        val deleted = File(queueRestartTripPath).delete()
-        logger.info { "Deleted queue tripper at $queueRestartTripPath? $deleted" }
+        circuitBreaker.start(container)
         (1..noOfWorkers).map {
             launch {
                 val queue = queueConfig.connection(container, connection)
@@ -41,6 +38,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
                 logger.warn { "Queue worker $it exited." }
             }
         }
+        circuitBreaker.close()
     }
 
     private suspend fun dequeue(queue: Queue, name: String? = null) {
@@ -65,7 +63,8 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     }
 
     private fun shouldCancelJob(): Boolean {
-        return circuitBreaker.isTripped().also { logger.debug { "Circuit breaker at ${circuitBreaker.path} isn't tripped yet." } }
+        return circuitBreaker.isTripped()
+            .also { logger.debug { "Circuit breaker isn't tripped yet." } }
     }
 
     private suspend fun dequeueMultiple(queue: Queue, names: List<String>) {

@@ -8,8 +8,7 @@ import dev.alpas.exceptions.ExceptionHandler
 import dev.alpas.http.HttpCall
 import dev.alpas.http.HttpKernel
 import dev.alpas.notifications.NotificationServiceProvider
-import dev.alpas.queue.QUEUE_TRIGGER_FILENAME
-import dev.alpas.queue.console.CircuitBreaker
+import dev.alpas.queue.console.QueueCircuitBreaker
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 import kotlin.system.exitProcess
@@ -39,14 +38,20 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
     private val serviceProviders = mutableListOf<ServiceProvider>()
 
     init {
-        if (args.contains("queue:restart")) {
-            logger.info { "Received queue:restart command" }
-           CircuitBreaker.trip("${System.getenv(ROOT_DIR_KEY)}/storage/app/$QUEUE_TRIGGER_FILENAME")
-           exitProcess(0)
-        }
         registerCoreServices(args)
+        checkEarlyBirdCommands()
         loadKernel()
         block()
+    }
+
+    private fun checkEarlyBirdCommands() {
+        if (env.inConsoleMode) {
+            if (args.contains("queue:restart")) {
+                logger.info { "Received queue:restart command" }
+                make<QueueCircuitBreaker>().trip(this)
+                exitProcess(0)
+            }
+        }
     }
 
     override fun bufferDebugLog(log: String) {
@@ -160,7 +165,7 @@ open class Alpas(args: Array<String>, entryClass: Class<*>, block: Alpas.() -> U
 
     private fun loadUserlandCoreClasses(loader: PackageClassLoader) {
         loader.load {
-            listOf(Config::class).forEach { interfaze ->
+            listOf(Config::class, QueueCircuitBreaker::class).forEach { interfaze ->
                 classesImplementing(interfaze) {
                     bufferDebugLog("Loading $it from $packageName that implement $interfaze")
                     if (it.superclass == null) {
