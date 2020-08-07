@@ -8,6 +8,7 @@ import io.github.classgraph.ScanResult
 import java.io.File
 
 internal class MigrationRunner(
+    private val container: Container,
     private val migrationDirectory: File,
     private val isDryRun: Boolean,
     private val migrationClassesScanner: ScanResult,
@@ -45,7 +46,7 @@ internal class MigrationRunner(
                     echo("${brightYellow("▸| Skipped for batch $batch:")} ${brightRed(givenName)}")
                 }
             } else {
-                migration.up()
+                migration.up(container)
             }
             if (!isDryRun) {
                 migrationRepo.saveMigration(givenName)
@@ -70,7 +71,7 @@ internal class MigrationRunner(
             notify {
                 echo("${yellow("Rolling back")} ${brightYellow(it.givenName)}")
             }
-            it.down()
+            it.down(container)
             notify {
                 deleteLastLine()
                 echo("${brightGreen("✓ Rolled back")} ${brightYellow(it.givenName)}")

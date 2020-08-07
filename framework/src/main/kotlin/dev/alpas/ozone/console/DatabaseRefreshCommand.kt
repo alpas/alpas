@@ -24,7 +24,7 @@ class DatabaseRefreshCommand(private val app: Application) : MigrationCommand(
         println()
         adapter.dropAllTables()
         println()
-        MigrationRunner(File(migrationsDirectory.toUri()), dryRun, migrationClassesScanner, useFilenames, quiet)
+        MigrationRunner(app, File(migrationsDirectory.toUri()), dryRun, migrationClassesScanner, useFilenames, quiet)
             .migrate()
         withColors {
             println()

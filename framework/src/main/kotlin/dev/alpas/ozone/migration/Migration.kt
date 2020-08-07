@@ -1,5 +1,6 @@
 package dev.alpas.ozone.migration
 
+import dev.alpas.Container
 import dev.alpas.ozone.OzoneEntity
 import dev.alpas.ozone.OzoneTable
 
@@ -45,7 +46,9 @@ abstract class Migration {
     open fun shouldSkipBatch(batch: Int) = false
 
     open fun up() {}
+    open fun up(container: Container) {up()}
     open fun down() {}
+    open fun down(container: Container) {down()}
 
     protected fun execute(query: String) {
         adapter.execute(query)

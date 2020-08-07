@@ -29,9 +29,9 @@ class OzoneServiceProvider : ServiceProvider {
         return if (config.canConnect()) {
             listOf(
                 DatabaseCreateCommand(),
-                DatabaseMigrateCommand(srcPackage),
+                DatabaseMigrateCommand(app, srcPackage),
                 DatabaseRefreshCommand(app),
-                DatabaseRollbackCommand(srcPackage),
+                DatabaseRollbackCommand(app, srcPackage),
                 DatabaseSeedCommand(app)
             ).plus(coreOzoneCommands)
         } else {
