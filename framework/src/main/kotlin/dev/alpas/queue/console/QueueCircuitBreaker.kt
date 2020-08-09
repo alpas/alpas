@@ -37,7 +37,6 @@ class MemoryBasedQueueCircuitChecker(val path: String) : QueueCircuitChecker {
             .toInt() != 0
     }
 
-
     override fun start(container: Container) {
         val deleted = File(path).delete()
         queueLogger.info { "Deleted memory based queue tripper at $path? $deleted" }

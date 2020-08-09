@@ -14,11 +14,12 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     private val logger = KotlinLogging.logger {}
     private val queueConfig = container.make<QueueConfig>()
     private val sleepDuration = sleep?.let { Duration.ofSeconds(it.toLong()) }
-    private val circuitBreaker = container.make<QueueCircuitChecker>() //CircuitBreaker(queueConfig.queueRestartTripPath)
+    private val circuitChecker =
+        container.make<QueueCircuitChecker>() //CircuitBreaker(queueConfig.queueRestartTripPath)
 
     internal fun work(noOfWorkers: Int, queueNames: List<String>?, connection: String) = runBlocking {
         // Since we are just starting, we don't care about the restart trigger of the past
-        circuitBreaker.start(container)
+        circuitChecker.start(container)
         (1..noOfWorkers).map {
             launch {
                 val queue = queueConfig.connection(container, connection)
@@ -38,7 +39,8 @@ class QueueWorker(private val container: Container, sleep: Int?) {
                 logger.warn { "Queue worker $it exited." }
             }
         }
-        circuitBreaker.close()
+        circuitChecker.close()
+        logger.info { "Circuit breaker closed. All good!" }
     }
 
     private suspend fun dequeue(queue: Queue, name: String? = null) {
@@ -63,7 +65,7 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     }
 
     private fun shouldCancelJob(): Boolean {
-        return circuitBreaker.isTripped()
+        return circuitChecker.isTripped()
             .also { logger.debug { "Circuit breaker isn't tripped yet." } }
     }
 
@@ -81,6 +83,6 @@ class QueueWorker(private val container: Container, sleep: Int?) {
     }
 
     private fun close() {
-        circuitBreaker.close()
+        circuitChecker.close()
     }
 }
