@@ -37,9 +37,12 @@ class QueueWorker(private val container: Container, sleep: Int?) {
                     }
                 } while (true)
                 logger.warn { "Queue worker $it exited." }
+                // if last job, close it
+                if (it == noOfWorkers - 1) {
+                    close()
+                }
             }
         }
-        circuitChecker.close()
         logger.info { "Circuit breaker closed. All good!" }
     }
 
@@ -47,7 +50,6 @@ class QueueWorker(private val container: Container, sleep: Int?) {
         queue.dequeue(name, sleepDuration)?.let { job ->
             if (shouldCancelJob()) {
                 logger.debug { "Queue cancel request received. Won't process the job $job on queue $name" }
-                close()
                 job.rollback()
             } else {
                 try {
@@ -73,7 +75,6 @@ class QueueWorker(private val container: Container, sleep: Int?) {
         for (name in names) {
             if (shouldCancelJob()) {
                 logger.debug { "Queue cancel request received. Won't process queue $name" }
-                close()
                 break
             } else {
                 dequeue(queue, name)
