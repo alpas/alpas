@@ -66,8 +66,12 @@ open class ValidationGuard(val shouldFailFast: Boolean = false, inJsonBody: Bool
         val shouldAllow = user()?.let { allow(it) } ?: allow()
 
         if (!shouldAllow) {
-            call.abort(HttpStatus.UNAUTHORIZED_401)
+            handleUnauthorizedAccess()
         }
+    }
+
+    protected open fun handleUnauthorizedAccess() {
+        call.abort(HttpStatus.UNAUTHORIZED_401)
     }
 
     private fun validate(attribute: String, errorBag: ErrorBag, rules: Iterable<Rule>) {

@@ -1,6 +1,7 @@
 package dev.alpas.routing
 
 import dev.alpas.AppConfig
+import dev.alpas.filterNotNullValues
 import dev.alpas.toDate
 import org.sagebionetworks.url.HttpMethod
 import org.sagebionetworks.url.UrlSignerUtils
@@ -15,11 +16,11 @@ class UrlGenerator(private val root: URI, private val router: Router, private va
 
     fun route(
         name: String,
-        params: Map<String, Any>? = null,
+        params: Map<String, Any?>? = null,
         absolute: Boolean = true,
         defaultPath: String? = null
     ): String {
-        val mutableParamsMap = params?.toMutableMap() ?: mutableMapOf()
+        val mutableParamsMap = params?.filterNotNullValues()?.toMutableMap() ?: mutableMapOf()
         val route = router.findNamedRoute(name)
         if (route == null) {
             // if require that the route is found or that there is a default path, otherwise we throw an exception
