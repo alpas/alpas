@@ -27,10 +27,6 @@ import javax.servlet.AsyncEvent
 import javax.servlet.AsyncListener
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.startCoroutine
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -140,7 +136,11 @@ class HttpCall internal constructor(
     }
 
     fun <T : ValidationGuard> validateUsing(validator: KClass<out T>, afterSuccessBlock: T.() -> Unit = {}): T {
-        return validator.createInstance().also {
+        return this.validateUsing(validator.createInstance(), afterSuccessBlock)
+    }
+
+    fun <T : ValidationGuard> validateUsing(validator: T, afterSuccessBlock: T.() -> Unit = {}): T {
+        return validator.also {
             it.call = this
             it.validate(errorBag)
             checkValidationErrors { errorBag ->
@@ -408,13 +408,23 @@ class HttpCall internal constructor(
         throw httpExceptionFor(statusCode, message, headers)
     }
 
-    fun abortUnless(condition: Boolean, statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()) {
+    fun abortUnless(
+        condition: Boolean,
+        statusCode: Int,
+        message: String? = null,
+        headers: Map<String, String> = emptyMap()
+    ) {
         if (!condition) {
             abort(statusCode, message, headers)
         }
     }
 
-    fun abortIf(condition: Boolean, statusCode: Int, message: String? = null, headers: Map<String, String> = emptyMap()) {
+    fun abortIf(
+        condition: Boolean,
+        statusCode: Int,
+        message: String? = null,
+        headers: Map<String, String> = emptyMap()
+    ) {
         if (condition) {
             abort(statusCode, message, headers)
         }
@@ -448,7 +458,11 @@ class HttpCall internal constructor(
         return render(templateName, mapOf(arg), statusCode)
     }
 
-    fun render(templateName: String, args: Map<String, Any?>? = null, statusCode: Int = HttpStatus.OK_200): ViewResponse {
+    fun render(
+        templateName: String,
+        args: Map<String, Any?>? = null,
+        statusCode: Int = HttpStatus.OK_200
+    ): ViewResponse {
         return ViewResponse(templateName.replace(".", "/"), args, statusCode)
             .also { this.response = it }
     }

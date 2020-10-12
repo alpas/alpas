@@ -8,6 +8,7 @@ import dev.alpas.http.HttpCall
 import dev.alpas.http.RenderContext
 import dev.alpas.http.RequestParamsBagContract
 import dev.alpas.validation.SharedDataBag
+import dev.alpas.validation.ValidationGuard
 import org.eclipse.jetty.http.HttpStatus
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -20,11 +21,24 @@ sealed class RouteHandler {
     abstract fun handle(call: HttpCall)
     protected fun invokeControllerMethod(methodName: String, controller: Controller, call: HttpCall) {
         fun Controller.invoke(methodName: String, call: HttpCall) {
-            this.call = call
-            this(call)
+            val me = this
+            me.call = call
+            me(call)
             if (!methodName.isBlank()) {
-                val method = this.javaClass.getMethod(methodName, call.javaClass)
-                method.invoke(this, call)
+                this.javaClass.methods.find { it.name == methodName }?.let { method ->
+                    method.parameterTypes.firstOrNull()?.let { param ->
+                        if (ValidationGuard::class.java.isAssignableFrom(param)) {
+                            val guard = param.getDeclaredConstructor().newInstance() as ValidationGuard
+                            call.validateUsing(guard) {
+                                method.invoke(me, guard)
+                            }
+                        } else {
+                            null
+                        }
+                    } ?: run {
+                        method.invoke(me, call)
+                    }
+                }
             }
         }
 

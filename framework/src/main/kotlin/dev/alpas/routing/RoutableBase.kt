@@ -4,6 +4,7 @@ import dev.alpas.Middleware
 import dev.alpas.extensions.toKebabCase
 import dev.alpas.http.HttpCall
 import dev.alpas.http.Method
+import dev.alpas.validation.ValidationGuard
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction2
 
@@ -109,6 +110,18 @@ abstract class RoutableBase(
     fun <T : Controller> get(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
         add(Method.GET, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
 
+    @JvmName("guardedGet")
+    inline fun <reified C : Controller, G : ValidationGuard> get(method: KFunction2<C, G, Unit>) = get("", C::class, method.name)
+
+    @JvmName("guardedGet")
+    fun <C : Controller, G : ValidationGuard> get(controller: KClass<C>, method: KFunction2<C, G, Unit>) = get("", controller, method.name)
+
+    @JvmName("guardedGet")
+    inline fun <reified C : Controller, G : ValidationGuard> get(path: String, method: KFunction2<C, G, Unit>) = get(path, C::class, method.name)
+
+    @JvmName("guardedGet")
+    fun <C : Controller, G : ValidationGuard> get(path: String, controller: KClass<C>, method: KFunction2<C, G, Unit>) = add(Method.GET, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
+
     fun get(path: String, controller: KClass<out Controller>, method: String = DEFAULT_GET_METHOD) =
         add(Method.GET, path, ControllerHandler(controller, method), middleware).name(method.toKebabCase())
 
@@ -129,6 +142,25 @@ abstract class RoutableBase(
     fun <T : Controller> post(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
         add(Method.POST, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
 
+    @JvmName("guardedPost")
+    inline fun <reified C : Controller, G : ValidationGuard> post(method: KFunction2<C, G, Unit>) =
+        post("", C::class, method.name)
+
+    @JvmName("guardedPost")
+    fun <C : Controller, G : ValidationGuard> post(controller: KClass<C>, method: KFunction2<C, G, Unit>) =
+        post("", controller, method.name)
+
+    @JvmName("guardedPost")
+    inline fun <reified C : Controller, G : ValidationGuard> post(path: String, method: KFunction2<C, G, Unit>) =
+        post(path, C::class, method.name)
+
+    @JvmName("guardedPost")
+    fun <C : Controller, G : ValidationGuard> post(
+        path: String,
+        controller: KClass<C>,
+        method: KFunction2<C, G, Unit>
+    ) = add(Method.POST, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
+
     fun post(path: String, controller: KClass<out Controller>, method: String = DEFAULT_POST_METHOD) =
         add(Method.POST, path, ControllerHandler(controller, method), middleware).name(method.toKebabCase())
 
@@ -147,10 +179,26 @@ abstract class RoutableBase(
     inline fun <reified T : Controller> delete(path: String, method: KFunction2<T, HttpCall, Unit>) =
         delete(path, T::class, method.name)
 
+    @JvmName("guardedDelete")
+    inline fun <reified C : Controller, G : ValidationGuard> delete(method: KFunction2<C, G, Unit>) =
+        delete("", C::class, method.name)
+
+    @JvmName("guardedDelete")
+    fun <C : Controller, G : ValidationGuard> delete(controller: KClass<C>, method: KFunction2<C, G, Unit>) =
+        delete("", controller, method.name)
+
+    @JvmName("guardedDelete")
+    inline fun <reified C : Controller, G : ValidationGuard> delete(path: String, method: KFunction2<C, G, Unit>) =
+        delete(path, C::class, method.name)
+
     fun delete(path: String, controller: KClass<out Controller>, method: String = DEFAULT_DELETE_METHOD) =
         add(Method.DELETE, path, ControllerHandler(controller, method), middleware).name(method.toKebabCase())
 
-    fun <T : Controller> delete(path: String, controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
+    fun <T : Controller, G : ValidationGuard> delete(
+        path: String,
+        controller: KClass<T>,
+        method: KFunction2<T, G, Unit>
+    ): Route =
         add(Method.DELETE, path, ControllerHandler(controller, method.name), middleware).name(method.name.toKebabCase())
 
     inline fun <reified T : Controller> patch(path: String = "", method: String = DEFAULT_PATCH_METHOD) =
@@ -165,8 +213,20 @@ abstract class RoutableBase(
     fun <T : Controller> patch(controller: KClass<T>, method: KFunction2<T, HttpCall, Unit>) =
         patch("", controller, method.name)
 
-    inline fun <reified T : Controller> patch(path: String, method: KFunction2<T, HttpCall, Unit>) =
-        patch(path, T::class, method.name)
+    inline fun <reified C : Controller> patch(path: String, method: KFunction2<C, HttpCall, Unit>) =
+        patch(path, C::class, method.name)
+
+    @JvmName("guardedPatch")
+    inline fun <reified C : Controller, G:ValidationGuard> patch(method: KFunction2<C, G, Unit>) =
+        patch("", C::class, method.name)
+
+    @JvmName("guardedPatch")
+    fun <C : Controller, G:ValidationGuard> patch(controller: KClass<C>, method: KFunction2<C, G, Unit>) =
+        patch("", controller, method.name)
+
+    @JvmName("guardedPatch")
+    inline fun <reified C : Controller, G:ValidationGuard> patch(path: String, method: KFunction2<C, G, Unit>) =
+        patch(path, C::class, method.name)
 
     fun patch(path: String, controller: KClass<out Controller>, method: String = DEFAULT_PATCH_METHOD) =
         add(Method.PATCH, path, ControllerHandler(controller, method), middleware).name(method.toKebabCase())
