@@ -76,8 +76,8 @@ class HttpCall internal constructor(
 
     fun charset() = servletResponse.charset()
 
-    fun isSigned(): Boolean {
-        return urlGenerator.checkSignature(fullUrl)
+    fun isSigned(url: String? = null): Boolean {
+        return urlGenerator.checkSignature(url ?: fullUrl)
     }
 
     fun route(): Route? {
