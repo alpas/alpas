@@ -24,21 +24,21 @@ class MySqlConnectionTest {
     fun `sets default db connections from the environment values`(@RelaxedMockK env: Environment) {
         env.fillWithTestValues()
         val connection = MySqlConnection(env)
-        assertEquals("jdbc:mysql://testhost:3333/testdb?useSSL=false", connection.jdbcUrl)
+        assertEquals("jdbc:mysql://testhost:3333/testdb?useSSL=false&serverTimezone=UTC", connection.jdbcUrl)
     }
 
     @Test
     fun `can pass extra params`(@RelaxedMockK env: Environment) {
         env.fillWithTestValues()
         val connection = MySqlConnection(env, ConnectionConfig(extraParams = mapOf("allowPublicKeyRetrieval" to true)))
-        assertEquals("jdbc:mysql://testhost:3333/testdb?allowPublicKeyRetrieval=true&useSSL=false", connection.jdbcUrl)
+        assertEquals("jdbc:mysql://testhost:3333/testdb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true", connection.jdbcUrl)
     }
 
     @Test
     fun `connection config values take precedence over environment variables`(@RelaxedMockK env: Environment) {
         env.fillWithTestValues()
         val connection = MySqlConnection(env, ConnectionConfig(host = "differenthost", port = 1111, useSSL = true))
-        assertEquals("jdbc:mysql://differenthost:1111/testdb?useSSL=true", connection.jdbcUrl)
+        assertEquals("jdbc:mysql://differenthost:1111/testdb?useSSL=true&serverTimezone=UTC", connection.jdbcUrl)
     }
 
     @Test
