@@ -11,7 +11,7 @@ dependencies {
     implementation "io.github.classgraph:classgraph:4.8.65"
     implementation "com.github.simbiose:Encryption:2.0.1"
     implementation "org.slf4j:slf4j-api:1.8.0-beta4"
-    implementation "de.mkammerer:argon2-jvm:2.6"
+    implementation "de.mkammerer:argon2-jvm:2.10.1"
     implementation "uy.kohesive.klutter:klutter-core:2.6.0"
     implementation "org.apache.qpid:qpid-jms-client:0.48.0"
     implementation "org.simplejavamail:simple-java-mail:5.5.1"
